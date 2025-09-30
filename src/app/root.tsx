@@ -21,15 +21,18 @@ export default function RootLayout() {
         isMobileMenuOpen={isMobileMenuOpen} 
         onCloseMobileMenu={closeMobileMenu}
       />
-      {/* Main layout - no left padding since sidebar is mobile-only */}
+      {/* Main layout with max-width constraint on desktop */}
       <div className="flex flex-col min-h-screen">
-        <Header 
-          onMobileMenuToggle={toggleMobileMenu}
-          isMobileMenuOpen={isMobileMenuOpen}
-        />
-        <main className="flex-1 overflow-x-hidden">
-          <Outlet />
-        </main>
+        {/* Container for header and main content with max-width */}
+        <div className="w-full max-w-7xl mx-auto flex flex-col min-h-screen">
+          <Header 
+            onMobileMenuToggle={toggleMobileMenu}
+            isMobileMenuOpen={isMobileMenuOpen}
+          />
+          <main className="flex-1 overflow-x-hidden">
+            <Outlet />
+          </main>
+        </div>
       </div>
     </div>
   );

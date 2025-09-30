@@ -1,7 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import { LoadingSpinner } from "../components/ui/micros/loading-spinner";
 import RootLayout from "./root";
-
+import { HomePage } from "../components/pages/HomePage";
 
 const router = createBrowserRouter([
   {
@@ -10,7 +9,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <LoadingSpinner />,
+        element: <HomePage />,
       },
       {
         path: "*",

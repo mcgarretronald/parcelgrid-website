@@ -5,7 +5,7 @@ import { Toaster } from "sonner";
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="escrow-admin-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="escrow-admin-theme">
       <RouterProvider router={router} />
       <Toaster position="top-center" richColors closeButton />
     </ThemeProvider>
