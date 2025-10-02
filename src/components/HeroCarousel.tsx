@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './ui/button';
 import './HeroCarousel.css';
 
@@ -39,15 +39,28 @@ export const HeroCarousel: React.FC = () => {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const hasQuickStarted = useRef(false);
 
   useEffect(() => {
     if (!isAutoPlaying) return;
 
+    // Quick-start the first transition shortly after mount
+    let quickStartTimeout: number | undefined;
+    if (!hasQuickStarted.current) {
+      quickStartTimeout = window.setTimeout(() => {
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
+      }, 300); // immediate start after a short delay for mount
+      hasQuickStarted.current = true;
+    }
+
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    }, 4000);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (quickStartTimeout) window.clearTimeout(quickStartTimeout);
+      clearInterval(interval);
+    };
   }, [isAutoPlaying]);
 
   // Keyboard navigation
@@ -73,39 +86,40 @@ export const HeroCarousel: React.FC = () => {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <div
-      className="relative h-screen bg-slate-900 overflow-hidden"
-      onMouseEnter={() => setIsAutoPlaying(false)}
-      onMouseLeave={() => setIsAutoPlaying(true)}
-      onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
-      onTouchMove={(e) => setTouchEndX(e.touches[0].clientX)}
-      onTouchEnd={() => {
-        if (touchStartX !== null && touchEndX !== null) {
-          const delta = touchEndX - touchStartX;
-          const threshold = 50; // px
-          if (delta < -threshold) {
-            setCurrentSlide((prev) => (prev + 1) % slides.length);
-            setIsAutoPlaying(false);
-          } else if (delta > threshold) {
-            setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-            setIsAutoPlaying(false);
+    <div className="relative h-screen">
+      <div
+        className="absolute inset-0 h-screen bg-slate-900 overflow-hidden"
+        onMouseEnter={() => setIsAutoPlaying(false)}
+        onMouseLeave={() => setIsAutoPlaying(true)}
+        onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
+        onTouchMove={(e) => setTouchEndX(e.touches[0].clientX)}
+        onTouchEnd={() => {
+          if (touchStartX !== null && touchEndX !== null) {
+            const delta = touchEndX - touchStartX;
+            const threshold = 50; // px
+            if (delta < -threshold) {
+              setCurrentSlide((prev) => (prev + 1) % slides.length);
+              setIsAutoPlaying(false);
+            } else if (delta > threshold) {
+              setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+              setIsAutoPlaying(false);
+            }
           }
-        }
-        setTouchStartX(null);
-        setTouchEndX(null);
-      }}
-    >
+          setTouchStartX(null);
+          setTouchEndX(null);
+        }}
+      >
       {/* Animated Background */}
       <div className="absolute inset-0">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-in-out opacity-30"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ease-in-out opacity-30"
           style={{
             backgroundImage: `url(${currentSlideData.backgroundImage || 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80'})`
           }}
         />
         <div className="absolute inset-0 bg-black/30"></div>
       </div>
-      
+
       {/* Modern Geometric Decorations */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Floating geometric shapes */}
@@ -190,6 +204,7 @@ export const HeroCarousel: React.FC = () => {
       {/* Navigation arrows and bottom indicators removed as requested */}
 
       {/* Top-right progress ring removed as requested */}
+      </div>
     </div>
   );
 };

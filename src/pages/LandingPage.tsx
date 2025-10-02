@@ -1,6 +1,6 @@
 import React from 'react';
 import { HeroCarousel } from '../components/HeroCarousel';
-import { Package, Clock, Shield, Star, Users, TrendingUp, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import AnimatedCounter from '../components/AnimatedCounter';
 
 const LandingPage: React.FC = () => {
@@ -10,74 +10,43 @@ const LandingPage: React.FC = () => {
       <HeroCarousel />
 
       {/* Features Section - interactive */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#00473E] mb-4">
-              Why Choose ParcelGrid?
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Trusted by thousands of businesses across Kenya for reliable, efficient, and affordable delivery solutions.
-            </p>
-          </div>
-          {/* Layout toggle */}
-          <div className="flex justify-center mb-8">
-            {/* simple toggle mimic via URL hash or state could be used; keeping grid default for simplicity */}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                icon: <Package className="w-12 h-12 text-[#E9FF15]" />,
-                title: "413+ Pickup Points",
-                description: "Extensive network covering every corner of Kenya, from major cities to remote towns."
-              },
-              {
-                icon: <Clock className="w-12 h-12 text-[#E9FF15]" />,
-                title: "Real-time Tracking",
-                description: "Keep your customers informed with live updates and delivery notifications."
-              },
-              {
-                icon: <Shield className="w-12 h-12 text-[#E9FF15]" />,
-                title: "Secure Delivery",
-                description: "COD and prepaid options with guaranteed security for all your parcels."
-              },
-              {
-                icon: <Star className="w-12 h-12 text-[#E9FF15]" />,
-                title: "Customer Satisfaction",
-                description: "98% satisfaction rate with our reliable delivery and customer service."
-              },
-              {
-                icon: <Users className="w-12 h-12 text-[#E9FF15]" />,
-                title: "Business Support",
-                description: "Dedicated support team to help your business grow and scale effectively."
-              },
-              {
-                icon: <TrendingUp className="w-12 h-12 text-[#E9FF15]" />,
-                title: "Growth Analytics",
-                description: "Detailed insights and analytics to help optimize your delivery strategy."
-              }
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className="bg-[#00473E] p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-[#E9FF15]/20 hover:-translate-y-1 hover:rotate-0 group"
-                style={{ transformStyle: 'preserve-3d' }}
-              >
-                <div className="mb-6">{feature.icon}</div>
-                <h3 className="text-xl font-semibold text-white mb-4">
-                  {feature.title}
-                </h3>
-                <p className="text-white/80 leading-relaxed">
-                  {feature.description}
-                </p>
+  <section className="min-h-screen bg-white flex items-center">
+  <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-0">
+            {/* Left: large feature text (center on small, left on md+) */}
+            <div className="flex justify-center md:justify-start">
+              <div className="w-full h-full">
+                <div className="space-y-6 text-center md:text-left">
+                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00473E]">BUILT FOR ONLINE VENDORS LIKE YOU.</h3>
+                  <p className="text-lg sm:text-xl md:text-2xl text-gray-700">Expand beyond Nairobi with Kenya’s broadest delivery infrastructure.</p>
+                  <p className="text-lg sm:text-xl md:text-2xl text-gray-700">Deliver to 413+ towns and growing, from Nairobi to remote counties.</p>
+                  <p className="text-lg sm:text-xl md:text-2xl text-gray-700">Cash on Delivery (COD) with instant wallet payouts for vendors.</p>
+                  <p className="text-lg sm:text-xl md:text-2xl text-gray-700">Prepaid & COD options that build customer trust and drive repeat sales.</p>
+                  <p className="text-lg sm:text-xl md:text-2xl text-gray-700">Easy-to-use app with a clean, straightforward design.</p>
+                </div>
+                <div className="mt-6 flex justify-center md:justify-start">
+                  <a
+                    href="/download"
+                    className="inline-block px-6 py-3 bg-[#E9FF15] text-[#00473E] rounded-lg hover:bg-emerald-700 transition-colors duration-200 font-semibold"
+                  >
+                    Download App
+                  </a>
+                </div>
               </div>
-            ))}
+            </div>
+
+            {/* Right column: show phone image on md+ screens */}
+            <div className="hidden md:flex items-center">
+              <div className="w-80 md:w-[720px] lg:w-[920px] xl:w-[960px] flex items-center justify-start">
+                <img src="/phone.jpeg" alt="Phone screenshot" className="w-full max-h-[80vh] h-auto object-contain shadow-none" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-[#00473E]">
+        <section className="h-screen bg-[#00473E] flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
@@ -111,7 +80,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Testimonials Section - interactive carousel */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-900">
+        <section className="h-screen bg-gray-50 dark:bg-gray-900 flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
@@ -195,7 +164,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* CTA Section with modal interactions */}
-      <section className="py-20 bg-[#00473E]">
+        <section className="h-screen bg-[#00473E] flex items-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
             Ready to Scale Your Business?
