@@ -1,4 +1,4 @@
-import { useTheme } from "../theme-provider";
+// Theme removed - always render a single logo
 
 interface LogoProps {
   className?: string;
@@ -36,19 +36,8 @@ export function Logo({
   iconOnly = false,
   size = 'md'
 }: LogoProps) {
-  const { theme } = useTheme();
-
-  // Determine the actual theme considering system preference
-  const getResolvedTheme = () => {
-    if (theme === "system") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
-    return theme;
-  };
-
-  // Choose logo based on theme
-  const logoSrc = getResolvedTheme() === "dark" ? "/logo.svg" : "/logo-light.svg";
-  const fallbackLogoSrc = "/logo-light.svg";
+  const logoSrc = "/logo2.png";
+  const fallbackLogoSrc = "/logo.png";
   const textFallback = "Escrow Admin";
 
   if (iconOnly) {
@@ -67,27 +56,16 @@ export function Logo({
         className={`${sizeClasses[size]} w-auto`}
         onError={(e) => {
           const target = e.currentTarget;
-          
-          // Try fallback logo first
+          // Try fallback once
           if (target.src !== fallbackLogoSrc && fallbackLogoSrc) {
-            console.log("Primary logo failed, trying fallback:", fallbackLogoSrc);
             target.src = fallbackLogoSrc;
             return;
           }
-          
           // If all images fail, hide image and show text fallback
-          console.log("All logos failed, showing text fallback");
           target.style.display = "none";
           const textElement = target.parentElement?.querySelector('.logo-text-fallback') as HTMLElement;
           if (textElement) {
             textElement.style.display = "flex";
-          }
-        }}
-        onLoad={() => {
-          // When image loads successfully, ensure text fallback is hidden
-          const textElement = document.querySelector('.logo-text-fallback') as HTMLElement;
-          if (textElement) {
-            textElement.style.display = "none";
           }
         }}
       />

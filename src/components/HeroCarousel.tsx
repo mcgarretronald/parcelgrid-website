@@ -16,21 +16,21 @@ const slides: HeroSlide[] = [
     title: "DELIVERY INFRASTRUCTURE THAT POWERS YOUR GROWTH",
     subtitle: "",
     description: "From Nairobi to the furthest town, ParcelGrid helps you scale with prepaid and COD deliveries to 413+ pickup points.",
-    backgroundImage: "https://plus.unsplash.com/premium_photo-1682141916641-788c26579bca?q=80&w=871&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    backgroundImage: "https://plus.unsplash.com/premium_photo-1661409562732-aa3b5e6ecad1?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   },
   {
     id: 2,
     title: "HAPPY CUSTOMERS, REPEAT BUYERS",
     subtitle: "",
     description: "Smart notifications keep your buyers informed at every step—building trust that turns first-time buyers into loyal customers",
-    backgroundImage: "https://plus.unsplash.com/premium_photo-1682090260563-191f8160ca48?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    backgroundImage: "https://plus.unsplash.com/premium_photo-1682144143348-012a5df41573?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   },
   {
     id: 3,
     title: "KENYA'S BROADEST PICKUP NETWORK",
     subtitle: "",
     description: "Beat Nairobi's high competition by selling to untapped towns. From One Branch, to the Whole Country.",
-    backgroundImage: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?ixlib=rb-4.0.3&auto=format&fit=crop&w=2340&q=80"
+    backgroundImage: "https://plus.unsplash.com/premium_photo-1682144123371-b7bacda8bcbe?q=80&w=871&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   }
 ];
 
@@ -39,7 +39,24 @@ export const HeroCarousel: React.FC = () => {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchEndX, setTouchEndX] = useState<number | null>(null);
+  const [imagesLoaded, setImagesLoaded] = useState<Set<number>>(new Set());
   const hasQuickStarted = useRef(false);
+
+  // Preload images
+  useEffect(() => {
+    slides.forEach((slide) => {
+      if (slide.backgroundImage) {
+        const img = new Image();
+        img.onload = () => {
+          setImagesLoaded((prev) => new Set(prev).add(slide.id));
+        };
+        img.onerror = () => {
+          console.error(`Failed to load image for slide ${slide.id}:`, slide.backgroundImage);
+        };
+        img.src = slide.backgroundImage;
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (!isAutoPlaying) return;
@@ -89,7 +106,6 @@ export const HeroCarousel: React.FC = () => {
     <div className="relative h-screen">
       <div
         className="absolute inset-0 h-screen bg-slate-900 overflow-hidden"
-        onMouseEnter={() => setIsAutoPlaying(false)}
         onMouseLeave={() => setIsAutoPlaying(true)}
         onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
         onTouchMove={(e) => setTouchEndX(e.touches[0].clientX)}
@@ -112,12 +128,13 @@ export const HeroCarousel: React.FC = () => {
       {/* Animated Background */}
       <div className="absolute inset-0">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ease-in-out opacity-30"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-500 ease-in-out"
           style={{
-            backgroundImage: `url(${currentSlideData.backgroundImage || 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80'})`
+            backgroundImage: `url(${currentSlideData.backgroundImage || 'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2340&q=80'})`,
+            opacity: imagesLoaded.has(currentSlideData.id) ? 0.4 : 0.2
           }}
         />
-        <div className="absolute inset-0 bg-black/30"></div>
+        <div className="absolute inset-0 bg-black/40"></div>
       </div>
 
       {/* Modern Geometric Decorations */}

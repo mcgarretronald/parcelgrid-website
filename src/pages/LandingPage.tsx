@@ -1,7 +1,59 @@
 import React from 'react';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
-import AnimatedCounter from '../components/AnimatedCounter';
+import GoogleMap, { useAgentData, MapSearch, AgentLocationsList } from '../components/Map/GoogleMap';
+import type { MapControls } from '../components/Map/GoogleMap';
+
+// Map section with external controls
+function MapWithControls() {
+  const { points } = useAgentData('/api/agents')
+  const mapControlsRef = React.useRef<MapControls | null>(null)
+
+  const handleSelectPoint = (point: any) => {
+    if (mapControlsRef.current) {
+      mapControlsRef.current.panToPoint(point)
+    }
+  }
+
+  return (
+    <section className="min-h-screen bg-white flex items-center py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex justify-center mb-8">
+          <div className="text-center w-full max-w-3xl">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
+              Pickup Points Across Kenya
+            </h2>
+            <p className="text-lg text-gray-600 mb-6">
+              Explore our pickup network. Click a marker to see details and contact info.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Map - takes 2 columns on large screens */}
+          <div className="lg:col-span-2">
+            <div className="w-full h-[70vh] rounded-2xl overflow-hidden">
+              <GoogleMap 
+                points={points} 
+                onMapReady={(controls) => {
+                  mapControlsRef.current = controls
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Sidebar with search and list - same height as map */}
+          <div className="lg:col-span-1 flex flex-col h-[70vh] gap-6">
+            <MapSearch points={points} onSelect={handleSelectPoint} />
+            <div className="flex-1 overflow-hidden">
+              <AgentLocationsList points={points} onSelect={handleSelectPoint} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
 
 const LandingPage: React.FC = () => {
   return (
@@ -35,49 +87,26 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Right column: show phone image on md+ screens */}
-            <div className="hidden md:flex items-center">
-              <div className="w-80 md:w-[720px] lg:w-[920px] xl:w-[960px] flex items-center justify-start">
-                <img src="/phone.jpeg" alt="Phone screenshot" className="w-full max-h-[80vh] h-auto object-contain shadow-none" />
+            {/* Right column: show phone image on md+ screens - anchored to far right */}
+            <div className="hidden md:flex items-center md:col-start-2">
+              <div className="w-80 md:w-[920px] lg:w-[1200px] xl:w-[1280px] flex items-center justify-end pr-8">
+                {/* outer container allows overflow so scaled image isn't clipped */}
+                <div className="overflow-visible rounded-xl shadow-none group">
+                  <img
+                    src="/phone.jpeg"
+                    alt="Phone screenshot"
+                    className="w-full max-h-[80vh] h-auto object-contain transform transition-transform duration-500 ease-out group-hover:scale-110 origin-right"
+                    style={{ willChange: 'transform' }}
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-        <section className="h-screen bg-[#00473E] flex items-center">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
-              Powering Delivery Across Kenya
-            </h2>
-            <p className="text-xl text-white/80 max-w-3xl mx-auto">
-              Join thousands of businesses that trust ParcelGrid for their delivery needs.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {(
-              [
-                { number: 413, suffix: '+', label: 'Pickup Points' },
-                { number: 50_000, suffix: '+', label: 'Happy Customers' },
-                { number: 1_000_000, suffix: '+', label: 'Packages Delivered' },
-                { number: 47, suffix: '', label: 'Counties Covered' },
-              ] as const
-            ).map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-2">
-                  <AnimatedCounter to={stat.number} formatter={(n) => n.toLocaleString() + stat.suffix} />
-                </div>
-                <div className="text-lg text-white/80">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Map Section - replace stats with a Kenya map showing pickup points */}
+      <MapWithControls />
 
       {/* Testimonials Section - interactive carousel */}
         <section className="h-screen bg-gray-50 dark:bg-gray-900 flex items-center">
