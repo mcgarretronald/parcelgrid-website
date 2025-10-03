@@ -1,5 +1,6 @@
 import React from 'react';
 import { HeroCarousel } from '../components/HeroCarousel';
+import { FeaturesCarousel } from '../components/FeaturesCarousel';
 import { Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import GoogleMap, { useAgentData, MapSearch, AgentLocationsList } from '../components/Map/GoogleMap';
 import type { MapControls } from '../components/Map/GoogleMap';
@@ -103,6 +104,11 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Features Carousel Section */}
+      <section className="bg-gray-50">
+        <FeaturesCarousel />
       </section>
 
       {/* Map Section - replace stats with a Kenya map showing pickup points */}

@@ -36,13 +36,13 @@ const Header: React.FC = () => {
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`flex items-center justify-between ${scrolled ? 'h-12' : 'h-20'}`}>
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 text-white">
-              <img src="/logo.png" alt="ParcelGrid logo" className={`transition-all duration-300 ${scrolled ? 'w-6 h-6' : 'w-14 h-14'} object-contain`} />
-              <span className={`transition-all duration-300 ${scrolled ? 'text-lg' : 'text-3xl'} font-bold leading-tight`}>ParcelGrid</span>
-            </div>
-          </div>
+          {/* Logo - image placed directly without extra wrappers; no bg/shadow so container appears transparent */}
+          <img
+            src="/parcelgridlogo01.jpeg"
+            alt="ParcelGrid logo"
+            className={`transition-all duration-300 transform hover:scale-105 h-full w-auto object-contain`}
+            style={{ background: 'transparent' }}
+          />
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-9">
