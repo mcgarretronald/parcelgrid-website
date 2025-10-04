@@ -5,7 +5,7 @@ import {
   X,
 } from "lucide-react";
 
-const Header: React.FC = () => {
+const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) => {
   // theme removed - site uses a single appearance
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -30,9 +30,11 @@ const Header: React.FC = () => {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      scrolled
+      transparent && !scrolled
+        ? 'bg-transparent shadow-none'
+        : scrolled
         ? 'bg-[#00473E]/95 shadow-sm'
-        : 'bg-transparent'
+        : 'bg-[#00473E]/95 shadow-sm'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`flex items-center justify-between ${scrolled ? 'h-12' : 'h-20'}`}>

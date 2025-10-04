@@ -103,9 +103,9 @@ export const HeroCarousel: React.FC = () => {
   const currentSlideData = slides[currentSlide];
 
   return (
-    <div className="relative h-screen">
+    <div className="relative h-screen w-full">
       <div
-        className="absolute inset-0 h-screen bg-slate-900 overflow-hidden"
+        className="absolute inset-0 h-screen w-full bg-slate-900 overflow-hidden"
         onMouseLeave={() => setIsAutoPlaying(true)}
         onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
         onTouchMove={(e) => setTouchEndX(e.touches[0].clientX)}

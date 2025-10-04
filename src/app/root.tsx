@@ -10,8 +10,8 @@ export default function RootLayout() {
       {/* Header - transparent on landing page */}
       <Header transparent={isLandingPage} />
       
-      {/* Main content - no padding-top on landing page since hero is full screen */}
-      <main className={isLandingPage ? '' : 'pt-16'}>
+      {/* Main content - reserve header height on non-landing pages so fixed header doesn't overlap content */}
+      <main className={isLandingPage ? '' : 'pt-20'}>
         <Outlet />
       </main>
     </div>
