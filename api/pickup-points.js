@@ -1,8 +1,11 @@
-// Netlify/Vercel serverless function to proxy API requests
 export default async function handler(req, res) {
-  console.log('Handler called with method:', req.method);
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  
+  console.log('Pickup points handler called with method:', req.method);
   console.log('Request URL:', req.url);
-  console.log('Request headers:', req.headers);
   
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -24,18 +27,20 @@ export default async function handler(req, res) {
     });
     
     console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
     
     if (!response.ok) {
       console.error('API Error:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
       return res.status(response.status).json({ 
-        error: 'Failed to fetch agents',
-        status: response.status 
+        error: 'Failed to fetch pickup points',
+        status: response.status,
+        details: errorText
       });
     }
     
     const data = await response.json();
-    console.log('Received data length:', Array.isArray(data) ? data.length : 'not array');
+    console.log('Successfully fetched data, length:', Array.isArray(data) ? data.length : 'not array');
     return res.status(200).json(data);
     
   } catch (error) {

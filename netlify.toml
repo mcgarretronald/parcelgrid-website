@@ -1,9 +1,4 @@
 [build]
   publish = "dist"
 
-[[redirects]]
-  from = "/api/agents"
-  to = "https://app.escrowcourier.com/user-services/api/agents"
-  status = 200
-  force = true
-  headers = {Access-Control-Allow-Origin = "*"}
+# Redirects handled by serverless functions in /api/ directory
