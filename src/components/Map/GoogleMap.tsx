@@ -21,6 +21,18 @@ export function useAgentData(apiUrl?: string) {
         const headers: Record<string, string> = {}
         if (token) headers.Authorization = `Bearer ${token}`
         const res = await fetch(apiUrl, { headers })
+        
+        // Check if response is actually JSON
+        const contentType = res.headers.get('content-type')
+        if (!res.ok || !contentType?.includes('application/json')) {
+          console.warn(`API endpoint ${apiUrl} returned non-JSON response:`, res.status, res.statusText)
+          if (mounted) {
+            setPoints([])
+            setLoading(false)
+          }
+          return
+        }
+        
         const data = await res.json()
 
         // Handle different response formats
