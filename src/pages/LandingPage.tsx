@@ -9,7 +9,7 @@ import type { MapControls } from '../components/Map/GoogleMap';
 
 // Map section with external controls
 function MapWithControls() {
-  const { points } = useAgentData('/api/pickup-points');
+  const { points } = useAgentData('https://app.escrowcourier.com/user-services/api/agents');
   const mapControlsRef = React.useRef<MapControls | null>(null);
 
   const handleSelectPoint = (point: any) => {
