@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: escrow-admin-service
+  name: escrow-web-services
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: escrow-admin-service
+      app: escrow-web-services
   template:
     metadata:
       labels:
-        app: escrow-admin-service
+        app: escrow-web-services
     spec:
       containers:
-        - name: escrow-admin-service
+        - name: escrow-web-services
           image: registry.digitalocean.com/escrow-mobileapp-registry/escrow-web-services:{{IMAGE_TAG}}
           ports:
             - containerPort: 3000
