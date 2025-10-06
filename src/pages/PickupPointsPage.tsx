@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
 import { Store, Truck, Package } from 'lucide-react';
+import Footer from '../components/Footer';
+import DownloadCTA from '../components/DownloadCTA';
 
 const PickupPointsPage: React.FC = () => {
   useEffect(() => {
@@ -13,13 +15,13 @@ const PickupPointsPage: React.FC = () => {
         {/* Background image (local) */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1200&h=800&fit=crop&crop=center)' }}
+          style={{ backgroundImage: 'url(https://images.pexels.com/photos/4246120/pexels-photo-4246120.jpeg)' }}
         />
 
         {/* subtle gradient overlay to keep text readable */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/10" />
+        <div className="absolute inset-0 bg-black/30"></div>
 
-        <div className="relative z-10 text-white py-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative z-10 text-[#E9FF15] py-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
             Drop Off Easily. Pick Up Anywhere.
           </h1>
@@ -195,36 +197,11 @@ const PickupPointsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="py-20 bg-gradient-to-br from-[#00473E] to-[#006644] relative overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-10 left-10 w-20 h-20 bg-[#E9FF15] rounded-full opacity-10"></div>
-          <div className="absolute bottom-10 right-10 w-32 h-32 bg-[#E9FF15] rounded-full opacity-5"></div>
-          <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-white rounded-full opacity-10"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-12 h-12 bg-[#E9FF15] rounded-full opacity-15"></div>
-        </div>
+      {/* Enhanced Call to Action */}
+      <DownloadCTA />
 
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="mb-8 w-full flex justify-center">
-            <img
-              src="/parcelgridlogo05.jpeg"
-              alt="ParcelGrid Logo"
-              className="mx-auto max-w-xs w-full h-auto object-contain mb-6"
-            />
-          </div>
-
-          <div className="flex justify-center">
-            <a
-              href="/download"
-              className="inline-flex items-center px-8 py-4 bg-[#E9FF15] text-[#00473E] rounded-2xl font-bold text-lg hover:bg-yellow-300 hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl"
-            >
-              <Package className="w-5 h-5 mr-2" />
-              Download App
-            </a>
-          </div>
-        </div>
-      </section>
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

@@ -66,17 +66,11 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
             
 
             {/* CTA Buttons */}
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2">
               <Button
-                variant="ghost"
-                className="text-white/90 hover:text-white/100"
+                className="bg-[#E9FF15] text-[#00473E] hover:bg-[#E9FF15] font-semibold px-5 py-2 rounded-full"
               >
-                Sign In
-              </Button>
-              <Button
-                className="bg-white text-[#00473E] hover:bg-white/90 font-semibold px-5 py-2 rounded-full"
-              >
-                Get Started
+                Get the App
               </Button>
             </div>
 

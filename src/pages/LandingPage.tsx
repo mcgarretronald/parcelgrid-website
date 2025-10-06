@@ -112,7 +112,7 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="w-50 h-64 mx-auto my-4 cursor-pointer group" style={{ perspective: '1000px' }}>
+            <div className="w-50 h-64 mx-auto my-4 cursor-pointer group" style={{ perspective: '1000px' }} onClick={() => navigate('/prepaid-cod')}>
               <div className="relative w-72 h-48 transition-all duration-500">
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2">
                   <DollarSign className="w-20 h-20 text-[#00473E] mb-4" />
@@ -128,7 +128,7 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="w-50 h-64 mx-auto my-4 cursor-pointer group" style={{ perspective: '1000px' }} onClick={() => navigate('/settlements')}>
+            <div className="w-50 h-64 mx-auto my-4 cursor-pointer group" style={{ perspective: '1000px' }} onClick={() => navigate('/instant-settlements')}>
               <div className="relative w-72 h-48 transition-all duration-500">
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2">
                   <Wallet className="w-20 h-20 text-[#00473E] mb-4" />
