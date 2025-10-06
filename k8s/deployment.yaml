@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: escrow-web-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: escrow-web-services
+  template:
+    metadata:
+      labels:
+        app: escrow-web-services
+    spec:
+      containers:
+        - name: escrow-web-services
+          image: registry.digitalocean.com/escrow-mobileapp-registry/escrow-web-services:{{IMAGE_TAG}}
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: escrow-auth-env
+          resources:
+            requests:
+              memory: "150Mi"
+            limits:
+              memory: "300Mi"
