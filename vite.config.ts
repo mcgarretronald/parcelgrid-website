@@ -8,24 +8,24 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
-      // proxy /api/pickup-points to the external agents API during dev
-      '/api/pickup-points': {
+      // proxy /api/agents to the external agents API during dev
+      '/api/agents': {
         target: 'https://app.escrowcourier.com/user-services/api/agents',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/pickup-points/, ''),
+        rewrite: (path) => path.replace(/^\/api\/agents/, ''),
         configure: (proxy) => {
           // attach Authorization header if VITE_AGENTS_API_KEY is present
           const token = process.env.VITE_AGENTS_API_KEY || process.env.AGENTS_API_KEY
           if (token) {
             // debug log so devs see whether the token was picked up
             // eslint-disable-next-line no-console
-            console.debug('Vite proxy will attach Authorization header for pickup points API')
+            console.debug('Vite proxy will attach Authorization header for agents API')
             proxy.on('proxyReq', (proxyReq: any) => {
               proxyReq.setHeader('Authorization', `Bearer ${token}`)
             })
           } else {
             // eslint-disable-next-line no-console
-            console.debug('Vite proxy: no pickup points API token found in environment')
+            console.debug('Vite proxy: no agents API token found in environment')
           }
         }
       }

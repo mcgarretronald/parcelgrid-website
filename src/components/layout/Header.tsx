@@ -29,22 +29,61 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
   ];
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      transparent && !scrolled
-        ? 'bg-transparent shadow-none'
-        : scrolled
-        ? 'bg-[#00473E]/95 shadow-sm'
-        : 'bg-[#00473E]/95 shadow-sm'
-    }`}>
+    <>
+      <style>{`
+        @keyframes slideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-slide-down {
+          animation: slideDown 0.3s ease-out;
+        }
+      `}</style>
+      
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        transparent && !scrolled
+          ? 'bg-transparent shadow-none'
+          : scrolled
+          ? 'bg-[#00473E]/95 shadow-sm'
+          : 'bg-[#00473E]/95 shadow-sm'
+      }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`flex items-center justify-between ${scrolled ? 'h-12' : 'h-20'}`}>
-          {/* Logo - image placed directly without extra wrappers; no bg/shadow so container appears transparent */}
-          <img
-            src="/parcelgridlogo01.jpeg"
-            alt="ParcelGrid logo"
-            className={`transition-all duration-300 transform hover:scale-105 h-full w-auto object-contain`}
-            style={{ background: 'transparent' }}
-          />
+          {/* Logo with text */}
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo1.png"
+              alt="ParcelGrid logo"
+              className={`transition-all duration-300 transform hover:scale-105 ${scrolled ? 'h-8' : 'h-12'} w-auto object-contain`}
+              style={{ background: 'transparent' }}
+            />
+            <div className="flex flex-col">
+              <div className="relative">
+                <span className={`font-bold text-[#E9FF15] transition-all duration-300 ${scrolled ? 'text-xl' : 'text-2xl'}`} style={{ fontFamily: 'Georgia, "Times New Roman", Times, serif' }}>
+                  ParcelGrid
+                </span>
+                <div className={`absolute bottom-0 left-0 w-full h-0.5 bg-[#E9FF15] transition-all duration-300`}></div>
+              </div>
+            </div>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-9">
@@ -68,7 +107,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
             {/* CTA Buttons */}
             <div className="hidden md:flex items-center gap-2">
               <Button
-                className="bg-[#E9FF15] text-[#00473E] hover:bg-[#E9FF15] font-semibold px-5 py-2 rounded-full"
+                className="bg-[#E9FF15] text-[#00473E] hover:bg-[#E9FF15]-semibold px-5 py-2 rounded-full"
               >
                 Get the App
               </Button>
@@ -78,41 +117,67 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden text-white/95 hover:bg-white/5"
+              className={`lg:hidden text-white/95 hover:bg-white/5 transition-all duration-300 hover:scale-110 ${
+                isMenuOpen ? 'bg-[#E9FF15]/20 rotate-90' : 'hover:rotate-12'
+              }`}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6 transition-transform duration-300 rotate-90" />
+              ) : (
+                <Menu className="h-6 w-6 transition-transform duration-300" />
+              )}
             </Button>
           </div>
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="lg:hidden border-t border-[#E9FF15]/30 mt-2 pt-4 pb-4">
-            <nav className="flex flex-col space-y-4">
-              {navItems.map((item) => (
+        <div className={`lg:hidden overflow-hidden transition-all duration-500 ease-in-out ${
+          isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        }`}>
+          <div className="bg-gradient-to-b from-[#00473E] to-[#005d4f] border-t border-[#E9FF15]/30 mt-2">
+            <nav className="flex flex-col space-y-4 px-4 py-6 animate-slide-down">
+              {navItems.map((item, index) => (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="font-medium transition-colors duration-200 text-white hover:text-[#E9FF15]"
+                  className="font-medium transition-all duration-300 text-white hover:text-[#E9FF15] hover:translate-x-2 hover:bg-white/5 px-4 py-2 rounded-lg transform"
                   onClick={() => setIsMenuOpen(false)}
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                    animation: isMenuOpen ? 'slideInLeft 0.4s ease-out forwards' : 'none'
+                  }}
                 >
                   {item.name}
                 </a>
               ))}
-              <div className="flex flex-col gap-3 pt-4">
-                <Button variant="ghost" className="justify-start text-white border-[#E9FF15] hover:bg-[#E9FF15] hover:text-[#00473E]">
+              <div className="flex flex-col gap-3 pt-4 px-4">
+                <Button 
+                  variant="ghost" 
+                  className="justify-start text-white border-[#E9FF15] hover:bg-[#E9FF15] hover:text-[#00473E] transition-all duration-300 hover:scale-105"
+                  style={{
+                    animationDelay: `${navItems.length * 100}ms`,
+                    animation: isMenuOpen ? 'slideInLeft 0.4s ease-out forwards' : 'none'
+                  }}
+                >
                   Sign In
                 </Button>
-                <Button className="bg-[#E9FF15] text-[#00473E] hover:bg-[#E9FF15]/90 justify-start font-semibold">
+                <Button 
+                  className="bg-[#E9FF15] text-[#00473E] hover:bg-[#E9FF15]/90 justify-start font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                  style={{
+                    animationDelay: `${(navItems.length + 1) * 100}ms`,
+                    animation: isMenuOpen ? 'slideInLeft 0.4s ease-out forwards' : 'none'
+                  }}
+                >
                   Get Started
                 </Button>
               </div>
             </nav>
           </div>
-        )}
+        </div>
       </div>
     </header>
+    </>
   );
 };
 

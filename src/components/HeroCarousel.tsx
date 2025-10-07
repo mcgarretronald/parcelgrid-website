@@ -66,7 +66,7 @@ export const HeroCarousel: React.FC = () => {
     if (!hasQuickStarted.current) {
       quickStartTimeout = window.setTimeout(() => {
         setCurrentSlide((prev) => (prev + 1) % slides.length);
-      }, 300); // immediate start after a short delay for mount
+      }, 4000); // immediate start after a short delay for mount
       hasQuickStarted.current = true;
     }
 
@@ -158,7 +158,7 @@ export const HeroCarousel: React.FC = () => {
       {/* Main Content Container */}
       <div className="relative z-10 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
         {/* Flat container (no blur/transparency) */}
-        <div className="max-w-5xl mx-auto p-8 md:p-12 lg:p-16">
+        <div className="max-w-5xl mx-auto p-6 md:p-12 lg:p-16">
           <div className="text-center">
             {/* Slide number badge removed as requested */}
          

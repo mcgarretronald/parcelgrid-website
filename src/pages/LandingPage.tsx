@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { FeaturesCarousel } from '../components/FeaturesCarousel';
 import Footer from '../components/Footer';
-import { Star, ChevronLeft, ChevronRight, Package, DollarSign, Wallet, Lightbulb } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight, Wallet, Bell, MapPin } from 'lucide-react';
 import GoogleMap, { useAgentData, MapSearch, AgentLocationsList } from '../components/Map/GoogleMap';
 import type { MapControls } from '../components/Map/GoogleMap';
 
@@ -19,9 +19,9 @@ function MapWithControls() {
   };
 
   return (
-    <section className="min-h-screen bg-white flex items-center py-12">
+    <section className="min-h-screen bg-white flex items-center py-16 md:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-8 md:mb-8">
           <div className="text-center w-full max-w-3xl">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Pickup Points Across Kenya</h2>
             <p className="text-lg text-gray-600 mb-6">Explore our pickup network. Click a marker to see details and contact info.</p>
@@ -49,14 +49,32 @@ function MapWithControls() {
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const [activeCard, setActiveCard] = useState<string | null>(null);
+
+  const handleCardTouch = (cardId: string) => {
+    setActiveCard(activeCard === cardId ? null : cardId);
+  };
+
+  const handleCardClick = (route: string, cardId: string) => {
+    // On mobile, first touch activates hover effect, second touch navigates
+    if (window.innerWidth < 768) {
+      if (activeCard === cardId) {
+        navigate(route);
+      } else {
+        handleCardTouch(cardId);
+      }
+    } else {
+      navigate(route);
+    }
+  };
 
   return (
     <div className="min-h-screen w-full">
       <HeroCarousel />
 
-      <section className="min-h-screen bg-white flex items-center">
+      <section className="min-h-screen bg-white flex items-center pt-20 md:pt-0">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-4 items-center py-8 md:py-0">
             <div className="flex justify-center md:justify-start">
               <div className="w-full h-full">
                 <div className="space-y-6 text-center md:text-left">
@@ -73,10 +91,10 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="hidden md:flex items-center md:col-start-2">
-              <div className="w-80 md:w-[920px] lg:w-[1200px] xl:w-[1280px] flex items-center justify-end pr-8">
+            <div className="flex items-center justify-center md:col-start-2 mt-8 md:mt-0">
+              <div className="w-full max-w-sm md:w-80 lg:w-[920px] xl:w-[1200px] md:flex md:items-center md:justify-end md:pr-8">
                 <div className="overflow-visible rounded-xl shadow-none group">
-                  <img src="/phone.jpeg" alt="Phone screenshot" className="w-full max-h-[80vh] h-auto object-contain transform transition-transform duration-500 ease-out group-hover:scale-110 origin-right" style={{ willChange: 'transform' }} />
+                  <img src="/phone.jpeg" alt="Phone screenshot" className="w-full max-h-[60vh] md:max-h-[80vh] h-auto object-contain transform transition-transform duration-500 ease-out group-hover:scale-110 md:origin-right" style={{ willChange: 'transform' }} />
                 </div>
               </div>
             </div>
@@ -88,21 +106,26 @@ const LandingPage: React.FC = () => {
         <FeaturesCarousel />
       </section>
 
-      <section className="min-h-screen bg-[#00473E] flex items-center justify-center py-20">
+      <section className="min-h-screen bg-[#00473E] flex items-center justify-center py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="text-center mb-24">
+          <div className="text-center mb-12 md:mb-24">
             <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">Core Features</h3>
             <p className="text-xl text-gray-200 max-w-3xl mx-auto">Key capabilities built for online vendors. Tap any card to learn more.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-8">
-            <div className="w-50 h-64 mx-auto my-4 cursor-pointer group" style={{ perspective: '1000px' }} onClick={() => navigate('/pickup-points')}>
-              <div className="relative w-72 h-48 transition-all duration-500">
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2">
-                  <Package className="w-20 h-20 text-[#00473E] mb-4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mt-8">
+            <div 
+              className={`w-full max-w-sm h-64 mx-auto my-2 md:my-4 cursor-pointer group ${activeCard === 'pickup' ? 'mobile-active' : ''}`} 
+              style={{ perspective: '1000px' }} 
+              onClick={() => handleCardClick('/pickup-points', 'pickup')}
+              onTouchStart={() => window.innerWidth < 768 && handleCardTouch('pickup')}
+            >
+              <div className="relative w-full h-48 transition-all duration-500">
+                <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'pickup' ? '-translate-y-1/2' : ''}`}>
+                  <MapPin className="w-20 h-20 text-[#00473E] mb-4" />
                   <h3 className="text-lg font-bold text-[#00473E] text-center">Drop-Off & Pickup Points</h3>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2">
+                <div className={`absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2 ${activeCard === 'pickup' ? 'translate-y-1/2' : ''}`}>
                   <div className="text-center">
                     <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
                     <p className="text-gray-600">Discover our pickup points network</p>
@@ -112,13 +135,20 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="w-50 h-64 mx-auto my-4 cursor-pointer group" style={{ perspective: '1000px' }} onClick={() => navigate('/prepaid-cod')}>
-              <div className="relative w-72 h-48 transition-all duration-500">
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2">
-                  <DollarSign className="w-20 h-20 text-[#00473E] mb-4" />
+            <div 
+              className={`w-full max-w-sm h-64 mx-auto my-2 md:my-4 cursor-pointer group ${activeCard === 'prepaid' ? 'mobile-active' : ''}`} 
+              style={{ perspective: '1000px' }} 
+              onClick={() => handleCardClick('/prepaid-cod', 'prepaid')}
+              onTouchStart={() => window.innerWidth < 768 && handleCardTouch('prepaid')}
+            >
+              <div className="relative w-full h-48 transition-all duration-500">
+                <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'prepaid' ? '-translate-y-1/2' : ''}`}>
+                  <div className="w-20 h-20 flex items-center justify-center mb-4">
+                    <span className="text-5xl font-bold text-[#00473E]">KES</span>
+                  </div>
                   <h3 className="text-lg font-bold text-[#00473E] text-center">Prepaid & COD Deliveries</h3>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2">
+                <div className={`absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2 ${activeCard === 'prepaid' ? 'translate-y-1/2' : ''}`}>
                   <div className="text-center">
                     <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
                     <p className="text-gray-600">Explore payment options</p>
@@ -128,13 +158,18 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="w-50 h-64 mx-auto my-4 cursor-pointer group" style={{ perspective: '1000px' }} onClick={() => navigate('/instant-settlements')}>
-              <div className="relative w-72 h-48 transition-all duration-500">
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2">
+            <div 
+              className={`w-full max-w-sm h-64 mx-auto my-2 md:my-4 cursor-pointer group ${activeCard === 'settlements' ? 'mobile-active' : ''}`} 
+              style={{ perspective: '1000px' }} 
+              onClick={() => handleCardClick('/instant-settlements', 'settlements')}
+              onTouchStart={() => window.innerWidth < 768 && handleCardTouch('settlements')}
+            >
+              <div className="relative w-full h-48 transition-all duration-500">
+                <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'settlements' ? '-translate-y-1/2' : ''}`}>
                   <Wallet className="w-20 h-20 text-[#00473E] mb-4" />
                   <h3 className="text-lg font-bold text-[#00473E] text-center">Instant Settlements</h3>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2">
+                <div className={`absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2 ${activeCard === 'settlements' ? 'translate-y-1/2' : ''}`}>
                   <div className="text-center">
                     <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
                     <p className="text-gray-600">Instant settlement details</p>
@@ -144,13 +179,18 @@ const LandingPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="w-50 h-64 mx-auto my-4 cursor-pointer group" style={{ perspective: '1000px' }} onClick={() => navigate('/notifications')}>
-              <div className="relative w-72 h-48 transition-all duration-500">
-                <div className="absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2">
-                  <Lightbulb className="w-20 h-20 text-[#00473E] mb-4" />
+            <div 
+              className={`w-full max-w-sm h-64 mx-auto my-2 md:my-4 cursor-pointer group ${activeCard === 'notifications' ? 'mobile-active' : ''}`} 
+              style={{ perspective: '1000px' }} 
+              onClick={() => handleCardClick('/notifications', 'notifications')}
+              onTouchStart={() => window.innerWidth < 768 && handleCardTouch('notifications')}
+            >
+              <div className="relative w-full h-48 transition-all duration-500">
+                <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'notifications' ? '-translate-y-1/2' : ''}`}>
+                  <Bell className="w-20 h-20 text-[#00473E] mb-4" />
                   <h3 className="text-lg font-bold text-[#00473E] text-center">Smart Notifications</h3>
                 </div>
-                <div className="absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2">
+                <div className={`absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2 ${activeCard === 'notifications' ? 'translate-y-1/2' : ''}`}>
                   <div className="text-center">
                     <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
                     <p className="text-gray-600">Smart notification features</p>
@@ -165,9 +205,9 @@ const LandingPage: React.FC = () => {
 
       <MapWithControls />
 
-      <section className="h-screen bg-gray-50 dark:bg-gray-900 flex items-center">
+      <section className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center py-16 md:py-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
+          <div className="text-center mb-8 md:mb-10">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">What Our Customers Say</h2>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">Real stories from businesses that have transformed their delivery operations with ParcelGrid.</p>
           </div>

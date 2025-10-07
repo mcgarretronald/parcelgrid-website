@@ -20,14 +20,14 @@ const Footer: React.FC = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         {/* Footer Info Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           {/* Company Info */}
-          <div className="lg:col-span-2">
+          <div className="md:col-span-2 lg:col-span-2">
             <div className="mb-6">
               <img 
                 src="/parcelgridlogo01.jpeg" 
                 alt="ParcelGrid Logo" 
-                className="w-full max-w-md h-24 object-contain object-left" 
+                className="w-full max-w-sm md:max-w-md h-20 md:h-24 object-contain object-left" 
               />
             </div>
             <p className="text-[#E9FF15] text-base leading-relaxed mb-6 max-w-md">

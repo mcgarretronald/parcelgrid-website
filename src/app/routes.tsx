@@ -4,6 +4,7 @@ import LandingPage from "../pages/LandingPage";
 import PickupPointsPage from "../pages/PickupPointsPage";
 import PrepaidCODPage from "../pages/PrepaidCODPage";
 import InstantSettlementsPage from "../pages/InstantSettlementsPage";
+import SmartNotificationsPage from "../pages/SmartNotificationsPage";
 
 const router = createBrowserRouter([
   {
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
       {
         path: "/instant-settlements",
         element: <InstantSettlementsPage />,
+      },
+      {
+        path: "/notifications",
+        element: <SmartNotificationsPage />,
       },
       {
         path: "*",

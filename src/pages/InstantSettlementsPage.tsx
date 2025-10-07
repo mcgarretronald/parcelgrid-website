@@ -3,8 +3,12 @@ import { Smartphone, Wallet, ArrowRight, CreditCard, Shield, Zap, Users, CheckCi
 import Header from '@/components/layout/Header';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
+import { useScrollToTop } from '../hooks/useScrollToTop';
 
 const InstantSettlementsPage: React.FC = () => {
+  // Scroll to top when navigating to this page
+  useScrollToTop();
+  
   const [isVisible, setIsVisible] = useState(false);
   const benefitsRef = useRef<HTMLElement>(null);
 
@@ -39,7 +43,7 @@ const InstantSettlementsPage: React.FC = () => {
       <Header transparent={false} />
 
       {/* Hero Section */}
-      <section className="relative py-32 overflow-hidden min-h-[70vh] flex items-center">
+      <section className="relative py-16 sm:py-20 md:py-32 overflow-hidden min-h-[60vh] sm:min-h-[70vh] flex items-center mt-16 md:mt-0">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
@@ -53,10 +57,10 @@ const InstantSettlementsPage: React.FC = () => {
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#E9FF15] mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#E9FF15] mb-4 sm:mb-6">
               Cash Flow You Can Trust
             </h1>
-            <p className="text-xl sm:text-2xl text-gray-300 leading-relaxed">
+            <p className="text-lg sm:text-xl md:text-2xl text-gray-300 leading-relaxed px-2 sm:px-0">
               COD payments are credited to your ParcelGrid wallet instantly—secure, transparent, and designed to keep your business liquid.
             </p>
           </div>
@@ -64,7 +68,7 @@ const InstantSettlementsPage: React.FC = () => {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
+      <section className="py-16 sm:py-20 bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-20 left-20 w-40 h-40 bg-[#00473E] rounded-full"></div>
@@ -73,14 +77,11 @@ const InstantSettlementsPage: React.FC = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center mb-20">
-            <div className="inline-block bg-[#E9FF15] px-6 py-2 rounded-full mb-6">
-              <span className="text-[#00473E] font-semibold text-sm uppercase tracking-wide">Process Flow</span>
-            </div>
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          <div className="text-center mb-16 sm:mb-20">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
               How It Works
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4 sm:px-0">
               Three simple steps to instant, secure settlements
             </p>
           </div>
@@ -89,16 +90,16 @@ const InstantSettlementsPage: React.FC = () => {
             {/* Connection Line */}
             <div className="hidden lg:block absolute left-1/2 top-24 bottom-24 w-0.5 bg-gradient-to-b from-[#E9FF15] via-[#00473E] to-[#E9FF15] transform -translate-x-1/2"></div>
 
-            <div className="space-y-24">
+            <div className="space-y-16 sm:space-y-24">
               {/* Step 1 */}
               <div className="relative">
                 <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-                  <div className="mb-8 lg:mb-0">
-                    <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200 relative">
-                      <div className="absolute -top-6 left-8 w-12 h-12 bg-gradient-to-r from-[#E9FF15] to-[#B8CC12] rounded-full flex items-center justify-center shadow-lg">
+                  <div className="mb-6 sm:mb-8 lg:mb-0">
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-gray-200 relative">
+                      <div className="absolute -top-6 left-6 sm:left-8 w-12 h-12 bg-gradient-to-r from-[#E9FF15] to-[#B8CC12] rounded-full flex items-center justify-center shadow-lg">
                         <span className="text-[#00473E] font-bold text-xl">1</span>
                       </div>
-                      <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 mt-2">
+                      <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-3 sm:mb-4 mt-2">
                         Customer Pays COD at Pickup Point
                       </h3>
                       <p className="text-lg text-gray-600 leading-relaxed">
@@ -267,7 +268,7 @@ const InstantSettlementsPage: React.FC = () => {
       {/* Vendor Benefits Section */}
       <section 
         ref={benefitsRef}
-        className="relative py-20 bg-gradient-to-br from-gray-50 via-white to-gray-100 overflow-hidden"
+        className="relative py-16 sm:py-20 bg-gradient-to-br from-gray-50 via-white to-gray-100 overflow-hidden"
       >
         {/* Subtle Background Pattern */}
         <div className="absolute inset-0 opacity-5">
@@ -291,16 +292,16 @@ const InstantSettlementsPage: React.FC = () => {
         <div className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-1000 ease-out ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}>
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
               Vendor Benefits
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4 sm:px-0">
               Experience the power of instant settlements with complete transparency
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {/* Benefit 1 */}
             <div className="text-center">
               <div className="w-16 h-16 bg-[#E9FF15] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">

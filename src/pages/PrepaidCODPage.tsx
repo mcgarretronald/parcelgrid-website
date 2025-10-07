@@ -3,8 +3,11 @@ import { Smartphone, CreditCard, Truck, MessageSquare, UserCheck, Wallet, Key, C
 import Header from '@/components/layout/Header';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
+import { useScrollToTop } from '../hooks/useScrollToTop';
 
 const PrepaidCODPage: React.FC = () => {
+  // Scroll to top when navigating to this page
+  useScrollToTop();
   const [, setIsVisible] = useState(false);
   const benefitsRef = useRef<HTMLElement>(null);
 
@@ -39,7 +42,7 @@ const PrepaidCODPage: React.FC = () => {
         <Header transparent={false} />
 
       {/* Hero Section */}
-      <section className="relative py-32 overflow-hidden min-h-[70vh] flex items-center">
+      <section className="relative py-20 md:py-32 overflow-hidden min-h-[70vh] flex items-center mt-16 md:mt-0">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"
