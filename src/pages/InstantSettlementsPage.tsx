@@ -43,7 +43,7 @@ const InstantSettlementsPage: React.FC = () => {
       <Header transparent={false} />
 
       {/* Hero Section */}
-      <section className="relative py-16 sm:py-20 md:py-32 overflow-hidden min-h-[60vh] sm:min-h-[70vh] flex items-center mt-16 md:mt-0">
+      <section className="relative pt-20 pb-16 sm:pt-24 sm:pb-20 md:pt-20 md:pb-32 overflow-hidden min-h-[60vh] sm:min-h-[70vh] flex items-center">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat scale-105"

@@ -106,21 +106,21 @@ const LandingPage: React.FC = () => {
         <FeaturesCarousel />
       </section>
 
-      <section className="min-h-screen bg-[#00473E] flex items-center justify-center py-16 md:py-20">
+      <section className="bg-[#00473E] py-16 md:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="text-center mb-12 md:mb-24">
+          <div className="text-center mb-12 md:mb-16">
             <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">Core Features</h3>
             <p className="text-xl text-gray-200 max-w-3xl mx-auto">Key capabilities built for online vendors. Tap any card to learn more.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             <div 
-              className={`w-full max-w-sm h-64 mx-auto my-2 md:my-4 cursor-pointer group ${activeCard === 'pickup' ? 'mobile-active' : ''}`} 
+              className={`w-full max-w-sm mx-auto cursor-pointer group ${activeCard === 'pickup' ? 'mobile-active' : ''}`} 
               style={{ perspective: '1000px' }} 
               onClick={() => handleCardClick('/pickup-points', 'pickup')}
               onTouchStart={() => window.innerWidth < 768 && handleCardTouch('pickup')}
             >
-              <div className="relative w-full h-48 transition-all duration-500">
+              <div className="relative w-full h-48 transition-all duration-500 overflow-hidden rounded-lg shadow-lg">
                 <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'pickup' ? '-translate-y-1/2' : ''}`}>
                   <MapPin className="w-20 h-20 text-[#00473E] mb-4" />
                   <h3 className="text-lg font-bold text-[#00473E] text-center">Drop-Off & Pickup Points</h3>
@@ -136,12 +136,12 @@ const LandingPage: React.FC = () => {
             </div>
 
             <div 
-              className={`w-full max-w-sm h-64 mx-auto my-2 md:my-4 cursor-pointer group ${activeCard === 'prepaid' ? 'mobile-active' : ''}`} 
+              className={`w-full max-w-sm mx-auto cursor-pointer group ${activeCard === 'prepaid' ? 'mobile-active' : ''}`} 
               style={{ perspective: '1000px' }} 
               onClick={() => handleCardClick('/prepaid-cod', 'prepaid')}
               onTouchStart={() => window.innerWidth < 768 && handleCardTouch('prepaid')}
             >
-              <div className="relative w-full h-48 transition-all duration-500">
+              <div className="relative w-full h-48 transition-all duration-500 overflow-hidden rounded-lg shadow-lg">
                 <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'prepaid' ? '-translate-y-1/2' : ''}`}>
                   <div className="w-20 h-20 flex items-center justify-center mb-4">
                     <span className="text-5xl font-bold text-[#00473E]">KES</span>
@@ -159,12 +159,12 @@ const LandingPage: React.FC = () => {
             </div>
 
             <div 
-              className={`w-full max-w-sm h-64 mx-auto my-2 md:my-4 cursor-pointer group ${activeCard === 'settlements' ? 'mobile-active' : ''}`} 
+              className={`w-full max-w-sm mx-auto cursor-pointer group ${activeCard === 'settlements' ? 'mobile-active' : ''}`} 
               style={{ perspective: '1000px' }} 
               onClick={() => handleCardClick('/instant-settlements', 'settlements')}
               onTouchStart={() => window.innerWidth < 768 && handleCardTouch('settlements')}
             >
-              <div className="relative w-full h-48 transition-all duration-500">
+              <div className="relative w-full h-48 transition-all duration-500 overflow-hidden rounded-lg shadow-lg">
                 <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'settlements' ? '-translate-y-1/2' : ''}`}>
                   <Wallet className="w-20 h-20 text-[#00473E] mb-4" />
                   <h3 className="text-lg font-bold text-[#00473E] text-center">Instant Settlements</h3>
@@ -180,12 +180,12 @@ const LandingPage: React.FC = () => {
             </div>
 
             <div 
-              className={`w-full max-w-sm h-64 mx-auto my-2 md:my-4 cursor-pointer group ${activeCard === 'notifications' ? 'mobile-active' : ''}`} 
+              className={`w-full max-w-sm mx-auto cursor-pointer group ${activeCard === 'notifications' ? 'mobile-active' : ''}`} 
               style={{ perspective: '1000px' }} 
               onClick={() => handleCardClick('/notifications', 'notifications')}
               onTouchStart={() => window.innerWidth < 768 && handleCardTouch('notifications')}
             >
-              <div className="relative w-full h-48 transition-all duration-500">
+              <div className="relative w-full h-48 transition-all duration-500 overflow-hidden rounded-lg shadow-lg">
                 <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'notifications' ? '-translate-y-1/2' : ''}`}>
                   <Bell className="w-20 h-20 text-[#00473E] mb-4" />
                   <h3 className="text-lg font-bold text-[#00473E] text-center">Smart Notifications</h3>

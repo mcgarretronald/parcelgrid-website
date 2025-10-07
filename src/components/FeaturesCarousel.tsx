@@ -151,7 +151,7 @@ export const FeaturesCarousel: React.FC = () => {
 
   return (
     <div
-      className="relative w-full min-h-screen flex items-center"
+      className="relative w-full py-16 md:py-20"
       style={{ backgroundColor: '#FAFBF8' }}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

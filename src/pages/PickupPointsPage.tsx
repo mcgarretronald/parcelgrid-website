@@ -14,7 +14,7 @@ const PickupPointsPage: React.FC = () => {
       <Header transparent={false} />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden mt-16 md:mt-0">
+      <section className="relative overflow-hidden">
         {/* Background image (local) */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -24,7 +24,7 @@ const PickupPointsPage: React.FC = () => {
         {/* subtle gradient overlay to keep text readable */}
         <div className="absolute inset-0 bg-black/30"></div>
 
-        <div className="relative z-10 text-[#E9FF15] py-12 sm:py-16 md:py-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative z-10 text-[#E9FF15] pt-20 pb-12 sm:pt-24 sm:pb-16 md:pt-20 md:pb-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
             Drop Off Easily. Pick Up Anywhere.
           </h1>
@@ -119,10 +119,10 @@ const PickupPointsPage: React.FC = () => {
             {/* Connecting Line */}
             <div className="hidden md:block absolute top-24 left-1/2 transform -translate-x-1/2 w-full max-w-4xl h-0.5 bg-gradient-to-r from-[#00473E] via-[#E9FF15] to-[#00473E] opacity-30"></div>
 
-            <div className="space-y-12 md:space-y-0 md:grid md:grid-cols-3 md:gap-12">
+            <div className="space-y-20 md:space-y-0 md:grid md:grid-cols-3 md:gap-12">
               {/* Step 1 */}
-              <div className="text-center group px-4">
-                <div className="relative mb-6 sm:mb-8">
+              <div className="text-center group px-6 py-8 md:px-4 md:py-0">
+                <div className="relative mb-8 sm:mb-8">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#00473E] to-[#006644] rounded-3xl flex items-center justify-center mx-auto shadow-lg group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110">
                     <Store className="w-10 h-10 sm:w-12 sm:h-12 text-[#E9FF15]" />
                   </div>
@@ -130,20 +130,20 @@ const PickupPointsPage: React.FC = () => {
                     1
                   </div>
                 </div>
-                <div className="bg-[#E9FF15] text-[#00473E] text-sm sm:text-lg font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-full inline-block mb-4 sm:mb-6 shadow-md">
+                <div className="bg-[#E9FF15] text-[#00473E] text-sm sm:text-lg font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-full inline-block mb-6 sm:mb-6 shadow-md">
                   Drop Off
                 </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-4">
                   Drop Off at Our Nairobi Branches
                 </h3>
-                <p className="text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed">
+                <p className="text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed mb-6">
                   Vendors bring parcels to Moi Avenue or Taveta Road drop-off locations with our easy-to-use system.
                 </p>
               </div>
 
               {/* Step 2 */}
-              <div className="text-center group px-4">
-                <div className="relative mb-6 sm:mb-8">
+              <div className="text-center group px-6 py-8 md:px-4 md:py-0">
+                <div className="relative mb-8 sm:mb-8">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#00473E] to-[#006644] rounded-3xl flex items-center justify-center mx-auto shadow-lg group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110">
                     <Truck className="w-10 h-10 sm:w-12 sm:h-12 text-[#E9FF15]" />
                   </div>
@@ -151,20 +151,20 @@ const PickupPointsPage: React.FC = () => {
                     2
                   </div>
                 </div>
-                <div className="bg-[#E9FF15] text-[#00473E] text-sm sm:text-lg font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-full inline-block mb-4 sm:mb-6 shadow-md">
+                <div className="bg-[#E9FF15] text-[#00473E] text-sm sm:text-lg font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-full inline-block mb-6 sm:mb-6 shadow-md">
                   Transport
                 </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-4">
                   We Route & Notify
                 </h3>
-                <p className="text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed">
+                <p className="text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed mb-6">
                   ParcelGrid transports the parcel to the customer's nearest pickup point and sends real-time notifications.
                 </p>
               </div>
 
               {/* Step 3 */}
-              <div className="text-center group px-4">
-                <div className="relative mb-6 sm:mb-8">
+              <div className="text-center group px-6 py-8 md:px-4 md:py-0">
+                <div className="relative mb-8 sm:mb-8">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-[#00473E] to-[#006644] rounded-3xl flex items-center justify-center mx-auto shadow-lg group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110">
                     <Package className="w-10 h-10 sm:w-12 sm:h-12 text-[#E9FF15]" />
                   </div>
@@ -172,13 +172,13 @@ const PickupPointsPage: React.FC = () => {
                     3
                   </div>
                 </div>
-                <div className="bg-[#E9FF15] text-[#00473E] text-sm sm:text-lg font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-full inline-block mb-4 sm:mb-6 shadow-md">
+                <div className="bg-[#E9FF15] text-[#00473E] text-sm sm:text-lg font-bold px-4 sm:px-6 py-2 sm:py-3 rounded-full inline-block mb-6 sm:mb-6 shadow-md">
                   Collect
                 </div>
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4">
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-4 sm:mb-4">
                   Customer Collects
                 </h3>
-                <p className="text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed">
+                <p className="text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed mb-6">
                   Customers collect their parcels at their convenience from our nationwide network of pickup agents.
                 </p>
               </div>

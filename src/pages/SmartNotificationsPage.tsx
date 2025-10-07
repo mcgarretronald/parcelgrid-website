@@ -16,7 +16,7 @@ const SmartNotificationsPage: React.FC = () => {
       <Header />
       
       {/* Hero Section */}
-      <section className="relative h-[70vh] flex items-center justify-center overflow-hidden mt-16 md:mt-0">
+      <section className="relative h-[70vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20 md:pt-0">
         {/* Background Image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
