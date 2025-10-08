@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { FeaturesCarousel } from '../components/FeaturesCarousel';
 import Footer from '../components/Footer';
-import { Star, ChevronLeft, ChevronRight, Wallet, Bell, MapPin } from 'lucide-react';
+import { Wallet, Bell, MapPin } from 'lucide-react';
 import GoogleMap, { useAgentData, MapSearch, AgentLocationsList } from '../components/Map/GoogleMap';
 import type { MapControls } from '../components/Map/GoogleMap';
 
@@ -47,8 +47,11 @@ function MapWithControls() {
   );
 }
 
+
+
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const storiesContainerRef = useRef<HTMLDivElement>(null);
 
   const handleCardClick = (route: string) => {
     navigate(route);
@@ -56,6 +59,18 @@ const LandingPage: React.FC = () => {
 
   const handleMouseEnter = () => {
     // No-op for desktop hover
+  };
+
+  const scrollLeft = () => {
+    if (storiesContainerRef.current) {
+      storiesContainerRef.current.scrollBy({ left: -320, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (storiesContainerRef.current) {
+      storiesContainerRef.current.scrollBy({ left: 320, behavior: 'smooth' });
+    }
   };
 
   return (
@@ -269,64 +284,175 @@ const LandingPage: React.FC = () => {
 
       <MapWithControls />
 
-      <section className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center py-16 md:py-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 md:mb-10">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">What Our Customers Say</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">Real stories from businesses that have transformed their delivery operations with ParcelGrid.</p>
+      {/* Real Stories Section */}
+      <section className="min-h-screen bg-gray-50 flex items-center py-16 md:py-20 overflow-hidden">
+        <div className="w-full">
+          <div className="text-center mb-12 md:mb-16 px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">What Our Online Sellers Say</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Real stories from businesses that have transformed their delivery operations with ParcelGrid.</p>
           </div>
 
-          {(() => {
-            const testimonials = [
-              {
-                quote: "ParcelGrid helped us expand from Nairobi to 15 counties in just 6 months. Their pickup network is incredible!",
-                author: "Sarah Mwangi",
-                company: "Fashionista Boutique",
-                rating: 5,
-              },
-              {
-                quote: "The real-time notifications keep our customers happy and informed. Our repeat purchase rate increased by 40%.",
-                author: "John Kimani",
-                company: "TechHub Electronics",
-                rating: 5,
-              },
-              {
-                quote: "COD delivery made it possible for us to serve customers who don't have mobile money. Game changer!",
-                author: "Grace Wanjiku",
-                company: "Mama's Kitchen",
-                rating: 5,
-              },
-            ];
-            const [idx, setIdx] = React.useState(0);
-            React.useEffect(() => {
-              const t = setInterval(() => setIdx((p) => (p + 1) % testimonials.length), 6000);
-              return () => clearInterval(t);
-            }, []);
-            return (
-              <div className="relative">
-                <div className="overflow-hidden">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 transition-transform duration-500" style={{ transform: `translateX(-${(idx % 3) * 0}%)` }}>
-                    {testimonials.map((testimonial, index) => (
-                      <div key={index} className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg">
-                        <div className="flex mb-4">{[...Array(testimonial.rating)].map((_, i) => (<Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />))}</div>
-                        <p className="text-gray-600 dark:text-gray-300 mb-6 italic leading-relaxed">"{testimonial.quote}"</p>
-                        <div>
-                          <div className="font-semibold text-gray-900 dark:text-white">{testimonial.author}</div>
-                          <div className="text-gray-500 dark:text-gray-400">{testimonial.company}</div>
-                        </div>
-                      </div>
-                    ))}
+          {/* Custom CSS for scrollable carousel */}
+          <style dangerouslySetInnerHTML={{
+            __html: `
+              .stories-container {
+                position: relative;
+              }
+              
+              .stories-scroll {
+                scroll-behavior: smooth;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+              
+              .stories-scroll::-webkit-scrollbar {
+                display: none;
+              }
+              
+              .arrow-button {
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+              }
+              
+              .arrow-button:hover {
+                transform: scale(1.1);
+                box-shadow: 0 8px 25px rgba(0, 71, 62, 0.3);
+              }
+              
+              .arrow-button:disabled {
+                opacity: 0.3;
+                cursor: not-allowed;
+                transform: scale(1);
+              }
+              
+              /* Mobile touch scrolling */
+              @media (max-width: 768px) {
+                .stories-scroll {
+                  -webkit-overflow-scrolling: touch;
+                }
+              }
+            `
+          }} />
+
+          {/* Stories Carousel Container */}
+          <div className="relative stories-container">
+            {/* Desktop Arrow Navigation */}
+            <div className="hidden md:block">
+              <button 
+                className="arrow-button absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg border border-gray-200"
+                onClick={scrollLeft}
+                aria-label="Previous stories"
+              >
+                <svg className="w-6 h-6 text-[#00473E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              <button 
+                className="arrow-button absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg border border-gray-200"
+                onClick={scrollRight}
+                aria-label="Next stories"
+              >
+                <svg className="w-6 h-6 text-[#00473E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Scrollable Cards Container */}
+            <div 
+              ref={storiesContainerRef}
+              className="stories-scroll flex gap-4 md:gap-6 px-4 md:px-16 overflow-x-auto pb-4">
+                {/* Story 1 */}
+                <div className="story-card bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0">
+                  <div className="flex items-center mb-4">
+                    <div>
+                      <h3 className="text-base md:text-lg font-semibold text-gray-900">Sarah Kimani</h3>
+                      <p className="text-sm md:text-base text-gray-600">Fashion & Accessories</p>
+                    </div>
+                  </div>
+                  <p className="text-sm md:text-base text-gray-700 italic mb-4">"Before ParcelGrid, I could only sell to customers in Nairobi. Now I reach over 400+ towns across Kenya. My monthly sales have tripled, and the instant COD settlements mean I never worry about cash flow anymore."</p>
+                  <div className="flex items-center">
+                    <span className="text-sm md:text-base text-gray-600 ml-2">Nairobi to Nationwide</span>
                   </div>
                 </div>
-                <button aria-label="Prev testimonial" className="absolute left-0 top-1/2 -translate-y-1/2 p-3 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600" onClick={() => setIdx((p) => (p - 1 + testimonials.length) % testimonials.length)}>
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button aria-label="Next testimonial" className="absolute right-0 top-1/2 -translate-y-1/2 p-3 rounded-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600" onClick={() => setIdx((p) => (p + 1) % testimonials.length)}>
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            );
-          })()}
+
+                {/* Story 2 */}
+                <div className="story-card bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0">
+                  <div className="flex items-center mb-4">
+                    <div>
+                      <h3 className="text-base md:text-lg font-semibold text-gray-900">James Mwangi</h3>
+                      <p className="text-sm md:text-base text-gray-600">Electronics & Gadgets</p>
+                    </div>
+                  </div>
+                  <p className="text-sm md:text-base text-gray-700 italic mb-4">"The pickup points are everywhere! My customers love collecting their orders at convenient locations near them. The app is so easy to use, and I get paid instantly when customers collect their COD orders."</p>
+                  <div className="flex items-center">
+                    <span className="text-sm md:text-base text-gray-600 ml-2">Electronics Vendor</span>
+                  </div>
+                </div>
+
+                {/* Story 3 */}
+                <div className="story-card bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0">
+                  <div className="flex items-center mb-4">
+                    <div>
+                      <h3 className="text-base md:text-lg font-semibold text-gray-900">Grace Wanjiku</h3>
+                      <p className="text-sm md:text-base text-gray-600">Beauty & Cosmetics</p>
+                    </div>
+                  </div>
+                  <p className="text-sm md:text-base text-gray-700 italic mb-4">"ParcelGrid changed my business completely. I went from selling only to friends and family to having customers in Mombasa, Kisumu, Eldoret, and so many other towns. The growth has been incredible!"</p>
+                  <div className="flex items-center">
+                    <span className="text-sm md:text-base text-gray-600 ml-2">Beauty Products</span>
+                  </div>
+                </div>
+
+                {/* Story 4 */}
+                <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0">
+                  <div className="flex items-center mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Peter Ochieng</h3>
+                      <p className="text-gray-600">Home & Kitchen</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-700 italic mb-4">"What I love most is the instant settlements. When my customers pay COD, the money hits my wallet immediately. No waiting weeks for payments like other platforms. ParcelGrid keeps my business moving fast."</p>
+                  <div className="flex items-center">
+                    <span className="text-gray-600 ml-2">Home Products</span>
+                  </div>
+                </div>
+
+                {/* Story 5 */}
+                <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0">
+                  <div className="flex items-center mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Mary Akinyi</h3>
+                      <p className="text-gray-600">Books & Stationery</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-700 italic mb-4">"The notifications keep me and my customers informed every step of the way. From drop-off to pickup, we always know what's happening. This builds so much trust with my customers."</p>
+                  <div className="flex items-center">
+                    <span className="text-gray-600 ml-2">Educational Materials</span>
+                  </div>
+                </div>
+
+                {/* Story 6 */}
+                <div className="bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0">
+                  <div className="flex items-center mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">David Njenga</h3>
+                      <p className="text-gray-600">Sports & Fitness</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-700 italic mb-4">"I've tried other courier services, but ParcelGrid is different. They actually understand online vendors. The 1.8% COD fee is fair, and the coverage is unmatched. My business has never been stronger."</p>
+                  <div className="flex items-center">
+                    <span className="text-gray-600 ml-2">Sports Equipment</span>
+                  </div>
+                </div>
+            </div>
+
+            {/* Mobile scroll indicator */}
+            <div className="md:hidden text-center mt-6 text-sm text-gray-500">
+              ← Swipe to see more stories →
+            </div>
+          </div>
         </div>
       </section>
 
@@ -336,3 +462,4 @@ const LandingPage: React.FC = () => {
 };
 
 export default LandingPage;
+

@@ -62,7 +62,7 @@ const PickupPointsPage: React.FC = () => {
                     Iconic Business Plaza, Ground Floor
                   </p>
                   <div className="flex items-center text-sm text-gray-500">
-                    <span className="font-medium">📍 Central Business District</span>
+                    <span className="font-medium">📍 Nairobi CBD</span>
                   </div>
                 </div>
               </div>
@@ -83,7 +83,7 @@ const PickupPointsPage: React.FC = () => {
                     Jitihada Shopping Complex, next to Taveta Shopping Mall, Ground Floor
                   </p>
                   <div className="flex items-center text-sm text-gray-500">
-                    <span className="font-medium">📍 Westlands Area</span>
+                    <span className="font-medium">📍 Nairobi CBD</span>
                   </div>
                 </div>
               </div>
