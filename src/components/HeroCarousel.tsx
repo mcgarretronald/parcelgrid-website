@@ -83,6 +83,16 @@ export const HeroCarousel: React.FC = () => {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't interfere with keyboard input in form elements
+      const activeElement = document.activeElement;
+      if (activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'TEXTAREA' || 
+        (activeElement as HTMLElement).isContentEditable
+      )) {
+        return;
+      }
+
       if (e.key === 'ArrowRight') {
         setIsAutoPlaying(false);
         setCurrentSlide((prev) => (prev + 1) % slides.length);

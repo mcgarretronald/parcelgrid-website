@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { FeaturesCarousel } from '../components/FeaturesCarousel';
@@ -49,23 +49,13 @@ function MapWithControls() {
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
-  const [activeCard, setActiveCard] = useState<string | null>(null);
 
-  const handleCardTouch = (cardId: string) => {
-    setActiveCard(activeCard === cardId ? null : cardId);
+  const handleCardClick = (route: string) => {
+    navigate(route);
   };
 
-  const handleCardClick = (route: string, cardId: string) => {
-    // On mobile, first touch activates hover effect, second touch navigates
-    if (window.innerWidth < 768) {
-      if (activeCard === cardId) {
-        navigate(route);
-      } else {
-        handleCardTouch(cardId);
-      }
-    } else {
-      navigate(route);
-    }
+  const handleMouseEnter = () => {
+    // No-op for desktop hover
   };
 
   return (
@@ -114,88 +104,162 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            <div 
-              className={`w-full max-w-sm mx-auto cursor-pointer group ${activeCard === 'pickup' ? 'mobile-active' : ''}`} 
-              style={{ perspective: '1000px' }} 
-              onClick={() => handleCardClick('/pickup-points', 'pickup')}
-              onTouchStart={() => window.innerWidth < 768 && handleCardTouch('pickup')}
-            >
-              <div className="relative w-full h-48 transition-all duration-500 overflow-hidden rounded-lg shadow-lg">
-                <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'pickup' ? '-translate-y-1/2' : ''}`}>
-                  <MapPin className="w-20 h-20 text-[#00473E] mb-4" />
-                  <h3 className="text-lg font-bold text-[#00473E] text-center">Drop-Off & Pickup Points</h3>
+            {/* Pickup Points Card */}
+            <div className="w-full max-w-sm mx-auto cursor-pointer group">
+              {/* Mobile Design - Simple Card Layout */}
+              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-6">
+                <div className="text-center mb-4">
+                  <MapPin className="w-16 h-16 text-[#00473E] mx-auto mb-3" />
+                  <h3 className="text-lg font-bold text-[#00473E]">Drop-Off & Pickup Points</h3>
                 </div>
-                <div className={`absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2 ${activeCard === 'pickup' ? 'translate-y-1/2' : ''}`}>
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
-                    <p className="text-gray-600">Discover our pickup points network</p>
+                <button 
+                  onClick={() => navigate('/pickup-points')}
+                  className="w-full bg-white text-[#00473E] py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Learn More
+                </button>
+              </div>
+              
+              {/* Desktop Design - Keep Original Animation */}
+              <div 
+                className="hidden md:block"
+                style={{ perspective: '1000px' }} 
+                onClick={() => handleCardClick('/pickup-points')}
+                onMouseEnter={handleMouseEnter}
+              >
+                <div className="relative w-full h-48 transition-all duration-500 rounded-lg shadow-lg" style={{ transformStyle: 'preserve-3d' }}>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10 transition-all duration-700 bg-[#E9FF15] rounded-lg shadow-lg transform translate-y-0 group-hover:-translate-y-20 group-hover:shadow-2xl">
+                    <MapPin className="w-20 h-20 text-[#00473E] mb-4" />
+                    <h3 className="text-lg font-bold text-[#00473E] text-center">Drop-Off & Pickup Points</h3>
                   </div>
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-[#E9FF15]"></div>
+                  <div className="absolute inset-0 flex items-center justify-center p-5 box-border transition-all duration-700 bg-white rounded-lg shadow-lg transform translate-y-0 group-hover:translate-y-20 group-hover:shadow-2xl">
+                    <div className="text-center">
+                      <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
+                      <p className="text-gray-600">Discover our pickup points network</p>
+                    </div>
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-[#E9FF15]"></div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div 
-              className={`w-full max-w-sm mx-auto cursor-pointer group ${activeCard === 'prepaid' ? 'mobile-active' : ''}`} 
-              style={{ perspective: '1000px' }} 
-              onClick={() => handleCardClick('/prepaid-cod', 'prepaid')}
-              onTouchStart={() => window.innerWidth < 768 && handleCardTouch('prepaid')}
-            >
-              <div className="relative w-full h-48 transition-all duration-500 overflow-hidden rounded-lg shadow-lg">
-                <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'prepaid' ? '-translate-y-1/2' : ''}`}>
-                  <div className="w-20 h-20 flex items-center justify-center mb-4">
-                    <span className="text-5xl font-bold text-[#00473E]">KES</span>
+            {/* Prepaid & COD Card */}
+            <div className="w-full max-w-sm mx-auto cursor-pointer group">
+              {/* Mobile Design - Simple Card Layout */}
+              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-6">
+                <div className="text-center mb-4">
+                  <div className="w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                    <span className="text-4xl font-bold text-[#00473E]">KES</span>
                   </div>
-                  <h3 className="text-lg font-bold text-[#00473E] text-center">Prepaid & COD Deliveries</h3>
+                  <h3 className="text-lg font-bold text-[#00473E]">Prepaid & COD Deliveries</h3>
                 </div>
-                <div className={`absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2 ${activeCard === 'prepaid' ? 'translate-y-1/2' : ''}`}>
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
-                    <p className="text-gray-600">Explore payment options</p>
+                <button 
+                  onClick={() => navigate('/prepaid-cod')}
+                  className="w-full bg-white text-[#00473E] py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Learn More
+                </button>
+              </div>
+              
+              {/* Desktop Design - Keep Original Animation */}
+              <div 
+                className="hidden md:block"
+                style={{ perspective: '1000px' }} 
+                onClick={() => handleCardClick('/prepaid-cod')}
+                onMouseEnter={handleMouseEnter}
+              >
+                <div className="relative w-full h-48 transition-all duration-500 rounded-lg shadow-lg" style={{ transformStyle: 'preserve-3d' }}>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10 transition-all duration-700 bg-[#E9FF15] rounded-lg shadow-lg transform translate-y-0 group-hover:-translate-y-20 group-hover:shadow-2xl">
+                    <div className="w-20 h-20 flex items-center justify-center mb-4">
+                      <span className="text-5xl font-bold text-[#00473E]">KES</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-[#00473E] text-center">Prepaid & COD Deliveries</h3>
                   </div>
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-[#E9FF15]"></div>
+                  <div className="absolute inset-0 flex items-center justify-center p-5 box-border transition-all duration-700 bg-white rounded-lg shadow-lg transform translate-y-0 group-hover:translate-y-20 group-hover:shadow-2xl">
+                    <div className="text-center">
+                      <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
+                      <p className="text-gray-600">Explore payment options</p>
+                    </div>
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-[#E9FF15]"></div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div 
-              className={`w-full max-w-sm mx-auto cursor-pointer group ${activeCard === 'settlements' ? 'mobile-active' : ''}`} 
-              style={{ perspective: '1000px' }} 
-              onClick={() => handleCardClick('/instant-settlements', 'settlements')}
-              onTouchStart={() => window.innerWidth < 768 && handleCardTouch('settlements')}
-            >
-              <div className="relative w-full h-48 transition-all duration-500 overflow-hidden rounded-lg shadow-lg">
-                <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'settlements' ? '-translate-y-1/2' : ''}`}>
-                  <Wallet className="w-20 h-20 text-[#00473E] mb-4" />
-                  <h3 className="text-lg font-bold text-[#00473E] text-center">Instant Settlements</h3>
+            {/* Instant Settlements Card */}
+            <div className="w-full max-w-sm mx-auto cursor-pointer group">
+              {/* Mobile Design - Simple Card Layout */}
+              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-6">
+                <div className="text-center mb-4">
+                  <Wallet className="w-16 h-16 text-[#00473E] mx-auto mb-3" />
+                  <h3 className="text-lg font-bold text-[#00473E]">Instant Settlements</h3>
                 </div>
-                <div className={`absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2 ${activeCard === 'settlements' ? 'translate-y-1/2' : ''}`}>
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
-                    <p className="text-gray-600">Instant settlement details</p>
+                <button 
+                  onClick={() => navigate('/instant-settlements')}
+                  className="w-full bg-white text-[#00473E] py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Learn More
+                </button>
+              </div>
+              
+              {/* Desktop Design - Keep Original Animation */}
+              <div 
+                className="hidden md:block"
+                style={{ perspective: '1000px' }} 
+                onClick={() => handleCardClick('/instant-settlements')}
+                onMouseEnter={handleMouseEnter}
+              >
+                <div className="relative w-full h-48 transition-all duration-500 rounded-lg shadow-lg" style={{ transformStyle: 'preserve-3d' }}>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10 transition-all duration-700 bg-[#E9FF15] rounded-lg shadow-lg transform translate-y-0 group-hover:-translate-y-20 group-hover:shadow-2xl">
+                    <Wallet className="w-20 h-20 text-[#00473E] mb-4" />
+                    <h3 className="text-lg font-bold text-[#00473E] text-center">Instant Settlements</h3>
                   </div>
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-[#E9FF15]"></div>
+                  <div className="absolute inset-0 flex items-center justify-center p-5 box-border transition-all duration-700 bg-white rounded-lg shadow-lg transform translate-y-0 group-hover:translate-y-20 group-hover:shadow-2xl">
+                    <div className="text-center">
+                      <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
+                      <p className="text-gray-600">Instant settlement details</p>
+                    </div>
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-[#E9FF15]"></div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div 
-              className={`w-full max-w-sm mx-auto cursor-pointer group ${activeCard === 'notifications' ? 'mobile-active' : ''}`} 
-              style={{ perspective: '1000px' }} 
-              onClick={() => handleCardClick('/notifications', 'notifications')}
-              onTouchStart={() => window.innerWidth < 768 && handleCardTouch('notifications')}
-            >
-              <div className="relative w-full h-48 transition-all duration-500 overflow-hidden rounded-lg shadow-lg">
-                <div className={`absolute inset-0 flex flex-col items-center justify-center z-10 transition-transform duration-700 bg-[#E9FF15] transform translate-y-0 group-hover:-translate-y-1/2 ${activeCard === 'notifications' ? '-translate-y-1/2' : ''}`}>
-                  <Bell className="w-20 h-20 text-[#00473E] mb-4" />
-                  <h3 className="text-lg font-bold text-[#00473E] text-center">Smart Notifications</h3>
+            {/* Smart Notifications Card */}
+            <div className="w-full max-w-sm mx-auto cursor-pointer group">
+              {/* Mobile Design - Simple Card Layout */}
+              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-6">
+                <div className="text-center mb-4">
+                  <Bell className="w-16 h-16 text-[#00473E] mx-auto mb-3" />
+                  <h3 className="text-lg font-bold text-[#00473E]">Smart Notifications</h3>
                 </div>
-                <div className={`absolute inset-0 flex items-center justify-center p-5 box-border transition-transform duration-800 shadow-2xl bg-white transform translate-y-0 group-hover:translate-y-1/2 ${activeCard === 'notifications' ? 'translate-y-1/2' : ''}`}>
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
-                    <p className="text-gray-600">Smart notification features</p>
+                <button 
+                  onClick={() => navigate('/notifications')}
+                  className="w-full bg-white text-[#00473E] py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Learn More
+                </button>
+              </div>
+              
+              {/* Desktop Design - Keep Original Animation */}
+              <div 
+                className="hidden md:block"
+                style={{ perspective: '1000px' }} 
+                onClick={() => handleCardClick('/notifications')}
+                onMouseEnter={handleMouseEnter}
+              >
+                <div className="relative w-full h-48 transition-all duration-500 rounded-lg shadow-lg" style={{ transformStyle: 'preserve-3d' }}>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10 transition-all duration-700 bg-[#E9FF15] rounded-lg shadow-lg transform translate-y-0 group-hover:-translate-y-20 group-hover:shadow-2xl">
+                    <Bell className="w-20 h-20 text-[#00473E] mb-4" />
+                    <h3 className="text-lg font-bold text-[#00473E] text-center">Smart Notifications</h3>
                   </div>
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-[#E9FF15]"></div>
+                  <div className="absolute inset-0 flex items-center justify-center p-5 box-border transition-all duration-700 bg-white rounded-lg shadow-lg transform translate-y-0 group-hover:translate-y-20 group-hover:shadow-2xl">
+                    <div className="text-center">
+                      <h3 className="text-2xl font-bold text-gray-700 mb-2">Learn More</h3>
+                      <p className="text-gray-600">Smart notification features</p>
+                    </div>
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-[#E9FF15]"></div>
+                  </div>
                 </div>
               </div>
             </div>

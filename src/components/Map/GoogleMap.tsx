@@ -255,7 +255,14 @@ export default function GoogleMap({
         })
 
         marker.addListener('click', () => {
-          infoWindow.setContent(`<div><strong>${p.name}</strong><div>${p.info || ''}</div></div>`)
+          // Extract town from the info string - look for town information
+          const infoText = p.info || ''
+          const infoParts = infoText.split(',').map(part => part.trim())
+          const town = infoParts.find(part => part.toLowerCase().includes('town')) || 
+                       infoParts[0] || 
+                       'Town not specified'
+          const businessName = p.name || 'Unknown Business'
+          infoWindow.setContent(`<div><strong>${town}</strong><div style="margin-top: 4px; font-size: 14px; color: #666;">${businessName}</div></div>`)
           infoWindow.open(map, marker)
         })
 
@@ -315,18 +322,38 @@ export function MapSearch({ points, onSelect }: { points: PickupPoint[]; onSelec
       setFiltered(points)
       return
     }
-    const q = query.toLowerCase()
-    setFiltered(points.filter((p) => p.name.toLowerCase().includes(q) || p.info?.toLowerCase().includes(q)))
+    const q = query.toLowerCase().trim()
+    
+    // Split query into words to handle multi-word searches
+    const queryWords = q.split(/\s+/).filter(word => word.length > 0)
+    
+    setFiltered(points.filter((p) => {
+      const name = p.name.toLowerCase()
+      const info = (p.info || '').toLowerCase()
+      const searchText = `${name} ${info}`
+      
+      // Check if all query words are found in the combined text
+      return queryWords.every(word => searchText.includes(word))
+    }))
   }, [points, query])
 
   return (
     <div className="w-full bg-white rounded-lg p-4 shadow">
       <input
+        type="text"
         aria-label="Search pickup points"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={(e) => {
+          // Ensure space key is not prevented
+          if (e.key === ' ' || e.code === 'Space') {
+            e.stopPropagation()
+          }
+        }}
         placeholder="Search pickup points by name or location..."
         className="w-full px-4 py-3 rounded-md border border-gray-300 focus:border-[#00473E] focus:ring-2 focus:ring-[#00473E]/20 outline-none"
+        autoComplete="off"
+        spellCheck="false"
       />
       {query && (
         <div className="max-h-64 overflow-auto mt-3 border-t pt-2">
@@ -336,8 +363,16 @@ export function MapSearch({ points, onSelect }: { points: PickupPoint[]; onSelec
               onClick={() => onSelect(p)}
               className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded transition-colors"
             >
-              <div className="font-medium text-gray-900">{p.name}</div>
-              {p.info && <div className="text-xs text-gray-500 mt-1">{p.info}</div>}
+              <div className="font-medium text-gray-900">
+                {(() => {
+                  const infoText = p.info || ''
+                  const infoParts = infoText.split(',').map(part => part.trim())
+                  return infoParts.find(part => part.toLowerCase().includes('town')) || 
+                         infoParts[0] || 
+                         `Town ${p.id}`
+                })()}
+              </div>
+              <div className="text-sm text-gray-600 mt-1">{p.name}</div>
             </button>
           ))}
           {filtered.length === 0 && <div className="px-3 py-2 text-sm text-gray-500">No matches found</div>}
@@ -358,7 +393,7 @@ export function AgentLocationsList({
   return (
     <div className="w-full h-full bg-white rounded-lg p-4 shadow flex flex-col">
       <div className="font-semibold mb-3 text-lg text-gray-900">
-        Agent Locations ({points.length} {points.length === 1 ? 'location' : 'locations'})
+        Agent Locations
       </div>
       {points.length > 0 ? (
         <div className="flex-1 overflow-auto space-y-3">
@@ -368,11 +403,18 @@ export function AgentLocationsList({
               onClick={() => onSelect?.(point)}
               className="w-full text-left border-b border-gray-200 pb-3 last:border-0 hover:bg-gray-50 transition-colors p-2 rounded -m-2"
             >
-              <div className="font-medium text-gray-900">{point.name}</div>
-              <div className="text-gray-600 text-xs mt-1">
+              <div className="font-medium text-gray-900">
+                {(() => {
+                  const infoParts = (point.info || '').split(',').map(part => part.trim())
+                  return infoParts.find(part => part.toLowerCase().includes('town')) || 
+                         infoParts[0] || 
+                         `Town ${point.id}`
+                })()}
+              </div>
+              <div className="text-gray-600 text-sm mt-1">{point.name}</div>
+              <div className="text-gray-500 text-xs mt-1">
                 Lat: {point.lat.toFixed(6)}, Lng: {point.lng.toFixed(6)}
               </div>
-              {point.info && <div className="text-gray-500 text-xs mt-1">{point.info}</div>}
             </button>
           ))}
         </div>

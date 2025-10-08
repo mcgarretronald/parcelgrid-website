@@ -121,3 +121,16 @@
     @apply m-0 p-0;
   }
 }
+
+/* Mobile card touch interaction styles */
+@media (max-width: 767px) {
+  .mobile-active .group-hover\:-translate-y-20 {
+    transform: translateY(-5rem) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  .mobile-active .group-hover\:translate-y-20 {
+    transform: translateY(5rem) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  }
+}
