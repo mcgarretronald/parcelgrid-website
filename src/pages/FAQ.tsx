@@ -199,7 +199,15 @@ const FAQ: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto px-6 py-12">
+      {/* Title and Subheading */}
+      <div className="text-center mb-12">
+        <h1 className="text-4xl md:text-5xl font-bold text-[#00473E] mb-4">Frequently Asked Questions</h1>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Find answers to common questions about ParcelGrid's delivery services, pickup points, and how we help vendors reach customers across Kenya.
+        </p>
+      </div>
+
       {faqData.map((category, categoryIndex) => (
         <div key={categoryIndex} className="mb-8">
           <h3 className="text-2xl font-bold text-[#00473E] mb-4">{category.category}</h3>

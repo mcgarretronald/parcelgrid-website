@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '../ui/button';
 import {
   Menu,
@@ -20,12 +21,10 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
   // theme toggle removed
 
   const navItems = [
-    { name: 'Home', href: '#' },
-    { name: 'Services', href: '#services' },
-    { name: 'Coverage', href: '#coverage' },
-    { name: 'Pricing', href: '#pricing' },
-    { name: 'About', href: '#about' },
-    { name: 'Contact', href: '#contact' },
+    { name: 'Home', href: '/' },
+    { name: 'Pickup Points', href: '/pickup-points' },
+    { name: 'FAQ', href: '/faq' },
+    { name: 'About', href: '/about' },
   ];
 
   return (
@@ -88,13 +87,13 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-9">
             {navItems.map((item) => (
-              <a
+              <Link
                 key={item.name}
-                href={item.href}
+                to={item.href}
                 className="text-sm font-medium text-white/95 hover:text-white transition-colors duration-150"
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -138,9 +137,9 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
           <div className="bg-gradient-to-b from-[#00473E] to-[#005d4f] border-t border-[#E9FF15]/30 mt-2">
             <nav className="flex flex-col space-y-4 px-4 py-6 animate-slide-down">
               {navItems.map((item, index) => (
-                <a
+                <Link
                   key={item.name}
-                  href={item.href}
+                  to={item.href}
                   className="font-medium transition-all duration-300 text-white hover:text-[#E9FF15] hover:translate-x-2 hover:bg-white/5 px-4 py-2 rounded-lg transform"
                   onClick={() => setIsMenuOpen(false)}
                   style={{
@@ -149,7 +148,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
                   }}
                 >
                   {item.name}
-                </a>
+                </Link>
               ))}
               <div className="flex flex-col gap-3 pt-4 px-4">
                 <Button 

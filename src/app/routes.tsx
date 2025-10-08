@@ -6,6 +6,7 @@ import PrepaidCODPage from "../pages/PrepaidCODPage";
 import InstantSettlementsPage from "../pages/InstantSettlementsPage";
 import SmartNotificationsPage from "../pages/SmartNotificationsPage";
 import FAQ from "../pages/FAQ";
+import AboutPage from "../pages/AboutPage";
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: "/faq",
         element: <FAQ />,
+      },
+      {
+        path: "/about",
+        element: <AboutPage />,
       },
       {
         path: "*",
