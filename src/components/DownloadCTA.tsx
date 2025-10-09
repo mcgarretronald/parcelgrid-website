@@ -26,15 +26,29 @@ export default function DownloadCTA() {
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="mb-6 sm:mb-8">
-          <a
-            href="/download"
-            aria-label="Download ParcelGrid App"
-            className="group relative block mx-auto w-full max-w-xs sm:max-w-sm md:max-w-lg h-24 sm:h-28 md:h-32 lg:h-40 rounded-2xl overflow-hidden transform transition-transform duration-300 hover:scale-[1.02] shadow-lg"
-            style={{ backgroundImage: `url('/parcelgridlogo05.jpeg')`, backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundSize: 'cover' }}
-          >
-            <span className="sr-only">Download ParcelGrid App</span>
-            <span className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 w-2 h-2 sm:w-3 sm:h-3 bg-[#00473E] rounded-full animate-pulse" />
-          </a>
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 justify-center">
+            <a
+              href="https://play.google.com/store/apps/details?id=com.parcelgrid.logistics"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-[#E9FF15] text-[#00473E] px-5 py-3 sm:px-6 sm:py-4 rounded-xl hover:bg-[#d4e614] transition-colors shadow-sm w-full sm:w-auto justify-center"
+              aria-label="Download on Google Play"
+            >
+              <img src="/playstorelogo.png" alt="Google Play" className="w-8 h-8 sm:w-12 sm:h-12 object-contain" />
+              <span className="text-base sm:text-lg font-semibold">Get it on Google Play</span>
+            </a>
+
+            <a
+              href="https://apps.apple.com/app/parcelgrid/id000000000"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-[#E9FF15] text-[#00473E] px-5 py-3 sm:px-6 sm:py-4 rounded-xl hover:bg-[#d4e614] transition-colors shadow-sm w-full sm:w-auto justify-center"
+              aria-label="Download on the App Store"
+            >
+              <img src="/Applelogo.png" alt="App Store" className="w-8 h-8 sm:w-12 sm:h-12 object-contain" />
+              <span className="text-base sm:text-lg font-semibold">Download on the App Store</span>
+            </a>
+          </div>
         </div>
 
         <div className="text-center">

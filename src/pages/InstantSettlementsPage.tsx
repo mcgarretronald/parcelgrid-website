@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Smartphone, Wallet, ArrowRight, CreditCard, Shield, Zap, Users, CheckCircle, TrendingUp } from 'lucide-react';
+import React from 'react';
+import { Smartphone, CreditCard, Shield, Zap, Users, TrendingUp } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
@@ -9,34 +9,7 @@ const InstantSettlementsPage: React.FC = () => {
   // Scroll to top when navigating to this page
   useScrollToTop();
   
-  const [isVisible, setIsVisible] = useState(false);
-  const benefitsRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        } else {
-          setIsVisible(false);
-        }
-      },
-      {
-        threshold: 0.3,
-        rootMargin: '-50px 0px',
-      }
-    );
-
-    if (benefitsRef.current) {
-      observer.observe(benefitsRef.current);
-    }
-
-    return () => {
-      if (benefitsRef.current) {
-        observer.unobserve(benefitsRef.current);
-      }
-    };
-  }, []);
+  // No entrance animation: vendor benefits render immediately
 
   return (
     <div className="min-h-screen bg-white">
@@ -107,35 +80,12 @@ const InstantSettlementsPage: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex justify-center lg:justify-start">
-                    <div className="relative">
-                      <div className="w-40 h-40 bg-gradient-to-br from-[#00473E] via-[#006644] to-[#00473E] rounded-3xl flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                        <Smartphone className="w-20 h-20 text-[#E9FF15]" />
-                      </div>
-                      <div className="absolute -bottom-3 -right-3 w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg animate-pulse">
-                        <span className="text-white text-lg font-bold">M</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
 
               {/* Step 2 */}
               <div className="relative">
                 <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-                  <div className="order-2 lg:order-1 flex justify-center lg:justify-end">
-                    <div className="relative">
-                      <div className="w-40 h-40 bg-gradient-to-br from-[#E9FF15] via-[#B8CC12] to-[#E9FF15] rounded-3xl flex items-center justify-center shadow-2xl transform -rotate-3 hover:rotate-0 transition-transform duration-300">
-                        <Wallet className="w-20 h-20 text-[#00473E]" />
-                      </div>
-                      <div className="absolute -top-3 -right-3 w-12 h-12 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg">
-                        <CheckCircle className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-[#00473E] text-[#E9FF15] px-3 py-1 rounded-full text-sm font-bold">
-                        KES
-                      </div>
-                    </div>
-                  </div>
                   <div className="order-1 lg:order-2 mb-8 lg:mb-0">
                     <div className="bg-white rounded-3xl p-8 shadow-xl border border-gray-200 relative">
                       <div className="absolute -top-6 right-8 w-12 h-12 bg-gradient-to-r from-[#00473E] to-[#006644] rounded-full flex items-center justify-center shadow-lg">
@@ -166,20 +116,6 @@ const InstantSettlementsPage: React.FC = () => {
                       <p className="text-lg text-gray-600 leading-relaxed">
                         Vendors can transfer money from their ParcelGrid wallet to their own M-Pesa number anytime—no delays, no waiting for batch settlements.
                       </p>
-                    </div>
-                  </div>
-                  <div className="flex justify-center lg:justify-start">
-                    <div className="flex items-center gap-6">
-                      <div className="w-32 h-32 bg-gradient-to-br from-[#00473E] to-[#006644] rounded-3xl flex items-center justify-center shadow-xl transform hover:scale-105 transition-transform duration-300">
-                        <Wallet className="w-16 h-16 text-[#E9FF15]" />
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <ArrowRight className="w-10 h-10 text-[#00473E] animate-pulse" />
-                        <span className="text-xs text-gray-500 mt-1">INSTANT</span>
-                      </div>
-                      <div className="w-32 h-32 bg-gradient-to-br from-green-500 to-green-600 rounded-3xl flex items-center justify-center shadow-xl transform hover:scale-105 transition-transform duration-300">
-                        <span className="text-white text-4xl font-bold">M</span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -267,7 +203,6 @@ const InstantSettlementsPage: React.FC = () => {
 
       {/* Vendor Benefits Section */}
       <section 
-        ref={benefitsRef}
         className="relative py-16 sm:py-20 bg-gradient-to-br from-gray-50 via-white to-gray-100 overflow-hidden"
       >
         {/* Subtle Background Pattern */}
@@ -289,9 +224,7 @@ const InstantSettlementsPage: React.FC = () => {
           </svg>
         </div>
 
-        <div className={`relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-1000 ease-out ${
-          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6">
               Vendor Benefits

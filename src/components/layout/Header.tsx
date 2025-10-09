@@ -112,21 +112,33 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
               </Button>
             </div>
 
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`lg:hidden text-white/95 hover:bg-white/5 transition-all duration-300 hover:scale-110 ${
-                isMenuOpen ? 'bg-[#E9FF15]/20 rotate-90' : 'hover:rotate-12'
-              }`}
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? (
-                <X className="h-6 w-6 transition-transform duration-300 rotate-90" />
-              ) : (
-                <Menu className="h-6 w-6 transition-transform duration-300" />
-              )}
-            </Button>
+            {/* Mobile Get the App CTA (visible on small screens only) */}
+            <div className="flex items-center lg:hidden">
+              <Button
+                className="bg-[#E9FF15] text-[#00473E] px-4 py-2 rounded-full mr-2"
+                onClick={() => {
+                  // Open app download in new tab
+                  window.open('https://play.google.com/store/apps/details?id=com.parcelgrid.logistics', '_blank')
+                }}
+              >
+                Get the App
+              </Button>
+              {/* Mobile menu button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`text-white/95 hover:bg-white/5 transition-all duration-300 hover:scale-110 ${
+                  isMenuOpen ? 'bg-[#E9FF15]/20 rotate-90' : 'hover:rotate-12'
+                }`}
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? (
+                  <X className="h-6 w-6 transition-transform duration-300 rotate-90" />
+                ) : (
+                  <Menu className="h-6 w-6 transition-transform duration-300" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -151,25 +163,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
                 </Link>
               ))}
               <div className="flex flex-col gap-3 pt-4 px-4">
-                <Button 
-                  variant="ghost" 
-                  className="justify-start text-white border-[#E9FF15] hover:bg-[#E9FF15] hover:text-[#00473E] transition-all duration-300 hover:scale-105"
-                  style={{
-                    animationDelay: `${navItems.length * 100}ms`,
-                    animation: isMenuOpen ? 'slideInLeft 0.4s ease-out forwards' : 'none'
-                  }}
-                >
-                  Sign In
-                </Button>
-                <Button 
-                  className="bg-[#E9FF15] text-[#00473E] hover:bg-[#E9FF15]/90 justify-start font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                  style={{
-                    animationDelay: `${(navItems.length + 1) * 100}ms`,
-                    animation: isMenuOpen ? 'slideInLeft 0.4s ease-out forwards' : 'none'
-                  }}
-                >
-                  Get Started
-                </Button>
+                {/* Removed duplicate mobile CTA - now shown in header */}
               </div>
             </nav>
           </div>

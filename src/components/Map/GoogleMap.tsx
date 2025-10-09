@@ -393,7 +393,7 @@ export function AgentLocationsList({
   return (
     <div className="w-full h-full bg-white rounded-lg p-4 shadow flex flex-col">
       <div className="font-semibold mb-3 text-lg text-gray-900">
-        Agent Locations
+        Our Pickup Points
       </div>
       {points.length > 0 ? (
         <div className="flex-1 overflow-auto space-y-3">
@@ -413,7 +413,7 @@ export function AgentLocationsList({
               </div>
               <div className="text-gray-600 text-sm mt-1">{point.name}</div>
               <div className="text-gray-500 text-xs mt-1">
-                Lat: {point.lat.toFixed(6)}, Lng: {point.lng.toFixed(6)}
+                {point.info || 'Address not available'}
               </div>
             </button>
           ))}

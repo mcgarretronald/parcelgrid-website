@@ -107,6 +107,30 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
+            {/* About Video Section */}
+      <section className="py-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Who We Are & What We Do</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Watch this short video to learn more about ParcelGrid and how we help online sellers scale across Kenya.</p>
+          </div>
+
+          <div className="w-full mt-6 flex justify-center">
+            <div className="w-full max-w-4xl aspect-video rounded-lg overflow-hidden shadow-lg">
+              {/* Google Drive preview embed - use the file id in the preview URL */}
+              <iframe
+                title="ParcelGrid Overview Video"
+                src="https://drive.google.com/file/d/1gmlf_I9Ij9cLuJzMuUVuh0Y9WHG1Jyka/preview"
+                className="w-full h-full"
+                allow="autoplay; encrypted-media"
+                frameBorder="0"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="bg-gray-50">
         <FeaturesCarousel />
       </section>
