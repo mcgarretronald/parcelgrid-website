@@ -401,9 +401,9 @@ export function AgentLocationsList({
             <button
               key={point.id}
               onClick={() => onSelect?.(point)}
-              className="w-full text-left border-b border-gray-200 pb-3 last:border-0 hover:bg-gray-50 transition-colors p-2 rounded -m-2"
+              className="w-full text-left border-b border-gray-200 last:border-b-0 hover:bg-gray-50 transition-colors px-3 py-3 rounded"
             >
-              <div className="font-medium text-gray-900">
+              <div className="font-medium text-gray-900 leading-relaxed break-words">
                 {(() => {
                   const infoParts = (point.info || '').split(',').map(part => part.trim())
                   return infoParts.find(part => part.toLowerCase().includes('town')) || 
@@ -411,8 +411,8 @@ export function AgentLocationsList({
                          `Town ${point.id}`
                 })()}
               </div>
-              <div className="text-gray-600 text-sm mt-1">{point.name}</div>
-              <div className="text-gray-500 text-xs mt-1">
+              <div className="text-gray-600 text-sm mt-1 leading-relaxed break-words">{point.name}</div>
+              <div className="text-gray-500 text-xs mt-2 leading-normal break-words">
                 {point.info || 'Address not available'}
               </div>
             </button>

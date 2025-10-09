@@ -47,7 +47,7 @@ const FAQ: React.FC = () => {
         {
           id: "q4",
           question: "Where do I drop off my parcels as a vendor?",
-          answer: "Vendors can drop off parcels at our Moi Avenue or Taveta Road branches in Nairobi."
+          answer: "Vendors can drop off parcels at our drop off points, Moi Avenue or Taveta Road branches in Nairobi."
         },
         {
           id: "q5",
@@ -123,10 +123,10 @@ const FAQ: React.FC = () => {
           question: "How will I and my customers know the status of parcels?",
           answer: (
             <ul className="list-disc ml-6">
-              <li>Vendor notified when parcel is dropped off.</li>
-              <li>Customer notified when parcel arrives at pickup point.</li>
-              <li>Reminders sent when parcel is ready for collection.</li>
-              <li>Vendor notified once parcel is collected (with COD payment confirmation if applicable).</li>
+              <li>The vendor is notified when the parcel is dropped off.</li>
+              <li>The customer is notified when the parcel arrives at the pickup point.</li>
+              <li>Reminders are sent when the parcel is ready for collection.</li>
+              <li>The vendor is notified once the parcel is collected (with COD payment confirmation if applicable).</li>
             </ul>
           )
         },

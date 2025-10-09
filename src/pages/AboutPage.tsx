@@ -239,7 +239,7 @@ const AboutPage: React.FC = () => {
               <div className="inline-block mb-4 px-4 py-2 bg-[#E9FF15] rounded-full">
                 <span className="text-[#00473E] font-semibold">Get Started</span>
               </div>
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Ready to Transform Your Deliveries?</h2>
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Ready to Scale Up your Business?</h2>
               <p className="text-white/90 text-lg mb-8 max-w-3xl mx-auto">
                 Whether you're running a thrift store, boutique, online shop, or selling on Instagram, TikTok, or WhatsApp — ParcelGrid makes deliveries and cash collection seamless.
               </p>
