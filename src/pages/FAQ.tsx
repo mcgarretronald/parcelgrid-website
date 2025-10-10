@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import Footer from '../components/Footer';
 
 const FAQ: React.FC = () => {
   const [openItems, setOpenItems] = useState<string[]>([]);
@@ -199,46 +200,53 @@ const FAQ: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto px-6 py-12">
-      {/* Title and Subheading */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#00473E] mb-4">Frequently Asked Questions</h1>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Find answers to common questions about ParcelGrid's delivery services, pickup points, and how we help vendors reach customers across Kenya.
-        </p>
-      </div>
-
-      {faqData.map((category, categoryIndex) => (
-        <div key={categoryIndex} className="mb-8">
-          <h3 className="text-2xl font-bold text-[#00473E] mb-4">{category.category}</h3>
-          <div className="space-y-3">
-            {category.items.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg shadow-md border border-gray-200">
-                <button
-                  onClick={() => toggleItem(item.id)}
-                  className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors"
-                >
-                  <span className="font-semibold text-gray-900 pr-4">{item.question}</span>
-                  {openItems.includes(item.id) ? (
-                    <ChevronUp className="w-5 h-5 text-[#00473E] flex-shrink-0" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-[#00473E] flex-shrink-0" />
-                  )}
-                </button>
-                {openItems.includes(item.id) && (
-                  <div className="px-6 pb-4 text-gray-700 border-t border-gray-100">
-                    {typeof item.answer === 'string' ? (
-                      <p className="pt-3">{item.answer}</p>
-                    ) : (
-                      <div className="pt-3">{item.answer}</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-6 py-12">
+        {/* Title and Subheading */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-[#00473E] mb-4">Frequently Asked Questions</h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Find answers to common questions about ParcelGrid's delivery services, pickup points, and how we help vendors reach customers across Kenya.
+          </p>
         </div>
-      ))}
+
+        {/* FAQ Categories */}
+        {faqData.map((category, categoryIndex) => (
+          <div key={categoryIndex} className="mb-8">
+            <h3 className="text-2xl font-bold text-[#00473E] mb-4">{category.category}</h3>
+            <div className="space-y-3">
+              {category.items.map((item) => (
+                <div key={item.id} className="bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
+                  <button
+                    onClick={() => toggleItem(item.id)}
+                    className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors rounded-lg"
+                  >
+                    <span className="font-semibold text-gray-900 pr-4">{item.question}</span>
+                    {openItems.includes(item.id) ? (
+                      <ChevronUp className="w-5 h-5 text-[#00473E] flex-shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-[#00473E] flex-shrink-0" />
+                    )}
+                  </button>
+                  {openItems.includes(item.id) && (
+                    <div className="px-6 pb-4 text-gray-700 border-t border-gray-100">
+                      {typeof item.answer === 'string' ? (
+                        <p className="pt-3 leading-relaxed">{item.answer}</p>
+                      ) : (
+                        <div className="pt-3 leading-relaxed">{item.answer}</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
