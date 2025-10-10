@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: site.escrowcourier.com
+    - host: escrowcourier.com
       http:
         paths:
           - path: /
