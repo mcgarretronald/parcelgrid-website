@@ -59,7 +59,7 @@ const PickupPointsPage: React.FC = () => {
                     <h3 className="text-xl sm:text-2xl font-bold text-gray-900">Moi Avenue Branch</h3>
                   </div>
                   <p className="text-gray-600 text-lg leading-relaxed mb-4">
-                    Iconic Business Plaza, Ground Floor
+                    Iconic Business Plaza, Ground floor, Shop no: G13. Moi avenue. Between sasa mall and Sawa mall.
                   </p>
                   <div className="flex items-center text-sm text-gray-500">
                     <span className="font-medium">📍 Nairobi CBD</span>
@@ -80,7 +80,7 @@ const PickupPointsPage: React.FC = () => {
                     <h3 className="text-2xl font-bold text-gray-900">Taveta Road Branch</h3>
                   </div>
                   <p className="text-gray-600 text-lg leading-relaxed mb-4">
-                    Jitihada Shopping Complex, next to Taveta Shopping Mall, Ground Floor
+                   Jithada Shopping Complex, Ground Floor, Shop no: F7 Taveta Road, Next to Taveta shopping Mall, Opposite Samagat Building.
                   </p>
                   <div className="flex items-center text-sm text-gray-500">
                     <span className="font-medium">📍 Nairobi CBD</span>
