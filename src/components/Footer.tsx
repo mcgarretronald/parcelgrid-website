@@ -49,12 +49,15 @@ const Footer: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-start">
-                <MapPin className="w-8 h-8 mr-3 mt-1 text-[#E9FF15]" />
-                <div>
-                  <div>Escrow Courier Networks Limited</div>
-                  <div className="text-sm">Iconic Business Plaza, Ground floor, Shop no: G13. Moi avenue. Between sasa mall and Sawa mall.</div>
-
-                  <div className="text-sm">Jithada Shopping Complex, Ground Floor, Shop no: F7 Taveta Road, Next to Taveta shopping Mall, Opposite Samagat Building.</div>
+                <div className="flex-shrink-0 mr-3 flex items-center">
+                  <MapPin className="w-5 h-5 text-[#E9FF15]" />
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium">Escrow Courier Networks Limited</div>
+                  <div className="mt-2 space-y-2 text-sm text-white/80">
+                    <div>Iconic Business Plaza, Ground floor, Shop no: G13. Moi avenue. Between sasa mall and Sawa mall.</div>
+                    <div>Jithada Shopping Complex, Ground Floor, Shop no: F7 Taveta Road, Next to Taveta shopping Mall, Opposite Samagat Building.</div>
+                  </div>
                 </div>
               </div>
             </div>
