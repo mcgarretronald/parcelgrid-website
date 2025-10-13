@@ -99,7 +99,7 @@ const LandingPage: React.FC = () => {
             <div className="flex items-center justify-center md:col-start-2 mt-8 md:mt-0">
               <div className="w-full max-w-sm md:w-80 lg:w-[920px] xl:w-[1200px] md:flex md:items-center md:justify-end md:pr-8">
                 <div className="overflow-visible rounded-xl shadow-none group">
-                  <img src="/phone.jpeg" alt="Phone screenshot" className="w-full max-h-[60vh] md:max-h-[80vh] h-auto object-contain transform transition-transform duration-500 ease-out group-hover:scale-110 md:origin-right" style={{ willChange: 'transform' }} />
+                  <img src="/phone.png" alt="Phone screenshot" className="w-full max-h-[60vh] md:max-h-[80vh] h-auto object-contain transform transition-transform duration-500 ease-out group-hover:scale-110 md:origin-right" style={{ willChange: 'transform' }} />
                 </div>
               </div>
             </div>

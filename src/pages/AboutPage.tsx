@@ -13,7 +13,7 @@ const AboutPage: React.FC = () => {
         {/* Background image */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1455849318743-b2233052fcff?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D)' }}
+          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1624137527136-66e631bdaa0e?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=687)' }}
         ></div>
          <div className="absolute inset-0 bg-black/50"></div>
 

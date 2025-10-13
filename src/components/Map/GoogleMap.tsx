@@ -411,7 +411,6 @@ export function AgentLocationsList({
                          `Town ${point.id}`
                 })()}
               </div>
-              <div className="text-gray-600 text-sm mt-1 leading-relaxed break-words">{point.name}</div>
               <div className="text-gray-500 text-xs mt-2 leading-normal break-words">
                 {point.info || 'Address not available'}
               </div>

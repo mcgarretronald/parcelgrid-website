@@ -20,7 +20,7 @@ const FAQ: React.FC = () => {
         {
           id: "q1",
           question: "What is ParcelGrid?",
-          answer: "ParcelGrid® is a registered trademark of Escrow Courier Networks Limited, a licensed courier company regulated by the Communications Authority of Kenya (CAK). We provide a delivery infrastructure with drop-off points in Nairobi and pickup points across 413+ towns in Kenya."
+          answer: "ParcelGrid® is a registered trademark of Escrow Courier Networks Limited, a licensed courier company regulated by the Communications Authority of Kenya (CA). We provide a delivery infrastructure with drop-off points in Nairobi and pickup points across 413+ towns in Kenya."
         },
         {
           id: "q2", 
@@ -63,7 +63,7 @@ const FAQ: React.FC = () => {
         {
           id: "q6",
           question: "Do you handle both prepaid and Cash on Delivery (COD)?",
-          answer: "✅ Yes. When booking a parcel, the vendor chooses whether it's Prepaid or COD."
+          answer: "Yes. When booking a parcel, the vendor chooses whether it's Prepaid or COD."
         },
         {
           id: "q7",
@@ -112,7 +112,7 @@ const FAQ: React.FC = () => {
         {
           id: "q12",
           question: "Can I link my bank account?",
-          answer: "❌ No. For now, withdrawals are only supported to M-Pesa."
+          answer: "No. For now, withdrawals are only supported to M-Pesa."
         }
       ]
     },
@@ -134,7 +134,7 @@ const FAQ: React.FC = () => {
         {
           id: "q14",
           question: "Is there a mobile app?",
-          answer: "✅ Yes. The ParcelGrid app is available for Android and iOS. It allows vendors to book parcels, choose Prepaid or COD, track deliveries, and withdraw money instantly."
+          answer: "Yes. The ParcelGrid app is available for Android and iOS. It allows vendors to book parcels, choose Prepaid or COD, track deliveries, and withdraw money instantly."
         }
       ]
     },
@@ -144,7 +144,7 @@ const FAQ: React.FC = () => {
         {
           id: "q15",
           question: "Are you licensed?",
-          answer: "✅ Yes. Escrow Courier Networks Limited (the company behind ParcelGrid) is licensed by the Communications Authority of Kenya (CAK) under License No. PL-025-0658."
+          answer: "Yes. Escrow Courier Networks Limited (the company behind ParcelGrid) is licensed by the Communications Authority of Kenya (CA) under License No. PL-025-0658."
         },
         {
           id: "q16",
@@ -178,7 +178,7 @@ const FAQ: React.FC = () => {
         {
           id: "q18",
           question: "Is there a cost to join?",
-          answer: "❌ No registration fees. You only pay delivery fees + the 1.8% handling fee on COD transactions."
+          answer: "No registration fees. You only pay delivery fees + the 1.8% handling fee on COD transactions."
         },
         {
           id: "q19",

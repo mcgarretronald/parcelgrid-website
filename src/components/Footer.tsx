@@ -78,8 +78,8 @@ const Footer: React.FC = () => {
               <li><Link to="/pickup-points" className="hover:text-[#E9FF15]">PICKUP POINTS</Link></li>
               <li><Link to="/faq" className="hover:text-[#E9FF15]">FAQ</Link></li>
               <li><Link to="/about" className="hover:text-[#E9FF15]">ABOUT US</Link></li>
-              <li><a href="https://app.escrowcourier.com/static-services/resources/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-[#E9FF15]">Privacy Policy</a></li>
-              <li><a href="https://app.escrowcourier.com/static-services/resources/terms" target="_blank" rel="noopener noreferrer" className="hover:text-[#E9FF15]">Terms &amp; Conditions</a></li>
+              <li><a href="https://app.escrowcourier.com/static-services/resources/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-[#E9FF15]">PRIVACY POLICY</a></li>
+              <li><a href="https://app.escrowcourier.com/static-services/resources/terms" target="_blank" rel="noopener noreferrer" className="hover:text-[#E9FF15]">TERMS &amp; CONDITIONS</a></li>
             </ul>
           </div>
 
