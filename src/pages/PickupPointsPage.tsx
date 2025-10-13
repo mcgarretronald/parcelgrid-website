@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Store, Truck, Package } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '../components/Footer';
@@ -8,6 +9,23 @@ import { useScrollToTop } from '../hooks/useScrollToTop';
 const PickupPointsPage: React.FC = () => {
   // Scroll to top when navigating to this page
   useScrollToTop();
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      const el = document.getElementById(id);
+      if (el) {
+        const header = document.querySelector('header');
+        const headerHeight = header ? header.getBoundingClientRect().height : 0;
+        const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
+        window.setTimeout(() => {
+          window.scrollTo({ top, behavior: 'smooth' });
+        }, 50);
+      }
+    }
+  }, [location]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -94,8 +112,8 @@ const PickupPointsPage: React.FC = () => {
 
       {/* Tutorial Video was moved into the 'How It Works' section */}
 
-      {/* How It Works */}
-      <section className="py-16 sm:py-20 bg-white relative overflow-hidden">
+  {/* How It Works */}
+  <section id="how-it-works" className="py-16 sm:py-20 bg-white relative overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-20 left-10 w-32 h-32 bg-[#00473E] rounded-full"></div>

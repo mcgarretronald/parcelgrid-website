@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useRef, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { FeaturesCarousel } from '../components/FeaturesCarousel';
 import Footer from '../components/Footer';
@@ -19,7 +19,7 @@ function MapWithControls() {
   };
 
   return (
-    <section className="min-h-screen bg-white flex items-center py-16 md:py-12">
+    <section id="pickup-points" className="min-h-screen bg-white flex items-center py-16 md:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex justify-center mb-8 md:mb-8">
           <div className="text-center w-full max-w-3xl">
@@ -51,7 +51,26 @@ function MapWithControls() {
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const storiesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to hash targets (e.g. /#pickup-points) with offset for the fixed header
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      const el = document.getElementById(id);
+      if (el) {
+        // header is fixed; compute its height to offset the scroll
+        const header = document.querySelector('header');
+        const headerHeight = header ? header.getBoundingClientRect().height : 0;
+        const top = el.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
+        // small timeout to ensure layout is ready
+        window.setTimeout(() => {
+          window.scrollTo({ top, behavior: 'smooth' });
+        }, 50);
+      }
+    }
+  }, [location]);
 
   const handleCardClick = (route: string) => {
     navigate(route);

@@ -33,7 +33,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
 
   // New items to be moved to sidebar
   const sidebarItems = [
-    { name: 'How to Use the App', href: '/pickup-points' },
+    { name: 'How to Use the App', href: '/pickup-points#how-it-works' },
     { name: 'Apply to Become a Pickup Agent', href: '/apply-pickup-agent' },
     { name: 'Apply to Become a Booking Agent', href: '/apply-booking-agent' },
     { name: 'Our Pickup Points List', href: '/#pickup-points' },
