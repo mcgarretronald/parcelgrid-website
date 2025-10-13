@@ -7,6 +7,7 @@ import InstantSettlementsPage from "../pages/InstantSettlementsPage";
 import SmartNotificationsPage from "../pages/SmartNotificationsPage";
 import FAQ from "../pages/FAQ";
 import AboutPage from "../pages/AboutPage";
+import ContactPage from "../pages/ContactPage";
 
 const router = createBrowserRouter([
   {
@@ -40,6 +41,18 @@ const router = createBrowserRouter([
       {
         path: "/about",
         element: <AboutPage />,
+      },
+      {
+        path: "/contact",
+        element: <ContactPage />,
+      },
+      {
+        path: "/apply-pickup-agent",
+        element: <Navigate to="/contact" replace />,
+      },
+      {
+        path: "/apply-booking-agent", 
+        element: <Navigate to="/contact" replace />,
       },
       {
         path: "*",

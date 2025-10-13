@@ -12,7 +12,10 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => {
+      const scrollY = window.scrollY;
+      setScrolled(scrollY > 40);
+    };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -20,11 +23,20 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
 
   // theme toggle removed
 
-  const navItems = [
+  // Original main navigation items
+  const mainNavItems = [
     { name: 'Home', href: '/' },
-    { name: 'Pickup Points', href: '/pickup-points' },
     { name: 'FAQ', href: '/faq' },
     { name: 'About', href: '/about' },
+    { name: 'Contact Us', href: '/contact' },
+  ];
+
+  // New items to be moved to sidebar
+  const sidebarItems = [
+    { name: 'How to Use the App', href: '/pickup-points' },
+    { name: 'Apply to Become a Pickup Agent', href: '/apply-pickup-agent' },
+    { name: 'Apply to Become a Booking Agent', href: '/apply-booking-agent' },
+    { name: 'Our Pickup Points List', href: '/#pickup-points' },
   ];
 
   return (
@@ -57,85 +69,94 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
         }
       `}</style>
       
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
         transparent && !scrolled
           ? 'bg-transparent shadow-none'
-          : scrolled
-          ? 'bg-[#00473E]/95 shadow-sm'
-          : 'bg-[#00473E]/95 shadow-sm'
+          : 'bg-[#00473E] shadow-lg'
       }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`flex items-center justify-between ${scrolled ? 'h-12' : 'h-20'}`}>
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className={`flex items-center justify-between w-full transition-all duration-500 ease-out ${
+          scrolled ? 'h-16' : 'h-20'
+        }`}>
           {/* Logo with text */}
-          <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-all duration-500 ease-out flex-shrink-0">
             <img
               src="/logo1.png"
               alt="ParcelGrid logo"
-              className={`transition-all duration-300 transform hover:scale-105 ${scrolled ? 'h-8' : 'h-12'} w-auto object-contain`}
-              style={{ background: 'transparent' }}
+              className={`object-contain transition-all duration-500 ease-out ${
+                scrolled ? 'h-8 w-8' : 'h-12 w-12'
+              }`}
             />
-            <div className="flex flex-col">
-              <div className="relative">
-                <span className={`font-bold text-[#E9FF15] transition-all duration-300 ${scrolled ? 'text-xl' : 'text-2xl'}`} style={{ fontFamily: 'Georgia, "Times New Roman", Times, serif' }}>
-                  ParcelGrid
-                </span>
-                <div className={`absolute bottom-0 left-0 w-full h-0.5 bg-[#E9FF15] transition-all duration-300`}></div>
-              </div>
-            </div>
-          </div>
+            <span 
+              className={`font-bold text-[#E9FF15] transition-all duration-500 ease-out ${
+                scrolled ? 'text-lg' : 'text-2xl'
+              }`} 
+              style={{ fontFamily: 'Georgia, "Times New Roman", Times, serif' }}
+            >
+              ParcelGrid
+            </span>
+          </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-9">
-            {navItems.map((item) => (
+          <nav className="hidden xl:flex items-center space-x-8 flex-1 justify-center">
+            {mainNavItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className="text-sm font-medium text-white/95 hover:text-white transition-colors duration-150"
+                className="text-sm font-medium text-white/90 hover:text-white hover:text-[#E9FF15] transition-colors duration-200 whitespace-nowrap"
               >
                 {item.name}
               </Link>
             ))}
+            
+            {/* Get the App Button - part of main nav */}
+            <Button
+              className="bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold px-6 py-2.5 rounded-full transition-all duration-200 hover:scale-105 ml-4"
+              onClick={() => {
+                window.open('https://play.google.com/store/apps/details?id=com.parcelgrid.logistics', '_blank')
+              }}
+            >
+              Get the App
+            </Button>
           </nav>
 
           {/* Right side buttons */}
-          <div className="flex items-center gap-4">
-            {/* Theme removed - no toggle */}
-
-            
-
-            {/* CTA Buttons */}
-            <div className="hidden md:flex items-center gap-2">
+          <div className="flex items-center gap-3 flex-shrink-0 ml-auto">
+            {/* Desktop Sidebar Toggle */}
+            <div className="hidden xl:block">
               <Button
-                className="bg-[#E9FF15] text-[#00473E] hover:bg-[#E9FF15]-semibold px-5 py-2 rounded-full"
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-white/10 hover:text-[#E9FF15] transition-all duration-200"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
-                Get the App
+                <Menu className="h-5 w-5" />
               </Button>
-            </div>
-
-            {/* Mobile Get the App CTA (visible on small screens only) */}
-            <div className="flex items-center lg:hidden">
+            </div>            {/* Mobile/Tablet menu and CTA */}
+            <div className="flex items-center gap-2 xl:hidden">
+              {/* Mobile CTA - visible on small to large screens */}
               <Button
-                className="bg-[#E9FF15] text-[#00473E] px-4 py-2 rounded-full mr-2"
+                className="bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold px-4 py-2 rounded-full text-sm md:px-6 md:py-2.5 transition-all duration-200"
                 onClick={() => {
-                  // Open app download in new tab
                   window.open('https://play.google.com/store/apps/details?id=com.parcelgrid.logistics', '_blank')
                 }}
               >
                 Get the App
               </Button>
+              
               {/* Mobile menu button */}
               <Button
                 variant="ghost"
                 size="icon"
-                className={`text-white/95 hover:bg-white/5 transition-all duration-300 hover:scale-110 ${
-                  isMenuOpen ? 'bg-[#E9FF15]/20 rotate-90' : 'hover:rotate-12'
+                className={`text-white hover:bg-white/10 transition-all duration-200 ${
+                  isMenuOpen ? 'bg-[#E9FF15]/20' : ''
                 }`}
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? (
-                  <X className="h-6 w-6 transition-transform duration-300 rotate-90" />
+                  <X className="h-6 w-6" />
                 ) : (
-                  <Menu className="h-6 w-6 transition-transform duration-300" />
+                  <Menu className="h-6 w-6" />
                 )}
               </Button>
             </div>
@@ -143,32 +164,128 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
         </div>
 
         {/* Mobile Navigation */}
-        <div className={`lg:hidden overflow-hidden transition-all duration-500 ease-in-out ${
-          isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        <div className={`xl:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+          isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
         }`}>
-          <div className="bg-gradient-to-b from-[#00473E] to-[#005d4f] border-t border-[#E9FF15]/30 mt-2">
-            <nav className="flex flex-col space-y-4 px-4 py-6 animate-slide-down">
-              {navItems.map((item, index) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="font-medium transition-all duration-300 text-white hover:text-[#E9FF15] hover:translate-x-2 hover:bg-white/5 px-4 py-2 rounded-lg transform"
-                  onClick={() => setIsMenuOpen(false)}
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                    animation: isMenuOpen ? 'slideInLeft 0.4s ease-out forwards' : 'none'
-                  }}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              <div className="flex flex-col gap-3 pt-4 px-4">
-                {/* Removed duplicate mobile CTA - now shown in header */}
+          <div className="bg-[#00473E] border-t border-[#E9FF15]/20">
+            <nav className="px-4 py-4">
+              <div className="space-y-1">
+                {/* All navigation items for mobile */}
+                {[...mainNavItems, ...sidebarItems].map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className="block px-4 py-3 text-sm font-medium text-white/90 hover:text-[#E9FF15] hover:bg-white/5 rounded-lg transition-all duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
               </div>
             </nav>
           </div>
         </div>
       </div>
+
+      {/* Desktop Sidebar */}
+      <div className={`hidden xl:block fixed top-0 right-0 h-full w-96 bg-gradient-to-b from-[#00473E] to-[#003832] shadow-2xl transform transition-transform duration-300 ease-in-out z-40 border-l border-[#E9FF15]/20 ${
+        isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+      }`}>
+        <div className="flex flex-col h-full">
+          {/* Sidebar Header */}
+          <div className="p-6 border-b border-[#E9FF15]/20 bg-[#00473E]/50 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <h3 className="text-xl font-bold text-[#E9FF15]" style={{ fontFamily: 'Georgia, "Times New Roman", Times, serif' }}>
+                  Quick Actions
+                </h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-white hover:bg-[#E9FF15]/10 hover:text-[#E9FF15] rounded-full transition-all duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Sidebar Navigation - simplified and non-scrolling */}
+          <nav className="flex-1 p-6 space-y-3">
+            {sidebarItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className="group flex items-center justify-between px-4 py-3 text-sm font-medium text-white/90 hover:text-white hover:bg-[#E9FF15]/10 rounded-lg transition-all duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span className="group-hover:text-[#E9FF15] transition-colors duration-200">
+                  {item.name}
+                </span>
+                <div className="text-white/40 group-hover:text-[#E9FF15] group-hover:translate-x-1 transition-all duration-200">
+                  →
+                </div>
+              </Link>
+            ))}
+          </nav>
+
+          {/* Sidebar Footer */}
+          <div className="p-6 bg-[#00473E]/50 backdrop-blur-sm">
+            <div className="space-y-4">
+              <div className="text-center">
+                <h4 className="text-lg font-bold text-[#E9FF15] mb-2">Download Our App</h4>
+                <p className="text-sm text-white/70 mb-4">Available on all platforms</p>
+              </div>
+              
+              <div className="space-y-3">
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.parcelgrid.logistics"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Download on Google Play"
+                  className="group w-full flex items-center justify-center gap-3 bg-gradient-to-r from-[#E9FF15] to-[#d4e614] text-[#00473E] hover:from-[#d4e614] hover:to-[#E9FF15] px-4 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#E9FF15]/20"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="h-5 w-5" viewBox="0 0 512 512">
+                    <path d="M99.617 8.057a50.191 50.191 0 00-38.815-6.713l230.932 230.933 74.846-74.846L99.617 8.057zM32.139 20.116c-6.441 8.563-10.148 19.077-10.148 30.199v411.358c0 11.123 3.708 21.636 10.148 30.199l235.877-235.877L32.139 20.116zM464.261 212.087l-67.266-37.637-81.544 81.544 81.548 81.548 67.273-37.64c16.117-9.03 25.738-25.442 25.738-43.908s-9.621-34.877-25.749-43.907zM291.733 279.711L60.815 510.629c3.786.891 7.639 1.371 11.492 1.371a50.275 50.275 0 0027.31-8.07l266.965-149.372-74.849-74.847z"></path>
+                  </svg>
+                  Google Play
+                </a>
+
+                <a
+                  href="https://apps.apple.com/app/parcelgrid/id000000000"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Download on the App Store"
+                  className="group w-full flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-[#E9FF15]/50 text-white hover:text-[#E9FF15] px-4 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <svg
+                    fill="currentColor"
+                    viewBox="-52.01 0 560.035 560.035"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                  >
+                    <path d="M380.844 297.529c.787 84.752 74.349 112.955 75.164 113.314-.622 1.988-11.754 40.191-38.756 79.652-23.343 34.117-47.568 68.107-85.731 68.811-37.499.691-49.557-22.236-92.429-22.236-42.859 0-56.256 21.533-91.753 22.928-36.837 1.395-64.889-36.891-88.424-70.883-48.093-69.53-84.846-196.475-35.496-282.165 24.516-42.554 68.328-69.501 115.882-70.192 36.173-.69 70.315 24.336 92.429 24.336 22.1 0 63.59-30.096 107.208-25.676 18.26.76 69.517 7.376 102.429 55.552-2.652 1.644-61.159 35.704-60.523 106.559M310.369 89.418C329.926 65.745 343.089 32.79 339.498 0 311.308 1.133 277.22 18.785 257 42.445c-18.121 20.952-33.991 54.487-29.709 86.628 31.421 2.431 63.52-15.967 83.078-39.655" />
+                  </svg>
+                  App Store
+                </a>
+              </div>
+
+              
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sidebar Overlay */}
+      {isMenuOpen && (
+        <div 
+          className="hidden xl:block fixed inset-0 bg-black/50 z-30 transition-opacity duration-300"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
     </header>
     </>
   );
