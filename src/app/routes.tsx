@@ -8,6 +8,8 @@ import SmartNotificationsPage from "../pages/SmartNotificationsPage";
 import FAQ from "../pages/FAQ";
 import AboutPage from "../pages/AboutPage";
 import ContactPage from "../pages/ContactPage";
+import CareersPage from "../pages/CareersPage";
+import HowToUseAppPage from "../pages/HowToUseAppPage";
 
 const router = createBrowserRouter([
   {
@@ -47,12 +49,20 @@ const router = createBrowserRouter([
         element: <ContactPage />,
       },
       {
-        path: "/apply-pickup-agent",
-        element: <Navigate to="/contact" replace />,
+        path: "/careers",
+        element: <CareersPage />,
       },
       {
-        path: "/apply-booking-agent", 
-        element: <Navigate to="/contact" replace />,
+        path: "/how-to-use-app",
+        element: <HowToUseAppPage />,
+      },
+      {
+        path: "/apply-pickup-agent",
+        element: <Navigate to="/careers#pickup" replace />,
+      },
+      {
+        path: "/apply-booking-agent",
+        element: <Navigate to="/careers#booking" replace />,
       },
       {
         path: "*",
