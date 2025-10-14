@@ -198,11 +198,6 @@ const HowToUseAppPage: React.FC = () => {
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   />
                 </div>
-                <div className="mt-4 text-center">
-                  <p className="text-gray-600 text-sm">
-                    💡 <strong>Tip:</strong> The video starts at the key demonstration point (0:29). Watch the complete walkthrough to master all ParcelGrid features.
-                  </p>
-                </div>
               </div>
             </div>
           </div>
