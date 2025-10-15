@@ -66,7 +66,7 @@ const LicenseVisual = () => (
 
 const WalletVisual = () => (
     <img
-      src="/withdrawal.jpeg"
+      src="/withdrawal.png"
       alt="Wallet"
       className="max-w-full max-h-[420px] sm:max-h-[270px] md:max-h-[460px] object-contain transition-transform duration-300 ease-out transform hover:scale-105"
     />
@@ -89,7 +89,7 @@ const VendorShopVisual = () => (
 )
 
 const NotificationsVisual = () => (
-  <img src="/Notification.jpeg" alt="Notifications" className="w-full rounded-2xl max-h-[560px] object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105" />
+  <img src="/Notification.png" alt="Notifications" className="w-full rounded-2xl max-h-[560px] object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105" />
 );
 
 const getVisualComponent = (visual: FeatureSlide['visual']) => {
