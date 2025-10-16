@@ -113,7 +113,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
             <Button
               className="bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold px-6 py-2.5 rounded-full transition-all duration-200 hover:scale-105 ml-4"
               onClick={() => {
-                window.open('https://play.google.com/store/apps/details?id=com.parcelgrid.logistics', '_blank')
+                window.open('https://play.google.com/store/apps/details?id=com.escrow.escrowApp', '_blank')
               }}
             >
               Get the App

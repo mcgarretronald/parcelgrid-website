@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
             <div className="hidden md:flex md:flex-col md:items-start mt-4">
               <div className="flex items-center gap-3">
                 <a
-                  href="https://play.google.com/store/apps/details?id=com.parcelgrid.logistics"
+                  href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Download on Google Play"

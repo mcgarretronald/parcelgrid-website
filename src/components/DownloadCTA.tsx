@@ -28,7 +28,7 @@ export default function DownloadCTA() {
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 justify-center">
             <a
-              href="https://play.google.com/store/apps/details?id=com.parcelgrid.logistics"
+              href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-[#E9FF15] text-[#00473E] px-5 py-3 sm:px-6 sm:py-4 rounded-xl hover:bg-[#d4e614] transition-colors shadow-sm w-full sm:w-auto justify-center"
