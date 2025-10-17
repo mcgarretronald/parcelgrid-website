@@ -138,7 +138,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
               <Button
                 className="bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold px-4 py-2 rounded-full text-sm md:px-6 md:py-2.5 transition-all duration-200"
                 onClick={() => {
-                  window.open('https://play.google.com/store/apps/details?id=com.parcelgrid.logistics', '_blank')
+                  window.open('https://play.google.com/store/apps/details?id=com.escrow.escrowApp', '_blank')
                 }}
               >
                 Get the App
@@ -240,7 +240,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
               
               <div className="space-y-3">
                 <a
-                  href="https://play.google.com/store/apps/details?id=com.parcelgrid.logistics"
+                  href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Download on Google Play"
