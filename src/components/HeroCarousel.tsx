@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button } from './ui/button';
 import './HeroCarousel.css';
 
 interface HeroSlide {
@@ -213,8 +212,8 @@ export const HeroCarousel: React.FC = () => {
 
             {/* CTA Button */}
             <div className="flex justify-center animate-fade-in">
-              <Button
-                size="lg"
+              <a
+                href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp"
                 className="bg-[#E9FF15] hover:bg-[#E9FF15]/90 text-[#00473E] font-semibold px-8 py-4 text-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 rounded-xl border-0"
                 style={{
                   fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
@@ -222,9 +221,27 @@ export const HeroCarousel: React.FC = () => {
                 }}
               >
                 Download and Deliver
-              </Button>
+              </a>
             </div>
           </div>
+        </div>
+
+        {/* Scroll Down Animation - Mobile Only */}
+        <div className="md:hidden absolute bottom-10 left-0 right-0 flex flex-col items-center animate-bounce-slow">
+          <span className="text-[#E9FF15] text-sm mb-2 font-medium">Scroll Down</span>
+          <svg 
+            className="w-6 h-6 text-[#E9FF15]" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M19 14l-7 7m0 0l-7-7m7 7V3"
+            />
+          </svg>
         </div>
       </div>
 

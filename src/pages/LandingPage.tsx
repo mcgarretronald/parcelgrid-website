@@ -12,6 +12,7 @@ function MapWithControls() {
   const { points } = useAgentData('https://app.escrowcourier.com/user-services/api/agents');
   const mapControlsRef = React.useRef<MapControls | null>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSelectPoint = (point: any) => {
     if (mapControlsRef.current) {
       mapControlsRef.current.panToPoint(point);
@@ -96,7 +97,7 @@ const LandingPage: React.FC = () => {
     <div className="min-h-screen w-full">
       <HeroCarousel />
 
-      <section className="min-h-screen bg-white flex items-center pt-20 md:pt-0">
+      <section className="min-h-screen bg-white flex items-center pt-5 md:pt-0">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-4 items-center py-8 md:py-0">
             <div className="flex justify-center md:justify-start">
@@ -110,7 +111,7 @@ const LandingPage: React.FC = () => {
                   <p className="text-lg sm:text-xl md:text-2xl text-gray-700">Easy-to-use app with a clean, straightforward design.</p>
                 </div>
                 <div className="mt-6 flex justify-center md:justify-start">
-                  <a href="/download" className="inline-block px-6 py-3 bg-[#e9ff15] text-[#00473E] rounded-lg  transition-colors duration-200 font-semibold">Download App</a>
+                  <a href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp" className="inline-block px-6 py-3 bg-[#e9ff15] text-[#00473E] rounded-lg  transition-colors duration-200 font-semibold">Download App</a>
                 </div>
               </div>
             </div>

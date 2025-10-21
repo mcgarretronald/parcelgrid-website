@@ -246,7 +246,7 @@ const AboutPage: React.FC = () => {
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <a 
-                  href="https://play.google.com/store/apps/details?id=com.parcelgrid.logistics" 
+                  href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="inline-flex items-center bg-[#E9FF15] text-[#00473E] px-8 py-4 rounded-xl font-bold text-lg hover:bg-[#d4e614] transition-all transform hover:scale-105 shadow-lg"

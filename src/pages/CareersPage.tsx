@@ -288,10 +288,6 @@ const CareersPage: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700">Email Address</label>
                       <input type="email" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00473E] focus:border-transparent transition-colors" placeholder="your.email@example.com" name="email" />
                     </div>
-                    <div className="space-y-2">
-                      <label className="block text-sm font-medium text-gray-700">Experience & Availability</label>
-                      <textarea className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00473E] focus:border-transparent transition-colors h-24 resize-none" placeholder="Tell us about your experience and availability..." name="notes" />
-                    </div>
                   </div>
 
                   {/* Documents Section */}
@@ -307,13 +303,8 @@ const CareersPage: React.FC = () => {
                         </div>
                       </div>
                       
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Lease Agreement *</label>
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#00473E] transition-colors">
-                          <input type="file" name="ownershipProof" accept=".pdf,image/*" className="w-full" />
-                          <p className="text-xs text-gray-500 mt-1">PDF or Image files</p>
-                        </div>
-                      </div>
+                  
+                      
                     </div>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

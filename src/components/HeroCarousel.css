@@ -46,3 +46,17 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* Scroll down animation */
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s infinite ease-in-out;
+}

@@ -118,7 +118,7 @@ const Footer: React.FC = () => {
           <div className="order-4 md:col-span-3 flex flex-col items-center gap-4 md:hidden px-4">
             <div className="flex flex-col xs:flex-row items-center gap-3 w-full max-w-md">
               <a
-                href="https://play.google.com/store/apps/details?id=com.parcelgrid.logistics"
+                href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Download on Google Play"
