@@ -6,10 +6,18 @@ import {
   X,
 } from "lucide-react";
 
+interface SidebarItem {
+  name: string;
+  href: string;
+  hasDropdown?: boolean;
+  subItems?: { name: string; href: string }[];
+}
+
 const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) => {
   // theme removed - site uses a single appearance
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [opportunitiesOpen, setOpportunitiesOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
@@ -32,10 +40,17 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
   ];
 
   // New items to be moved to sidebar
-  const sidebarItems = [
+  const sidebarItems: SidebarItem[] = [
     { name: 'How to Use the App', href: '/how-to-use-app' },
-    { name: 'Apply to Become a Pickup Agent', href: '/careers#pickup' },
-    { name: 'Apply to Become a Booking Agent', href: '/careers#booking' },
+    { 
+      name: 'Opportunities', 
+      href: '/opportunities',
+      hasDropdown: true,
+      subItems: [
+        { name: 'Apply to Become a Pickup Agent', href: '/pickup-agent' },
+        { name: 'Apply to Become a Booking Agent', href: '/booking-agent' },
+      ]
+    },
     { name: 'Our Pickup Points List', href: '/#pickup-points' },
   ];
 
@@ -170,8 +185,8 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
           <div className="bg-[#00473E] border-t border-[#E9FF15]/20">
             <nav className="px-4 py-4">
               <div className="space-y-1">
-                {/* All navigation items for mobile */}
-                {[...mainNavItems, ...sidebarItems].map((item) => (
+                {/* Main navigation items for mobile */}
+                {mainNavItems.map((item) => (
                   <Link
                     key={item.name}
                     to={item.href}
@@ -180,6 +195,52 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
                   >
                     {item.name}
                   </Link>
+                ))}
+                
+                {/* Sidebar items for mobile with dropdown support */}
+                {sidebarItems.map((item) => (
+                  <div key={item.name}>
+                    {item.hasDropdown ? (
+                      <div>
+                        <button
+                          onClick={() => setOpportunitiesOpen(!opportunitiesOpen)}
+                          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white/90 hover:text-[#E9FF15] hover:bg-white/5 rounded-lg transition-all duration-200"
+                        >
+                          <span>{item.name}</span>
+                          <svg
+                            className={`w-4 h-4 transition-transform duration-200 ${opportunitiesOpen ? 'rotate-180' : ''}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        {opportunitiesOpen && (
+                          <div className="ml-4 mt-1 space-y-1">
+                            {item.subItems?.map((subItem) => (
+                              <Link
+                                key={subItem.name}
+                                to={subItem.href}
+                                className="block px-4 py-2 text-sm text-white/80 hover:text-[#E9FF15] hover:bg-white/5 rounded-lg transition-all duration-200"
+                                onClick={() => setIsMenuOpen(false)}
+                              >
+                                {subItem.name}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <Link
+                        to={item.href}
+                        className="block px-4 py-3 text-sm font-medium text-white/90 hover:text-[#E9FF15] hover:bg-white/5 rounded-lg transition-all duration-200"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        {item.name}
+                      </Link>
+                    )}
+                  </div>
                 ))}
               </div>
             </nav>
@@ -214,19 +275,60 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
           {/* Sidebar Navigation - simplified and non-scrolling */}
           <nav className="flex-1 p-6 space-y-3">
             {sidebarItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="group flex items-center justify-between px-4 py-3 text-sm font-medium text-white/90 hover:text-white hover:bg-[#E9FF15]/10 rounded-lg transition-all duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <span className="group-hover:text-[#E9FF15] transition-colors duration-200">
-                  {item.name}
-                </span>
-                <div className="text-white/40 group-hover:text-[#E9FF15] group-hover:translate-x-1 transition-all duration-200">
-                  →
-                </div>
-              </Link>
+              <div key={item.name}>
+                {item.hasDropdown ? (
+                  <div>
+                    <button
+                      onClick={() => setOpportunitiesOpen(!opportunitiesOpen)}
+                      className="w-full group flex items-center justify-between px-4 py-3 text-sm font-medium text-white/90 hover:text-white hover:bg-[#E9FF15]/10 rounded-lg transition-all duration-200"
+                    >
+                      <span className="group-hover:text-[#E9FF15] transition-colors duration-200">
+                        {item.name}
+                      </span>
+                      <svg
+                        className={`w-4 h-4 text-white/40 group-hover:text-[#E9FF15] transition-all duration-200 ${opportunitiesOpen ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {opportunitiesOpen && (
+                      <div className="ml-4 mt-2 space-y-2 animate-slide-down">
+                        {item.subItems?.map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.href}
+                            className="group flex items-center justify-between px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-[#E9FF15]/10 rounded-lg transition-all duration-200"
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <span className="group-hover:text-[#E9FF15] transition-colors duration-200">
+                              {subItem.name}
+                            </span>
+                            <div className="text-white/40 group-hover:text-[#E9FF15] group-hover:translate-x-1 transition-all duration-200">
+                              →
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    to={item.href}
+                    className="group flex items-center justify-between px-4 py-3 text-sm font-medium text-white/90 hover:text-white hover:bg-[#E9FF15]/10 rounded-lg transition-all duration-200"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <span className="group-hover:text-[#E9FF15] transition-colors duration-200">
+                      {item.name}
+                    </span>
+                    <div className="text-white/40 group-hover:text-[#E9FF15] group-hover:translate-x-1 transition-all duration-200">
+                      →
+                    </div>
+                  </Link>
+                )}
+              </div>
             ))}
           </nav>
 

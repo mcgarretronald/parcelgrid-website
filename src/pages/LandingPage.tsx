@@ -20,16 +20,16 @@ function MapWithControls() {
   };
 
   return (
-    <section id="pickup-points" className="min-h-screen bg-white flex items-center py-16 md:py-12">
+    <section id="pickup-points" className="min-h-screen bg-white flex items-center py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex justify-center mb-8 md:mb-8">
+        <div className="flex justify-center mb-6 md:mb-8">
           <div className="text-center w-full max-w-3xl">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Pickup Points Across Kenya</h2>
-            <p className="text-lg text-gray-600 mb-6">Explore our pickup network. Click a marker to see details and contact info.</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-3 md:mb-4">Pickup Points Across Kenya</h2>
+            <p className="text-base md:text-lg text-gray-600 mb-4 md:mb-6">Explore our pickup network. Click a marker to see details and contact info.</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           <div className="lg:col-span-2">
             <div className="w-full h-[70vh] rounded-2xl overflow-hidden">
               <GoogleMap points={points} onMapReady={(controls) => { mapControlsRef.current = controls }} />
@@ -97,29 +97,29 @@ const LandingPage: React.FC = () => {
     <div className="min-h-screen w-full">
       <HeroCarousel />
 
-      <section className="min-h-screen bg-white flex items-center pt-5 md:pt-0">
+      <section className="min-h-screen bg-white flex items-center py-4 md:py-8">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-4 items-center py-8 md:py-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4 items-center py-2 md:py-0">
             <div className="flex justify-center md:justify-start">
               <div className="w-full h-full">
-                <div className="space-y-6 text-center md:text-left">
+                <div className="space-y-3 md:space-y-6 text-center md:text-left">
                   <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00473E]">BUILT FOR ONLINE VENDORS LIKE YOU.</h3>
-                  <p className="text-lg sm:text-xl md:text-2xl text-gray-700">Expand beyond Nairobi with Kenya’s broadest delivery infrastructure.</p>
-                  <p className="text-lg sm:text-xl md:text-2xl text-gray-700">Deliver to 413+ towns and growing, from Nairobi to remote counties.</p>
-                  <p className="text-lg sm:text-xl md:text-2xl text-gray-700">Cash on Delivery (COD) with instant wallet payouts for vendors.</p>
-                  <p className="text-lg sm:text-xl md:text-2xl text-gray-700">Prepaid & COD options that build customer trust and drive repeat sales.</p>
-                  <p className="text-lg sm:text-xl md:text-2xl text-gray-700">Easy-to-use app with a clean, straightforward design.</p>
+                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Expand beyond Nairobi with Kenya's broadest delivery infrastructure.</p>
+                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Deliver to 413+ towns and growing, from Nairobi to remote counties.</p>
+                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Cash on Delivery (COD) with instant wallet payouts for vendors.</p>
+                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Prepaid & COD options that build customer trust and drive repeat sales.</p>
+                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Easy-to-use app with a clean, straightforward design.</p>
                 </div>
-                <div className="mt-6 flex justify-center md:justify-start">
+                <div className="mt-3 md:mt-6 flex justify-center md:justify-start">
                   <a href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp" className="inline-block px-6 py-3 bg-[#e9ff15] text-[#00473E] rounded-lg  transition-colors duration-200 font-semibold">Download App</a>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-center md:col-start-2 mt-8 md:mt-0">
+            <div className="flex items-center justify-center md:col-start-2 mt-3 md:mt-0">
               <div className="w-full max-w-sm md:w-80 lg:w-[920px] xl:w-[1200px] md:flex md:items-center md:justify-end md:pr-8">
                 <div className="overflow-visible rounded-xl shadow-none group">
-                  <img src="/phone.png" alt="Phone screenshot" className="w-full max-h-[60vh] md:max-h-[80vh] h-auto object-contain transform transition-transform duration-500 ease-out group-hover:scale-110 md:origin-right" style={{ willChange: 'transform' }} />
+                  <img src="/phone.png" alt="Phone screenshot" className="w-full max-h-[50vh] md:max-h-[80vh] h-auto object-contain transform transition-transform duration-500 ease-out group-hover:scale-110 md:origin-right" style={{ willChange: 'transform' }} />
                 </div>
               </div>
             </div>
@@ -127,15 +127,15 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-            {/* About Video Section */}
-      <section className="py-12 bg-white">
+      {/* About Video Section */}
+      <section className="py-6 md:py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Who We Are & What We Do</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">Watch this short video to learn more about ParcelGrid and how we help online sellers scale across Kenya.</p>
+          <div className="text-center mb-3 md:mb-6">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1.5 md:mb-2">Who We Are & What We Do</h2>
+            <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">Watch this short video to learn more about ParcelGrid and how we help online sellers scale across Kenya.</p>
           </div>
 
-          <div className="w-full mt-6 flex justify-center">
+          <div className="w-full mt-3 md:mt-6 flex justify-center">
             <div className="w-full max-w-4xl aspect-video rounded-lg overflow-hidden shadow-lg">
               {/* Google Drive preview embed - use the file id in the preview URL */}
               <iframe
@@ -155,25 +155,25 @@ const LandingPage: React.FC = () => {
         <FeaturesCarousel />
       </section>
 
-      <section className="bg-[#00473E] py-16 md:py-20">
+      <section className="bg-[#00473E] py-12 md:py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="text-center mb-12 md:mb-16">
-            <h3 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">Core Features</h3>
-            <p className="text-xl text-gray-200 max-w-3xl mx-auto">Key capabilities built for online vendors. Tap any card to learn more.</p>
+          <div className="text-center mb-8 md:mb-12 lg:mb-16">
+            <h3 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 md:mb-6">Core Features</h3>
+            <p className="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto">Key capabilities built for online vendors. Tap any card to learn more.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
             {/* Pickup Points Card */}
             <div className="w-full max-w-sm mx-auto cursor-pointer group">
               {/* Mobile Design - Simple Card Layout */}
-              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-6">
-                <div className="text-center mb-4">
-                  <MapPin className="w-16 h-16 text-[#00473E] mx-auto mb-3" />
-                  <h3 className="text-lg font-bold text-[#00473E]">Drop-Off & Pickup Points</h3>
+              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-4">
+                <div className="text-center mb-3">
+                  <MapPin className="w-12 h-12 text-[#00473E] mx-auto mb-2" />
+                  <h3 className="text-base font-bold text-[#00473E]">Drop-Off & Pickup Points</h3>
                 </div>
                 <button 
                   onClick={() => navigate('/pickup-points')}
-                  className="w-full bg-white text-[#00473E] py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  className="w-full bg-white text-[#00473E] py-2.5 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Learn More
                 </button>
@@ -205,16 +205,16 @@ const LandingPage: React.FC = () => {
             {/* Prepaid & COD Card */}
             <div className="w-full max-w-sm mx-auto cursor-pointer group">
               {/* Mobile Design - Simple Card Layout */}
-              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-6">
-                <div className="text-center mb-4">
-                  <div className="w-16 h-16 flex items-center justify-center mx-auto mb-3">
-                    <span className="text-4xl font-bold text-[#00473E]">KES</span>
+              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-4">
+                <div className="text-center mb-3">
+                  <div className="w-12 h-12 flex items-center justify-center mx-auto mb-2">
+                    <span className="text-3xl font-bold text-[#00473E]">KES</span>
                   </div>
-                  <h3 className="text-lg font-bold text-[#00473E]">Prepaid & COD Deliveries</h3>
+                  <h3 className="text-base font-bold text-[#00473E]">Prepaid & COD Deliveries</h3>
                 </div>
                 <button 
                   onClick={() => navigate('/prepaid-cod')}
-                  className="w-full bg-white text-[#00473E] py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  className="w-full bg-white text-[#00473E] py-2.5 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Learn More
                 </button>
@@ -248,14 +248,14 @@ const LandingPage: React.FC = () => {
             {/* Instant Settlements Card */}
             <div className="w-full max-w-sm mx-auto cursor-pointer group">
               {/* Mobile Design - Simple Card Layout */}
-              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-6">
-                <div className="text-center mb-4">
-                  <Wallet className="w-16 h-16 text-[#00473E] mx-auto mb-3" />
-                  <h3 className="text-lg font-bold text-[#00473E]">Instant Settlements</h3>
+              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-4">
+                <div className="text-center mb-3">
+                  <Wallet className="w-12 h-12 text-[#00473E] mx-auto mb-2" />
+                  <h3 className="text-base font-bold text-[#00473E]">Instant Settlements</h3>
                 </div>
                 <button 
                   onClick={() => navigate('/instant-settlements')}
-                  className="w-full bg-white text-[#00473E] py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  className="w-full bg-white text-[#00473E] py-2.5 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Learn More
                 </button>
@@ -287,14 +287,14 @@ const LandingPage: React.FC = () => {
             {/* Smart Notifications Card */}
             <div className="w-full max-w-sm mx-auto cursor-pointer group">
               {/* Mobile Design - Simple Card Layout */}
-              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-6">
-                <div className="text-center mb-4">
-                  <Bell className="w-16 h-16 text-[#00473E] mx-auto mb-3" />
-                  <h3 className="text-lg font-bold text-[#00473E]">Smart Notifications</h3>
+              <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-4">
+                <div className="text-center mb-3">
+                  <Bell className="w-12 h-12 text-[#00473E] mx-auto mb-2" />
+                  <h3 className="text-base font-bold text-[#00473E]">Smart Notifications</h3>
                 </div>
                 <button 
                   onClick={() => navigate('/notifications')}
-                  className="w-full bg-white text-[#00473E] py-3 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  className="w-full bg-white text-[#00473E] py-2.5 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
                 >
                   Learn More
                 </button>
@@ -329,11 +329,11 @@ const LandingPage: React.FC = () => {
       <MapWithControls />
 
       {/* Real Stories Section */}
-      <section className="min-h-screen bg-gray-50 flex items-center py-16 md:py-20 overflow-hidden">
+      <section className="min-h-screen bg-gray-50 flex items-center py-12 md:py-16 lg:py-20 overflow-hidden">
         <div className="w-full">
-          <div className="text-center mb-12 md:mb-16 px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4">What Our Online Sellers Say</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Real stories from businesses that have transformed their delivery operations with ParcelGrid.</p>
+          <div className="text-center mb-8 md:mb-12 lg:mb-16 px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-3 md:mb-4">What Our Online Sellers Say</h2>
+            <p className="text-base md:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">Real stories from businesses that have transformed their delivery operations with ParcelGrid.</p>
           </div>
 
           {/* Custom CSS for scrollable carousel */}
@@ -406,16 +406,16 @@ const LandingPage: React.FC = () => {
             {/* Scrollable Cards Container */}
             <div 
               ref={storiesContainerRef}
-              className="stories-scroll flex gap-4 md:gap-6 px-4 md:px-16 overflow-x-auto pb-4">
+              className="stories-scroll flex gap-3 md:gap-6 px-4 md:px-16 overflow-x-auto pb-4">
                 {/* Story 1 */}
                 <div className="story-card bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0">
-                  <div className="flex items-center mb-4">
+                  <div className="flex items-center mb-3 md:mb-4">
                     <div>
                       <h3 className="text-base md:text-lg font-semibold text-gray-900">Sarah Kimani</h3>
                       <p className="text-sm md:text-base text-gray-600">Fashion & Accessories</p>
                     </div>
                   </div>
-                  <p className="text-sm md:text-base text-gray-700 italic mb-4">"Before ParcelGrid, I could only sell to customers in Nairobi. Now I reach over 400+ towns across Kenya. My monthly sales have tripled, and the instant COD settlements mean I never worry about cash flow anymore."</p>
+                  <p className="text-sm md:text-base text-gray-700 italic mb-3 md:mb-4">"Before ParcelGrid, I could only sell to customers in Nairobi. Now I reach over 400+ towns across Kenya. My monthly sales have tripled, and the instant COD settlements mean I never worry about cash flow anymore."</p>
                   <div className="flex items-center">
                     <span className="text-sm md:text-base text-gray-600 ml-2">Nairobi to Nationwide</span>
                   </div>
@@ -423,13 +423,13 @@ const LandingPage: React.FC = () => {
 
                 {/* Story 2 */}
                 <div className="story-card bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0">
-                  <div className="flex items-center mb-4">
+                  <div className="flex items-center mb-3 md:mb-4">
                     <div>
                       <h3 className="text-base md:text-lg font-semibold text-gray-900">James Mwangi</h3>
                       <p className="text-sm md:text-base text-gray-600">Electronics & Gadgets</p>
                     </div>
                   </div>
-                  <p className="text-sm md:text-base text-gray-700 italic mb-4">"The pickup points are everywhere! My customers love collecting their orders at convenient locations near them. The app is so easy to use, and I get paid instantly when customers collect their COD orders."</p>
+                  <p className="text-sm md:text-base text-gray-700 italic mb-3 md:mb-4">"The pickup points are everywhere! My customers love collecting their orders at convenient locations near them. The app is so easy to use, and I get paid instantly when customers collect their COD orders."</p>
                   <div className="flex items-center">
                     <span className="text-sm md:text-base text-gray-600 ml-2">Electronics Vendor</span>
                   </div>
@@ -437,13 +437,13 @@ const LandingPage: React.FC = () => {
 
                 {/* Story 3 */}
                 <div className="story-card bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0">
-                  <div className="flex items-center mb-4">
+                  <div className="flex items-center mb-3 md:mb-4">
                     <div>
                       <h3 className="text-base md:text-lg font-semibold text-gray-900">Grace Wanjiku</h3>
                       <p className="text-sm md:text-base text-gray-600">Beauty & Cosmetics</p>
                     </div>
                   </div>
-                  <p className="text-sm md:text-base text-gray-700 italic mb-4">"ParcelGrid changed my business completely. I went from selling only to friends and family to having customers in Mombasa, Kisumu, Eldoret, and so many other towns. The growth has been incredible!"</p>
+                  <p className="text-sm md:text-base text-gray-700 italic mb-3 md:mb-4">"ParcelGrid changed my business completely. I went from selling only to friends and family to having customers in Mombasa, Kisumu, Eldoret, and so many other towns. The growth has been incredible!"</p>
                   <div className="flex items-center">
                     <span className="text-sm md:text-base text-gray-600 ml-2">Beauty Products</span>
                   </div>
