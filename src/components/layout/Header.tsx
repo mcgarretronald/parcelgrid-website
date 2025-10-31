@@ -5,6 +5,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { openStoreForPlatform, APP_STORE_URL } from '../../lib/storeLinks';
 
 interface SidebarItem {
   name: string;
@@ -30,6 +31,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
   }, []);
 
   // theme toggle removed
+
 
   // Original main navigation items
   const mainNavItems = [
@@ -127,9 +129,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
             {/* Get the App Button - part of main nav */}
             <Button
               className="bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold px-6 py-2.5 rounded-full transition-all duration-200 hover:scale-105 ml-4"
-              onClick={() => {
-                window.open('https://play.google.com/store/apps/details?id=com.escrow.escrowApp', '_blank')
-              }}
+              onClick={() => openStoreForPlatform()}
             >
               Get the App
             </Button>
@@ -152,9 +152,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
               {/* Mobile CTA - visible on small to large screens */}
               <Button
                 className="bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold px-4 py-2 rounded-full text-sm md:px-6 md:py-2.5 transition-all duration-200"
-                onClick={() => {
-                  window.open('https://play.google.com/store/apps/details?id=com.escrow.escrowApp', '_blank')
-                }}
+                onClick={() => openStoreForPlatform()}
               >
                 Get the App
               </Button>
@@ -356,7 +354,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
                 </a>
 
                 <a
-                  href="https://apps.apple.com/app/parcelgrid/id000000000"
+                  href={APP_STORE_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Download on the App Store"

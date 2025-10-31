@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
+import { openStoreForPlatform } from '../lib/storeLinks';
 
 const Footer: React.FC = () => {
   return (
@@ -20,11 +21,10 @@ const Footer: React.FC = () => {
             {/* Store buttons on desktop: hidden on small, visible md+ beneath social icons */}
             <div className="hidden md:flex md:flex-col md:items-start mt-4">
               <div className="flex items-center gap-3">
-                <a
-                  href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
                   aria-label="Download on Google Play"
+                  onClick={() => openStoreForPlatform()}
                   className="inline-flex items-center justify-center border-2 border-[#00473E] rounded-full bg-[#00473E] px-6 py-2.5 text-center text-white outline-0 transition-all duration-200 ease-out hover:bg-transparent hover:text-[#E9FF15] hover:border-[#E9FF15] no-underline"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="h-6 w-6" viewBox="0 0 512 512">
@@ -34,13 +34,12 @@ const Footer: React.FC = () => {
                     <div className="mb-1 text-xs leading-4">GET IT ON</div>
                     <div className="font-semibold">Google Play</div>
                   </div>
-                </a>
+                </button>
 
-                <a
-                  href="https://apps.apple.com/ke/app/parcelgrid-deliver-beyond-nrbi/id6749815954"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
                   aria-label="Download on the App Store"
+                  onClick={() => openStoreForPlatform()}
                   className="inline-flex items-center justify-center border-2 border-[#00473E] rounded-full bg-[#00473E] px-6 py-2.5 text-center text-white outline-0 transition-all duration-200 ease-out hover:bg-transparent hover:text-[#E9FF15] hover:border-[#E9FF15] no-underline"
                 >
                   <svg
@@ -65,7 +64,7 @@ const Footer: React.FC = () => {
                     <div className="mb-1 text-xs leading-4">Download on the</div>
                     <div className="font-semibold">App Store</div>
                   </div>
-                </a>
+                </button>
               </div>
             </div>
           </div>
@@ -117,11 +116,10 @@ const Footer: React.FC = () => {
           {/* Logo (order-4 on mobile - appears last, order-1 on desktop) */}
           <div className="order-4 md:col-span-3 flex flex-col items-center gap-4 md:hidden px-4">
             <div className="flex flex-col xs:flex-row items-center gap-3 w-full max-w-md">
-              <a
-                href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
                 aria-label="Download on Google Play"
+                onClick={() => openStoreForPlatform()}
                 className="inline-flex items-center justify-center border-2 border-[#00473E] rounded-full bg-[#00473E] px-4 xs:px-6 py-2 xs:py-2.5 text-center text-white outline-0 transition-all duration-200 ease-out hover:bg-transparent hover:text-[#E9FF15] hover:border-[#E9FF15] no-underline w-full xs:w-auto"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="h-5 w-5 xs:h-6 xs:w-6 flex-shrink-0" viewBox="0 0 512 512">
@@ -131,13 +129,12 @@ const Footer: React.FC = () => {
                   <div className="mb-1 text-xs leading-3 xs:leading-4">GET IT ON</div>
                   <div className="font-semibold text-sm xs:text-base">Google Play</div>
                 </div>
-              </a>
+              </button>
 
-              <a
-                href="https://apps.apple.com/app/parcelgrid/id000000000"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
                 aria-label="Download on the App Store"
+                onClick={() => openStoreForPlatform()}
                 className="inline-flex items-center justify-center border-2 border-[#00473E] rounded-full bg-[#00473E] px-4 xs:px-6 py-2 xs:py-2.5 text-center text-white outline-0 transition-all duration-200 ease-out hover:bg-transparent hover:text-[#E9FF15] hover:border-[#E9FF15] no-underline w-full xs:w-auto"
               >
                 <svg
@@ -162,7 +159,7 @@ const Footer: React.FC = () => {
                   <div className="mb-1 text-xs leading-3 xs:leading-4">Download on the</div>
                   <div className="font-semibold text-sm xs:text-base">App Store</div>
                 </div>
-              </a>
+              </button>
             </div>
 
           </div>
