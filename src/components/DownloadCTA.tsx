@@ -39,7 +39,7 @@ export default function DownloadCTA() {
             </a>
 
             <a
-              href="https://apps.apple.com/app/parcelgrid/id000000000"
+              href="https://apps.apple.com/ke/app/parcelgrid-deliver-beyond-nrbi/id6749815954"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-[#E9FF15] text-[#00473E] px-5 py-3 sm:px-6 sm:py-4 rounded-xl hover:bg-[#d4e614] transition-colors shadow-sm w-full sm:w-auto justify-center"
