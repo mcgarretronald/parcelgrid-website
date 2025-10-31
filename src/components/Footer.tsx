@@ -37,7 +37,7 @@ const Footer: React.FC = () => {
                 </a>
 
                 <a
-                  href="https://apps.apple.com/app/parcelgrid/id000000000"
+                  href="https://apps.apple.com/ke/app/parcelgrid-deliver-beyond-nrbi/id6749815954"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Download on the App Store"
