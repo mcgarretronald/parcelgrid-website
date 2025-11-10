@@ -11,7 +11,7 @@ interface FeatureSlide {
 const slides: FeatureSlide[] = [
   {
     id: 1,
-    title: "413+ Pickup Points across Kenya and expanding weekly",
+    title: "Pickup Points across Kenya and expanding weekly",
     description: "Our network spans the entire country with new locations added every week",
     visual: 'kenya-map'
   },

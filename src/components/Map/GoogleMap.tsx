@@ -2,30 +2,28 @@ import { useEffect, useRef, useState } from 'react'
 import type { PickupPoint, GoogleMapProps } from '../../lib/types'
 
 // Custom hook to fetch and normalize agent data
-export function useAgentData(apiUrl?: string) {
+export function useAgentData() {
   const [points, setPoints] = useState<PickupPoint[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     let mounted = true
-    const token = (import.meta.env as any).VITE_AGENTS_API_KEY || undefined
 
     const fetchPoints = async () => {
-      if (!apiUrl) {
-        setPoints([])
-        return
-      }
+      // Use backend proxy instead of direct API call
+      const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+      const endpoint = `${backendUrl}/api/agents`;
 
       setLoading(true)
       try {
-        const headers: Record<string, string> = {}
-        if (token) headers.Authorization = `Bearer ${token}`
-        const res = await fetch(apiUrl, { headers })
+        const res = await fetch(endpoint, {
+          headers: { 'Content-Type': 'application/json' }
+        })
         
         // Check if response is actually JSON
         const contentType = res.headers.get('content-type')
         if (!res.ok || !contentType?.includes('application/json')) {
-          console.warn(`API endpoint ${apiUrl} returned non-JSON response:`, res.status, res.statusText)
+          console.warn(`API endpoint returned non-JSON response:`, res.status, res.statusText)
           if (mounted) {
             setPoints([])
             setLoading(false)
@@ -53,6 +51,22 @@ export function useAgentData(apiUrl?: string) {
         }
 
         const normalized: PickupPoint[] = arr
+          .filter((item: any) => {
+            // Filter out inactive agents - only show active ones
+            const status = item.status ?? item.accountStatus ?? item.active ?? item.isActive
+            
+            // Debug logging to see actual status values
+            console.log('Agent:', item.name ?? item.businessName, 'Status:', status, 'Full item:', item)
+            
+            if (typeof status === 'string') {
+              return status.toLowerCase() === 'active'
+            }
+            if (typeof status === 'boolean') {
+              return status === true
+            }
+            // If no status field, include the agent (backward compatibility)
+            return true
+          })
           .map((item: any, idx: number) => {
             const id = item.id ?? item._id ?? item.agentId ?? idx
             const name =
@@ -145,7 +159,7 @@ export function useAgentData(apiUrl?: string) {
     return () => {
       mounted = false
     }
-  }, [apiUrl])
+  }, []) // Remove apiUrl dependency since we use backend now
 
   return { points, loading }
 }
@@ -198,12 +212,11 @@ export interface MapControls {
 
 export default function GoogleMap({
   apiKey,
-  apiUrl,
   points: propPoints,
   onMapReady,
 }: GoogleMapProps & { points?: PickupPoint[]; onMapReady?: (controls: MapControls) => void }) {
   const mapRef = useRef<HTMLDivElement | null>(null)
-  const { points: fetchedPoints } = useAgentData(apiUrl)
+  const { points: fetchedPoints } = useAgentData()
   const points = propPoints ?? fetchedPoints
   const markersRef = useRef<any[]>([])
   const mapInstanceRef = useRef<any>(null)

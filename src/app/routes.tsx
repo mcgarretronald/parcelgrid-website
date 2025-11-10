@@ -12,6 +12,7 @@ import OpportunitiesPage from "../pages/OpportunitiesPage";
 import PickupAgentPage from "../pages/PickupAgentPage";
 import BookingAgentPage from "../pages/BookingAgentPage";
 import HowToUseAppPage from "../pages/HowToUseAppPage";
+import BookingPage from "../pages/BookingPage";
 
 const router = createBrowserRouter([
   {
@@ -65,6 +66,10 @@ const router = createBrowserRouter([
       {
         path: "/how-to-use-app",
         element: <HowToUseAppPage />,
+      },
+      {
+        path: "/book-parcel",
+        element: <BookingPage />,
       },
       {
         path: "/careers",

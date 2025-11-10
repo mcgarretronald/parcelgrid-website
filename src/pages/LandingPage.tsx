@@ -9,7 +9,7 @@ import type { MapControls } from '../components/Map/GoogleMap';
 
 // Map section with external controls
 function MapWithControls() {
-  const { points } = useAgentData('https://app.escrowcourier.com/user-services/api/agents');
+  const { points } = useAgentData();
   const mapControlsRef = React.useRef<MapControls | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,7 +29,7 @@ function MapWithControls() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-12">
           <div className="lg:col-span-2">
             <div className="w-full h-[70vh] rounded-2xl overflow-hidden">
               <GoogleMap points={points} onMapReady={(controls) => { mapControlsRef.current = controls }} />
@@ -40,6 +40,113 @@ function MapWithControls() {
             <MapSearch points={points} onSelect={handleSelectPoint} />
             <div className="flex-1 overflow-hidden">
               <AgentLocationsList points={points} onSelect={handleSelectPoint} />
+            </div>
+          </div>
+        </div>
+
+        {/* Delivery Network */}
+        <div className="mt-16">
+          <div className="text-center mb-8 md:mb-12">
+            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 md:mb-4">Our Delivery Network</h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            {/* Mombasa Route */}
+            <div className="bg-[#00473E] rounded-2xl p-6 hover:bg-[#006644] transition-all duration-300 shadow-xl hover:shadow-2xl">
+              <h4 className="text-lg font-bold text-[#E9FF15] mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                Mombasa Route
+              </h4>
+              <ul className="space-y-2 text-white text-sm">
+                <li>Mlolongo</li>
+                <li>Athi River</li>
+                <li>Kyumvi</li>
+                <li>Salama</li>
+                <li>Sultan Hamud</li>
+                <li>Emali</li>
+                <li>Kibwezi</li>
+                <li>Voi</li>
+                <li>Mariakani</li>
+                <li>Mazeras</li>
+                <li>Miritini</li>
+                <li>Changawe</li>
+                <li className="font-bold text-[#E9FF15] text-base">Mombasa Town</li>
+              </ul>
+            </div>
+
+            {/* Nakuru Route */}
+            <div className="bg-[#00473E] rounded-2xl p-6 hover:bg-[#006644] transition-all duration-300 shadow-xl hover:shadow-2xl">
+              <h4 className="text-lg font-bold text-[#E9FF15] mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                Nakuru Route
+              </h4>
+              <ul className="space-y-2 text-white text-sm">
+                <li>Limuru</li>
+                <li>Kimende</li>
+                <li>Mai Mahiu</li>
+                <li>Naivasha</li>
+                <li>Gilgil</li>
+                <li>Kikopey</li>
+                <li>Lanet</li>
+                <li className="font-bold text-[#E9FF15] text-base">Nakuru Town</li>
+              </ul>
+            </div>
+
+            {/* Eldoret Route */}
+            <div className="bg-[#00473E] rounded-2xl p-6 hover:bg-[#006644] transition-all duration-300 shadow-xl hover:shadow-2xl">
+              <h4 className="text-lg font-bold text-[#E9FF15] mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                Eldoret Route
+              </h4>
+              <ul className="space-y-2 text-white text-sm">
+                <li>Nakuru</li>
+                <li>Salagaa</li>
+                <li>Mau Summit</li>
+                <li>Molo</li>
+                <li>Timboroa</li>
+                <li>Burnt Forest</li>
+                <li className="font-bold text-[#E9FF15] text-base">Eldoret Town</li>
+              </ul>
+            </div>
+
+            {/* Kisumu Route */}
+            <div className="bg-[#00473E] rounded-2xl p-6 hover:bg-[#006644] transition-all duration-300 shadow-xl hover:shadow-2xl">
+              <h4 className="text-lg font-bold text-[#E9FF15] mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                Kisumu Route
+              </h4>
+              <ul className="space-y-2 text-white text-sm">
+                <li>Nakuru</li>
+                <li>Londiani</li>
+                <li>Chepseon</li>
+                <li>Kericho</li>
+                <li>Kapsoit</li>
+                <li>Awasi</li>
+                <li>Ahero</li>
+                <li className="font-bold text-[#E9FF15] text-base">Kisumu Town</li>
+              </ul>
+            </div>
+
+            {/* Meru Route */}
+            <div className="bg-[#00473E] rounded-2xl p-6 hover:bg-[#006644] transition-all duration-300 shadow-xl hover:shadow-2xl">
+              <h4 className="text-lg font-bold text-[#E9FF15] mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                Meru Route
+              </h4>
+              <ul className="space-y-2 text-white text-sm">
+                <li>Thika</li>
+                <li>Kabati</li>
+                <li>Kenol</li>
+                <li>Makuyu</li>
+                <li>Makutano Junction</li>
+                <li>Mwea Town</li>
+                <li>Embu</li>
+                <li>Runyenjes</li>
+                <li>Chuka</li>
+                <li>Chogoria</li>
+                <li>Nkubu</li>
+                <li className="font-bold text-[#E9FF15] text-base">Meru Town</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -105,7 +212,7 @@ const LandingPage: React.FC = () => {
                 <div className="space-y-3 md:space-y-6 text-center md:text-left">
                   <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00473E]">BUILT FOR ONLINE VENDORS LIKE YOU.</h3>
                   <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Expand beyond Nairobi with Kenya's broadest delivery infrastructure.</p>
-                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Deliver to 413+ towns and growing, from Nairobi to remote counties.</p>
+                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Deliver to all major towns and growing, from Nairobi to remote counties.</p>
                   <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Cash on Delivery (COD) with instant wallet payouts for vendors.</p>
                   <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Prepaid & COD options that build customer trust and drive repeat sales.</p>
                   <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Easy-to-use app with a clean, straightforward design.</p>

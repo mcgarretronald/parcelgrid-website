@@ -23,11 +23,14 @@ export interface AgentPoint {
   info?: string
 }
 
-export async function getAgents(apiUrl: string, token?: string): Promise<AgentPoint[]> {
-  const headers: Record<string,string> = { 'Content-Type': 'application/json' }
-  if (token) headers['Authorization'] = `Bearer ${token}`
-
-  const res = await fetch(apiUrl, { headers })
+export async function getAgents(): Promise<AgentPoint[]> {
+  // Use backend proxy instead of direct API call
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+  
+  const res = await fetch(`${apiUrl}/api/agents`, {
+    headers: { 'Content-Type': 'application/json' }
+  });
+  
   if (!res.ok) throw new Error(`Failed to fetch agents: ${res.status}`)
   const data = await res.json()
 
