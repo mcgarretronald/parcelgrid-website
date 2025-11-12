@@ -59,7 +59,7 @@ const AboutPage: React.FC = () => {
                   <MapPin className="w-6 h-6 text-[#00473E]" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg mb-1">413+ Pickup Points</h3>
+                  <h3 className="font-bold text-lg mb-1">Pickup Points</h3>
                   <p className="text-white/80">Nationwide coverage across Kenya</p>
                 </div>
               </div>
@@ -116,7 +116,7 @@ const AboutPage: React.FC = () => {
               <div className="bg-[#00473E] rounded-lg p-3 w-fit mb-4 group-hover:bg-[#E9FF15] transition-colors">
                 <MapPin className="w-6 h-6 text-[#E9FF15] group-hover:text-[#00473E]" />
               </div>
-              <h3 className="font-bold text-xl text-gray-900 mb-2">413+ Pickup Points</h3>
+              <h3 className="font-bold text-xl text-gray-900 mb-2">Pickup Points</h3>
               <p className="text-gray-600">Customers collect parcels conveniently through our growing network across Kenya.</p>
             </div>
 
@@ -264,7 +264,7 @@ const AboutPage: React.FC = () => {
 
               <div className="mt-12 grid grid-cols-3 gap-8 max-w-2xl mx-auto pt-8 border-t border-white/20">
                 <div>
-                  <div className="text-3xl font-bold text-[#E9FF15] mb-1">413+</div>
+                  <div className="text-3xl font-bold text-[#E9FF15] mb-1">All major towns</div>
                   <div className="text-white/80 text-sm">Pickup Points</div>
                 </div>
                 <div>

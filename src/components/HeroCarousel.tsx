@@ -14,7 +14,7 @@ const slides: HeroSlide[] = [
     id: 1,
     title: "DELIVERY INFRASTRUCTURE THAT POWERS YOUR GROWTH",
     subtitle: "",
-    description: "From Nairobi to the furthest town, ParcelGrid helps you scale with prepaid and COD deliveries to 413+ pickup points.",
+    description: "From Nairobi to the furthest town, ParcelGrid helps you scale with prepaid and COD deliveries to pickup points across major towns.",
     backgroundImage: "https://plus.unsplash.com/premium_photo-1661409562732-aa3b5e6ecad1?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   },
   {

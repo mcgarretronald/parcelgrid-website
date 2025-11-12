@@ -60,7 +60,7 @@ export default function DownloadCTA() {
             </span>
             <span className="flex items-center">
               <div className="w-2 h-2 bg-blue-400 rounded-full mr-2 animate-pulse"></div>
-              <span className="whitespace-nowrap">413+ Pickup Points</span>
+              <span className="whitespace-nowrap">All Major Towns</span>
             </span>
             <span className="flex items-center">
               <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2 animate-pulse"></div>

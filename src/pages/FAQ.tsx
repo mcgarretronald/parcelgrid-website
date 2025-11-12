@@ -20,7 +20,7 @@ const FAQ: React.FC = () => {
         {
           id: "q1",
           question: "What is ParcelGrid?",
-          answer: "ParcelGrid® is a registered trademark of Escrow Courier Networks Limited, a licensed courier company regulated by the Communications Authority of Kenya (CA). We provide a delivery infrastructure with drop-off points in Nairobi and pickup points across 413+ towns in Kenya."
+          answer: "ParcelGrid® is a registered trademark of Escrow Courier Networks Limited, a licensed courier company regulated by the Communications Authority of Kenya (CA). We provide a delivery infrastructure with drop-off points in Nairobi and pickup points in all major towns across Kenya."
         },
         {
           id: "q2", 
@@ -53,7 +53,7 @@ const FAQ: React.FC = () => {
         {
           id: "q5",
           question: "How many pickup points do you have?",
-          answer: "We currently have 413+ verified pickup points across Kenya, and the network is growing."
+          answer: "We currently have verified pickup points across Kenya, and the network is growing."
         }
       ]
     },
@@ -151,14 +151,14 @@ const FAQ: React.FC = () => {
           question: "How is ParcelGrid different from other couriers?",
           answer: (
             <ul className="list-disc ml-6">
-              <li>Widest pickup network in Kenya (413+ points).</li>
+              <li>Widest pickup network in Kenya (all major towns).</li>
               <li>Instant COD settlements to M-Pesa.</li>
               <li>Transparent 1.8% fee, no hidden charges.</li>
               <li>Smart notifications to keep vendors and customers informed.</li>
               <li>Built for online vendors, not general courier services.</li>
             </ul>
           )
-        }
+        },
       ]
     },
     {

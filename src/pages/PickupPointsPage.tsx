@@ -47,7 +47,7 @@ const PickupPointsPage: React.FC = () => {
             Drop Off Easily. Pick Up Anywhere.
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed px-2 sm:px-0">
-            Vendors drop off parcels at our Nairobi branches, and customers collect from 413+ pickup points nationwide.
+            Vendors drop off parcels at our Nairobi branches, and customers collect from pickup points in all major towns nationwide.
           </p>
         </div>
       </section>
