@@ -4,6 +4,8 @@ export interface PickupPoint {
   lat: number
   lng: number
   info?: string
+  distanceFromHQ?: number
+  rawData?: any // Store the original data for additional fields
 }
 
 export interface GoogleMapProps {

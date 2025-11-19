@@ -33,6 +33,14 @@ export function useAgentData() {
         
         const data = await res.json()
 
+        // Debug: log first agent to see structure
+        console.log('Agent API response type:', Array.isArray(data) ? 'array' : typeof data);
+        if (Array.isArray(data) && data.length > 0) {
+          console.log('First agent sample:', data[0]);
+        } else if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
+          console.log('First agent sample (from data.data):', data.data[0]);
+        }
+
         // Handle different response formats
         let arr: any[] = []
         if (Array.isArray(data)) {
@@ -132,12 +140,23 @@ export function useAgentData() {
             else if (item.address) infoParts.push(item.address)
 
             const info = infoParts.join(', ') || (item.info ?? item.description ?? '')
+            
+            // Extract distanceFromHQ (may be in various formats)
+            const distanceFromHQ = 
+              item.distanceFromHQ ?? 
+              item.distance_from_hq ?? 
+              item.distanceFromHq ?? 
+              item.distance ?? 
+              null;
+
             return {
               id,
               name,
               lat: Number.isFinite(lat as number) ? (lat as number) : 0,
               lng: Number.isFinite(lng as number) ? (lng as number) : 0,
               info,
+              distanceFromHQ: distanceFromHQ ? Number(distanceFromHQ) : undefined,
+              rawData: item, // Preserve original data
             }
           })
           .filter((p: PickupPoint) => p.lat !== 0 || p.lng !== 0)

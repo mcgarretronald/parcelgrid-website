@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { ArrowLeft, ArrowRight, Package, User, MapPin, CheckCircle } from 'lucide-react';
@@ -8,12 +9,10 @@ interface FormData {
   // Vendor Info
   vendorName: string;
   vendorPhone: string;
-  vendorAddress: string;
   
   // Customer Info
   customerName: string;
   customerPhone: string;
-  customerAltPhone: string;
   customerCounty: string;
   pickupPoint: string;
   
@@ -28,14 +27,14 @@ interface FormData {
 }
 
 const BookingPage: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     vendorName: '',
     vendorPhone: '+254',
-    vendorAddress: '',
     customerName: '',
     customerPhone: '+254',
-    customerAltPhone: '+254',
     customerCounty: '',
     pickupPoint: '',
     packageType: '',
@@ -49,16 +48,46 @@ const BookingPage: React.FC = () => {
 
   const { points } = useAgentData();
   const [filteredPickupPoints, setFilteredPickupPoints] = useState<any[]>([]);
+  const [deliveryFee, setDeliveryFee] = useState<number | null>(null);
+  const [feeLoading, setFeeLoading] = useState(false);
+  const [feeError, setFeeError] = useState<string | null>(null);
 
-  // Filter pickup points based on county
+  // Filter pickup points based on county - only show active agents
   useEffect(() => {
     if (formData.customerCounty) {
-      const filtered = points.filter((point) =>
-        point.info?.toLowerCase().includes(formData.customerCounty.toLowerCase())
-      );
+      const filtered = points.filter((point) => {
+        // Check if point matches the county/location
+        const matchesLocation = point.info?.toLowerCase().includes(formData.customerCounty.toLowerCase());
+        
+        // Check if agent is active (using rawData which contains original API response)
+        const status = point.rawData?.status ?? point.rawData?.accountStatus ?? point.rawData?.active ?? point.rawData?.isActive;
+        
+        let isActive = true;
+        if (typeof status === 'string') {
+          isActive = status.toLowerCase() === 'active';
+        } else if (typeof status === 'boolean') {
+          isActive = status === true;
+        }
+        // If no status field, include the agent (backward compatibility)
+        
+        return matchesLocation && isActive;
+      });
       setFilteredPickupPoints(filtered);
     } else {
-      setFilteredPickupPoints(points);
+      // Show only active agents when no county filter
+      const activePoints = points.filter((point) => {
+        const status = point.rawData?.status ?? point.rawData?.accountStatus ?? point.rawData?.active ?? point.rawData?.isActive;
+        
+        if (typeof status === 'string') {
+          return status.toLowerCase() === 'active';
+        }
+        if (typeof status === 'boolean') {
+          return status === true;
+        }
+        // If no status field, include the agent (backward compatibility)
+        return true;
+      });
+      setFilteredPickupPoints(activePoints);
     }
   }, [formData.customerCounty, points]);
 
@@ -79,24 +108,129 @@ const BookingPage: React.FC = () => {
     '15-20 KG',
     '20-25 KG',
     '25-30 KG',
-    'Over 30 KG',
   ];
 
   const handleInputChange = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Calculate delivery fee when both pickupPoint and weightRange are set
+  useEffect(() => {
+    let active = true;
+    // only calculate when both values exist
+    if (!formData.pickupPoint || !formData.weightRange) {
+      setDeliveryFee(null);
+      setFeeError(null);
+      setFeeLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const calculate = async () => {
+      setFeeLoading(true);
+      setFeeError(null);
+      setDeliveryFee(null);
+
+      try {
+        // Find the selected pickup point to get distanceFromHQ
+        // Look in all points, not just filtered, in case user went back and forward
+        const selectedPoint = points.find(
+          (point) => String(point.id) === String(formData.pickupPoint)
+        );
+
+        // Debug logging
+        console.log('Selected pickup point ID:', formData.pickupPoint);
+        console.log('Found point object:', selectedPoint);
+        console.log('Distance from HQ:', selectedPoint?.distanceFromHQ);
+        console.log('Raw data:', selectedPoint?.rawData);
+
+        if (!selectedPoint) {
+          setFeeError('Selected pickup point not found');
+          setFeeLoading(false);
+          return;
+        }
+
+        if (!selectedPoint.distanceFromHQ) {
+          setFeeError('Distance information not available for this pickup point');
+          setFeeLoading(false);
+          return;
+        }
+
+        // Build payload with weightRange and distance as required
+        // Remove " KG" from weight range (e.g., "0-4 KG" becomes "0-4")
+        const weightRangeValue = formData.weightRange.replace(/\s*KG$/i, '').trim();
+        
+        const payload = {
+          weightRange: weightRangeValue,
+          distance: selectedPoint.distanceFromHQ,
+        };
+
+        console.log('Sending payload to pricing API:', payload);
+
+        const resp = await fetch('/api/calculate-delivery-fee', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+
+        if (!resp.ok) {
+          const text = await resp.text();
+          throw new Error(text || `Status ${resp.status}`);
+        }
+
+        const data = await resp.json();
+        
+        console.log('Pricing API response:', data);
+
+        // The pricing API returns totalFee. Also check other common field names as fallback.
+        const fee = data?.totalFee ?? data?.fee ?? data?.deliveryFee ?? data?.price ?? data?.amount ?? null;
+
+        if (active) {
+          if (typeof fee === 'number') {
+            setDeliveryFee(fee);
+          } else if (typeof fee === 'string' && !isNaN(Number(fee))) {
+            setDeliveryFee(Number(fee));
+          } else {
+            // If API returned a complex object, try common places
+            if (data && typeof data === 'object') {
+              // try nested 'data' or 'result'
+              const nested = data.data ?? data.result ?? null;
+              const nestedFee = nested?.totalFee ?? nested?.fee ?? nested?.amount ?? nested?.price ?? null;
+              if (typeof nestedFee === 'number') setDeliveryFee(nestedFee);
+              else setFeeError('Unable to parse fee from pricing response');
+            } else {
+              setFeeError('Unable to parse fee from pricing response');
+            }
+          }
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') return;
+        console.error('Delivery fee error', err);
+        if (active) setFeeError(err.message || 'Failed to calculate delivery fee');
+      } finally {
+        if (active) setFeeLoading(false);
+      }
+    };
+
+    // small debounce to avoid rapid calls when user is typing
+    const timer = setTimeout(calculate, 400);
+
+    return () => {
+      active = false;
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [formData.pickupPoint, formData.weightRange, points]);
+
   const validateStep = (currentStep: number): boolean => {
     if (currentStep === 1) {
+      // Validate both vendor and customer information on step 1
       return !!(
         formData.vendorName &&
         formData.vendorPhone &&
         formData.vendorPhone.length >= 12 &&
-        formData.vendorAddress
-      );
-    }
-    if (currentStep === 2) {
-      return !!(
         formData.customerName &&
         formData.customerPhone &&
         formData.customerPhone.length >= 12 &&
@@ -104,7 +238,8 @@ const BookingPage: React.FC = () => {
         formData.pickupPoint
       );
     }
-    if (currentStep === 3) {
+    if (currentStep === 2) {
+      // Validate package information on step 2
       return !!(
         formData.packageType &&
         (formData.packageType !== 'Other' || formData.packageTypeOther) &&
@@ -117,7 +252,7 @@ const BookingPage: React.FC = () => {
 
   const handleNext = () => {
     if (validateStep(step)) {
-      setStep((prev) => Math.min(prev + 1, 4));
+      setStep((prev) => Math.min(prev + 1, 3));
     } else {
       alert('Please fill in all required fields');
     }
@@ -128,155 +263,232 @@ const BookingPage: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    // TODO: Submit form data to backend
-    console.log('Booking submitted:', formData);
-    alert('Booking submitted successfully! We will contact you shortly.');
-    // Reset form or redirect
+    try {
+      // Find the selected pickup point to get full details
+      const selectedPoint = points.find(
+        (point) => String(point.id) === String(formData.pickupPoint)
+      );
+
+      // Prepare order payload with correct field names for the API
+      const orderPayload = {
+        vendorName: formData.vendorName,
+        vendorPhone: formData.vendorPhone,
+        customerName: formData.customerName,
+        customerPhone: formData.customerPhone,
+        customerAddress: formData.customerCounty, // Required field - just the county/location string as entered
+        customerCounty: formData.customerCounty,
+        pickupPointId: formData.pickupPoint,
+        pickupPointName: selectedPoint?.name || '',
+        agentId: selectedPoint?.id || formData.pickupPoint, // Required field - using pickup point as agent
+        packagingType: formData.packageType === 'Other' ? formData.packageTypeOther : formData.packageType, // Required field (renamed from packageType)
+        weightRange: formData.weightRange,
+        distanceRange: selectedPoint?.distanceFromHQ || 0, // Required field - distance from HQ
+        parcelValue: parseFloat(formData.packageValue), // Required field (renamed from packageValue)
+        shippingCharges: deliveryFee || 0, // Required field (renamed from deliveryFee)
+        isFragile: formData.isFragile,
+        isSpillProne: formData.isSpillProne,
+        specialInstructions: formData.specialInstructions,
+      };
+
+      console.log('Creating order with payload:', orderPayload);
+      // Persist booking form for summary restoration
+      localStorage.setItem('currentBookingForm', JSON.stringify(formData));
+
+      // Get auth token from backend server
+      let authToken = '';
+      try {
+        const tokenResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/token`);
+        if (tokenResponse.ok) {
+          const tokenData = await tokenResponse.json();
+          authToken = tokenData.token || tokenData.access_token || tokenData.bearer_token;
+          console.log('Auth token fetched from backend');
+        }
+      } catch (error) {
+        console.warn('Could not fetch auth token:', error);
+      }
+
+      // Create order via API
+      const response = await fetch('/api/booking-agent-orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+        },
+        body: JSON.stringify(orderPayload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || `Failed to create order: ${response.status}`);
+      }
+
+      const orderData = await response.json();
+      console.log('=== ORDER CREATED SUCCESSFULLY ===');
+      console.log('Full order response:', orderData);
+      console.log('Order data type:', typeof orderData);
+      console.log('Order data keys:', Object.keys(orderData));
+      
+      // Log all possible tracking number fields
+      console.log('orderData.trackingNo:', orderData.trackingNo);
+      console.log('orderData.trackingNumber:', orderData.trackingNumber);
+      console.log('orderData.tracking_no:', orderData.tracking_no);
+      console.log('orderData.data:', orderData.data);
+      console.log('orderData.order:', orderData.order);
+      
+      if (orderData.data) {
+        console.log('orderData.data keys:', Object.keys(orderData.data));
+      }
+
+      // Store the complete order response in localStorage for later use
+      localStorage.setItem('currentOrder', JSON.stringify(orderData));
+      localStorage.setItem('currentOrderTimestamp', Date.now().toString());
+
+      // Extract tracking number from various possible locations in the response
+      const trackingNo = orderData.trackingNo 
+        || orderData.trackingNumber 
+        || orderData.tracking_no 
+        || orderData.data?.trackingNo 
+        || orderData.data?.trackingNumber 
+        || orderData.data?.tracking_no
+        || orderData.data?.order?.[0]?.trackingNo
+        || orderData.data?.order?.[0]?.trackingNumber
+        || orderData.order?.trackingNo
+        || orderData.order?.trackingNumber;
+      
+      const orderId = orderData.id || orderData.orderId || orderData._id || orderData.data?.id || orderData.data?.order?.[0]?.id;
+
+      console.log('Extracted tracking number:', trackingNo);
+      console.log('Extracted order ID:', orderId);
+      console.log('Order data stored in localStorage');
+      console.log('=================================');
+
+      // Navigate to payment page with booking data and order response
+      navigate('/payment', {
+        state: {
+          bookingData: {
+            ...formData,
+            deliveryFee,
+          },
+          trackingNo: trackingNo,
+          orderId: orderId,
+          orderData: orderData,
+          fromSummary: true,
+        },
+      });
+    } catch (error: any) {
+      console.error('Error creating order:', error);
+      alert(`Failed to create order: ${error.message || 'Please try again'}`);
+    }
   };
+
+  // If returning from payment or localStorage contains previous booking, set step to summary (3)
+  useEffect(() => {
+    const showSummary = location.state?.showSummary;
+    if (showSummary) {
+      const existing = location.state?.existingData;
+      if (existing) {
+        setFormData(prev => ({ ...prev, ...existing }));
+      } else {
+        const stored = localStorage.getItem('currentBookingForm');
+        if (stored) {
+          try { setFormData(prev => ({ ...prev, ...JSON.parse(stored) })); } catch {}
+        }
+      }
+      setStep(3);
+    } else if (!showSummary) {
+      // Browser back without state but with persisted form & order
+      const stored = localStorage.getItem('currentBookingForm');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          // If there is also an order in localStorage, assume user was at summary
+          if (localStorage.getItem('currentOrder')) {
+            setFormData(prev => ({ ...prev, ...parsed }));
+            setStep(3);
+          }
+        } catch {}
+      }
+    }
+  }, [location.state]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 mt-20">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#00473E] mb-3">
-            Book Your Parcel
-          </h1>
-          <p className="text-lg text-gray-600">Fast and reliable delivery across Kenya</p>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between max-w-2xl mx-auto">
-            <div className="flex-1">
-              <div className="flex items-center">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                    step >= 1 ? 'bg-[#00473E] text-white' : 'bg-gray-300 text-gray-600'
-                  }`}
-                >
-                  1
-                </div>
-                <div className="flex-1 h-1 mx-2 bg-gray-300">
-                  <div
-                    className={`h-full transition-all duration-300 ${
-                      step >= 2 ? 'bg-[#00473E]' : 'bg-gray-300'
-                    }`}
-                    style={{ width: step >= 2 ? '100%' : '0%' }}
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-center mt-2 text-gray-600">Vendor & Customer</p>
-            </div>
-
-            <div className="flex-1">
-              <div className="flex items-center">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                    step >= 3 ? 'bg-[#00473E] text-white' : 'bg-gray-300 text-gray-600'
-                  }`}
-                >
-                  2
-                </div>
-                <div className="flex-1 h-1 mx-2 bg-gray-300">
-                  <div
-                    className={`h-full transition-all duration-300 ${
-                      step >= 4 ? 'bg-[#00473E]' : 'bg-gray-300'
-                    }`}
-                    style={{ width: step >= 4 ? '100%' : '0%' }}
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-center mt-2 text-gray-600">Package & Summary</p>
-            </div>
-
-            <div>
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                  step === 4 ? 'bg-[#00473E] text-white' : 'bg-gray-300 text-gray-600'
-                }`}
-              >
-                <CheckCircle className="w-6 h-6" />
-              </div>
-              <p className="text-xs text-center mt-2 text-gray-600">Review</p>
-            </div>
+        {/* Motivational Banner */}
+        <div className="mb-8 mt-20">
+          <div className="text-center p-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#00473E] mb-3">
+              BOOK A PARCEL IN UNDER A MINUTE.
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-700 font-semibold">
+              Share the receipt with your customer NOW, and drop your parcel later.
+            </p>
           </div>
         </div>
 
         {/* Form Card */}
         <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10">
-          {/* Step 1: Vendor Information */}
+          {/* Step 1: Vendor & Customer Information Combined */}
           {step === 1 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <User className="w-6 h-6 text-[#00473E]" />
-                <h2 className="text-2xl font-bold text-[#00473E]">Vendor Information</h2>
+            <div className="space-y-8">
+              {/* Vendor Section */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <User className="w-6 h-6 text-[#00473E]" />
+                  <h2 className="text-2xl font-bold text-[#00473E]">Vendor Information</h2>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Vendor Name <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.vendorName}
+                    onChange={(e) => handleInputChange('vendorName', e.target.value)}
+                    placeholder="Enter vendor name"
+                    className="w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Vendor Phone Number <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="tel"
+                    value={formData.vendorPhone}
+                    onChange={(e) => handleInputChange('vendorPhone', e.target.value)}
+                    placeholder="+254712345678"
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Include country code (e.g., +254)</p>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Vendor Name <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="text"
-                  value={formData.vendorName}
-                  onChange={(e) => handleInputChange('vendorName', e.target.value)}
-                  placeholder="Enter vendor name"
-                  className="w-full"
-                />
-              </div>
+              {/* Divider */}
+              <div className="border-t border-gray-200"></div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Vendor Phone Number <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="tel"
-                  value={formData.vendorPhone}
-                  onChange={(e) => handleInputChange('vendorPhone', e.target.value)}
-                  placeholder="+254712345678"
-                  className="w-full"
-                />
-                <p className="text-xs text-gray-500 mt-1">Include country code (e.g., +254)</p>
-              </div>
+              {/* Customer Section */}
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <MapPin className="w-6 h-6 text-[#00473E]" />
+                  <h2 className="text-2xl font-bold text-[#00473E]">Customer Information</h2>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Vendor Address <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  value={formData.vendorAddress}
-                  onChange={(e) => handleInputChange('vendorAddress', e.target.value)}
-                  placeholder="Enter full address"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00473E] focus:border-transparent resize-none"
-                  rows={3}
-                />
-              </div>
-            </div>
-          )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Customer Name <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="text"
+                    value={formData.customerName}
+                    onChange={(e) => handleInputChange('customerName', e.target.value)}
+                    placeholder="Enter customer name"
+                    className="w-full"
+                  />
+                </div>
 
-          {/* Step 2: Customer Information */}
-          {step === 2 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <MapPin className="w-6 h-6 text-[#00473E]" />
-                <h2 className="text-2xl font-bold text-[#00473E]">Customer Information</h2>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Customer Name <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="text"
-                  value={formData.customerName}
-                  onChange={(e) => handleInputChange('customerName', e.target.value)}
-                  placeholder="Enter customer name"
-                  className="w-full"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Phone Number <span className="text-red-500">*</span>
@@ -292,64 +504,51 @@ const BookingPage: React.FC = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Alternative Phone Number
+                    Customer County/Location <span className="text-red-500">*</span>
                   </label>
                   <Input
-                    type="tel"
-                    value={formData.customerAltPhone}
-                    onChange={(e) => handleInputChange('customerAltPhone', e.target.value)}
-                    placeholder="+254712345678"
+                    type="text"
+                    value={formData.customerCounty}
+                    onChange={(e) => handleInputChange('customerCounty', e.target.value)}
+                    placeholder="e.g., Nairobi, Mombasa, Nakuru"
                     className="w-full"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Customer County/Location <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="text"
-                  value={formData.customerCounty}
-                  onChange={(e) => handleInputChange('customerCounty', e.target.value)}
-                  placeholder="e.g., Nairobi, Mombasa, Nakuru"
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Pickup Point <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.pickupPoint}
-                  onChange={(e) => handleInputChange('pickupPoint', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00473E] focus:border-transparent"
-                >
-                  <option value="">Select a pickup point</option>
-                  {filteredPickupPoints.length > 0 ? (
-                    filteredPickupPoints.map((point) => (
-                      <option key={point.id} value={point.name}>
-                        {point.name} - {point.info}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preferred Pickup Point <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.pickupPoint}
+                    onChange={(e) => handleInputChange('pickupPoint', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00473E] focus:border-transparent"
+                  >
+                    <option value="">Select a pickup point</option>
+                    {filteredPickupPoints.length > 0 ? (
+                      filteredPickupPoints.map((point) => (
+                        <option key={point.id} value={point.id}>
+                          {point.name} - {point.info}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>
+                        No pickup points found for this county
                       </option>
-                    ))
-                  ) : (
-                    <option value="" disabled>
-                      No pickup points found for this county
-                    </option>
+                    )}
+                  </select>
+                  {filteredPickupPoints.length === 0 && formData.customerCounty && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      No pickup points found. Try a different county or contact us.
+                    </p>
                   )}
-                </select>
-                {filteredPickupPoints.length === 0 && formData.customerCounty && (
-                  <p className="text-xs text-amber-600 mt-1">
-                    No pickup points found. Try a different county or contact us.
-                  </p>
-                )}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Step 3: Package Details */}
-          {step === 3 && (
+          {/* Step 2: Package Details */}
+          {step === 2 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 mb-6">
                 <Package className="w-6 h-6 text-[#00473E]" />
@@ -405,6 +604,18 @@ const BookingPage: React.FC = () => {
                     </option>
                   ))}
                 </select>
+                {/* Delivery fee display */}
+                <div className="mt-3">
+                  {feeLoading ? (
+                    <p className="text-sm text-gray-500">Calculating delivery fee...</p>
+                  ) : feeError ? (
+                    <p className="text-sm text-amber-600">{feeError}</p>
+                  ) : deliveryFee !== null ? (
+                    <p className="text-sm text-[#00473E] font-semibold">Estimated delivery fee: KES {deliveryFee.toLocaleString()}</p>
+                  ) : (
+                    <p className="text-sm text-gray-500">Select pickup point and weight to see delivery fee</p>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -465,12 +676,12 @@ const BookingPage: React.FC = () => {
             </div>
           )}
 
-          {/* Step 4: Summary */}
-          {step === 4 && (
+          {/* Step 3: Checkout/Summary */}
+          {step === 3 && (
             <div className="space-y-6">
               <div className="flex items-center gap-3 mb-6">
                 <CheckCircle className="w-6 h-6 text-[#00473E]" />
-                <h2 className="text-2xl font-bold text-[#00473E]">Booking Summary</h2>
+                <h2 className="text-2xl font-bold text-[#00473E]">Checkout - Review Your Booking</h2>
               </div>
 
               <div className="space-y-6">
@@ -483,7 +694,6 @@ const BookingPage: React.FC = () => {
                   <div className="space-y-2 text-sm">
                     <p><strong>Name:</strong> {formData.vendorName}</p>
                     <p><strong>Phone:</strong> {formData.vendorPhone}</p>
-                    <p><strong>Address:</strong> {formData.vendorAddress}</p>
                   </div>
                 </div>
 
@@ -496,11 +706,10 @@ const BookingPage: React.FC = () => {
                   <div className="space-y-2 text-sm">
                     <p><strong>Name:</strong> {formData.customerName}</p>
                     <p><strong>Phone:</strong> {formData.customerPhone}</p>
-                    {formData.customerAltPhone !== '+254' && (
-                      <p><strong>Alt Phone:</strong> {formData.customerAltPhone}</p>
-                    )}
                     <p><strong>County:</strong> {formData.customerCounty}</p>
-                    <p><strong>Pickup Point:</strong> {formData.pickupPoint}</p>
+                    <p><strong>Pickup Point:</strong> {
+                      points.find(p => String(p.id) === String(formData.pickupPoint))?.name || formData.pickupPoint
+                    }</p>
                   </div>
                 </div>
 
@@ -532,6 +741,16 @@ const BookingPage: React.FC = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Delivery Fee Summary */}
+                {deliveryFee !== null && (
+                  <div className="bg-[#00473E] text-white rounded-lg p-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-semibold">Delivery Fee:</span>
+                      <span className="text-2xl font-bold">KES {deliveryFee.toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="bg-[#E9FF15]/20 border border-[#E9FF15] rounded-lg p-4 mt-6">
@@ -557,7 +776,7 @@ const BookingPage: React.FC = () => {
             )}
 
             <div className={step === 1 ? 'ml-auto' : ''}>
-              {step < 4 ? (
+              {step < 3 ? (
                 <Button
                   onClick={handleNext}
                   className="bg-[#00473E] hover:bg-[#006644] text-white flex items-center gap-2"
@@ -571,7 +790,7 @@ const BookingPage: React.FC = () => {
                   className="bg-[#E9FF15] hover:bg-[#d4e614] text-[#00473E] font-bold flex items-center gap-2"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  Submit Booking
+                  Proceed to Payment
                 </Button>
               )}
             </div>

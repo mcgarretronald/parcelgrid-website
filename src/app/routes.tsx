@@ -13,6 +13,7 @@ import PickupAgentPage from "../pages/PickupAgentPage";
 import BookingAgentPage from "../pages/BookingAgentPage";
 import HowToUseAppPage from "../pages/HowToUseAppPage";
 import BookingPage from "../pages/BookingPage";
+import PaymentPage from "../pages/PaymentPage";
 
 const router = createBrowserRouter([
   {
@@ -70,6 +71,10 @@ const router = createBrowserRouter([
       {
         path: "/book-parcel",
         element: <BookingPage />,
+      },
+      {
+        path: "/payment",
+        element: <PaymentPage />,
       },
       {
         path: "/careers",
