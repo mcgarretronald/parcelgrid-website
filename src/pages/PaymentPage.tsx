@@ -43,7 +43,7 @@ const PaymentPage: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [statusTimeoutId, setStatusTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [checkingStatus, setCheckingStatus] = useState(false);
-  const [merchantRequestId, setMerchantRequestId] = useState<string>('');
+  const [, setMerchantRequestId] = useState<string>('');
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [isStatusSuccess, setIsStatusSuccess] = useState<boolean>(false);
