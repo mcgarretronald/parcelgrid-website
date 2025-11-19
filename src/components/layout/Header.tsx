@@ -93,21 +93,21 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
           : 'bg-[#00473E] shadow-lg'
       }`}>
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className={`flex items-center justify-between w-full transition-all duration-500 ease-out ${
+        <div className={`flex items-center justify-between gap-3 sm:gap-4 w-full transition-all duration-500 ease-out ${
           scrolled ? 'h-16' : 'h-20'
         }`}>
           {/* Logo with text */}
-          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-all duration-500 ease-out flex-shrink-0">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-all duration-500 ease-out flex-shrink-0">
             <img
               src="/logo1.png"
               alt="ParcelGrid logo"
               className={`object-contain transition-all duration-500 ease-out ${
-                scrolled ? 'h-8 w-8' : 'h-12 w-12'
+                scrolled ? 'h-8 w-8' : 'h-10 sm:h-12 w-10 sm:w-12'
               }`}
             />
             <span 
               className={`font-bold text-[#E9FF15] transition-all duration-500 ease-out ${
-                scrolled ? 'text-lg' : 'text-2xl'
+                scrolled ? 'text-base sm:text-lg' : 'text-xl sm:text-2xl'
               }`} 
               style={{ fontFamily: 'Georgia, "Times New Roman", Times, serif' }}
             >
@@ -137,7 +137,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
           </nav>
 
           {/* Right side buttons */}
-          <div className="flex items-center gap-3 flex-shrink-0 ml-auto">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-auto">
             {/* Desktop Sidebar Toggle */}
             <div className="hidden xl:block">
               <Button
@@ -149,10 +149,10 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
                 <Menu className="h-5 w-5" />
               </Button>
             </div>            {/* Mobile/Tablet menu and CTA */}
-            <div className="flex items-center gap-2 xl:hidden">
+            <div className="flex items-center gap-2 sm:gap-3 xl:hidden">
               {/* Mobile CTA - visible on small to large screens */}
               <Button
-                className="bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold px-4 py-2 rounded-full text-sm md:px-6 md:py-2.5 transition-all duration-200"
+                className="bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 rounded-full text-xs sm:text-sm transition-all duration-200 whitespace-nowrap"
                 onClick={() => navigate('/book-parcel')}
               >
                 Book a Parcel
@@ -162,15 +162,15 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
               <Button
                 variant="ghost"
                 size="icon"
-                className={`text-white hover:bg-white/10 transition-all duration-200 ${
+                className={`text-white hover:bg-white/10 transition-all duration-200 flex-shrink-0 ${
                   isMenuOpen ? 'bg-[#E9FF15]/20' : ''
                 }`}
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? (
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5 sm:h-6 sm:w-6" />
                 ) : (
-                  <Menu className="h-6 w-6" />
+                  <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
                 )}
               </Button>
             </div>
