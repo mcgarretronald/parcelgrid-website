@@ -204,7 +204,7 @@ const BookingPage: React.FC = () => {
           min-height: 100vh;
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
+          justify-content: center;
           position: relative;
         }
       }
@@ -720,13 +720,13 @@ const BookingPage: React.FC = () => {
           </div>
 
           {/* Main Illustration Content */}
-          <div className="relative z-10 text-center space-y-3 lg:space-y-8 max-w-lg w-full">
+          <div className="relative z-10 text-center space-y-5 lg:space-y-8 max-w-lg w-full">
             {/* Motivational Banner */}
             <div className="mb-1 lg:mb-8">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1.5">
+              <h2 className="text-3xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
                 BOOK A PARCEL IN UNDER 60 SECONDS.
               </h2>
-              <p className="text-sm sm:text-base lg:text-xl text-white/90">
+              <p className="text-base sm:text-base lg:text-xl text-white/90">
                 Skip the long process & book a parcel in seconds. Drop Off When You're Ready.
               </p>
             </div>
@@ -773,22 +773,22 @@ h78.747C231.693,100.736,232.77,106.162,232.77,111.694z" />
             </div>
 
             {/* Feature Points */}
-            <div className="space-y-1.5 lg:space-y-3 text-left mt-3">
-              <div className="flex items-center gap-2 lg:gap-3 text-white text-sm lg:text-base">
+            <div className="space-y-2.5 lg:space-y-3 text-left mt-4">
+              <div className="flex items-center gap-2 lg:gap-3 text-white text-base lg:text-base">
                 <div className="w-2 h-2 bg-[#E9FF15] rounded-full animate-pulse flex-shrink-0"></div>
                 <span>Track your parcel in real-time</span>
               </div>
-              <div className="flex items-center gap-2 lg:gap-3 text-white text-sm lg:text-base">
+              <div className="flex items-center gap-2 lg:gap-3 text-white text-base lg:text-base">
                 <div className="w-2 h-2 bg-[#E9FF15] rounded-full animate-pulse delay-300 flex-shrink-0"></div>
                 <span>Instant COD settlements</span>
               </div>
-              <div className="flex items-center gap-2 lg:gap-3 text-white text-sm lg:text-base">
+              <div className="flex items-center gap-2 lg:gap-3 text-white text-base lg:text-base">
                 <div className="w-2 h-2 bg-[#E9FF15] rounded-full animate-pulse delay-700 flex-shrink-0"></div>
                 <span>Fast, Secure & Reliable Delivery</span>
               </div>
               
               {/* Animated Scroll Indicator - Only visible on mobile */}
-              <div className="lg:hidden mt-3 flex justify-center">
+              <div className="lg:hidden mt-5 flex justify-center">
                 <div 
                   className="scrolldown"
                   onClick={() => {
