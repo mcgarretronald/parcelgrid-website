@@ -23,7 +23,7 @@ export default async function handler(req, res) {
     
     try {
       console.log('Fetching auth token from backend server...');
-      const authResponse = await fetch('http://localhost:3001/api/auth/token', {
+      const authResponse = await fetch('https://app.escrowcourier.com/website-backend-services/api/auth/token', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
       console.error('Error fetching auth token from backend:', authError.message);
     }
     
-    const apiUrl = 'https://app.escrowcourier.com/order-services/api/bookingAgentOrders';
+    const apiUrl = 'https://app.escrowcourier.com/website-backend-services/api/bookingAgentOrders';
     console.log('Making request to:', apiUrl);
     console.log('Request body:', JSON.stringify(req.body, null, 2));
     

@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const apiUrl = 'https://app.escrowcourier.com/user-services/api/agents';
+    const apiUrl = 'https://app.escrowcourier.com/website-backend-services/api/pickup-points';
     console.log('Making request to:', apiUrl);
     
     const headers = {

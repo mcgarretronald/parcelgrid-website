@@ -24,10 +24,10 @@ export interface AgentPoint {
 }
 
 export async function getAgents(): Promise<AgentPoint[]> {
-  // Use backend proxy instead of direct API call
-  const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+  // Direct API call to the pickup points endpoint
+  const apiUrl = 'https://app.escrowcourier.com/website-backend-services/api/pickup-points';
   
-  const res = await fetch(`${apiUrl}/api/agents`, {
+  const res = await fetch(apiUrl, {
     headers: { 'Content-Type': 'application/json' }
   });
   

@@ -10,9 +10,8 @@ export function useAgentData() {
     let mounted = true
 
     const fetchPoints = async () => {
-      // Use backend proxy instead of direct API call
-      const backendUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
-      const endpoint = `${backendUrl}/api/agents`;
+      // Direct API call to the pickup points endpoint
+      const endpoint = 'https://app.escrowcourier.com/website-backend-services/api/pickup-points';
 
       setLoading(true)
       try {

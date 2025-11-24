@@ -23,8 +23,23 @@ const PaymentPage: React.FC = () => {
     }
     
     const storedOrder = localStorage.getItem('currentOrder');
-    if (storedOrder) {
+    const storedTimestamp = localStorage.getItem('currentOrderTimestamp');
+    
+    if (storedOrder && storedTimestamp) {
       try {
+        const timestamp = parseInt(storedTimestamp, 10);
+        const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+        const now = Date.now();
+        
+        // Clear stale data (older than 1 hour)
+        if (now - timestamp > oneHour) {
+          console.log('Clearing stale order data');
+          localStorage.removeItem('currentOrder');
+          localStorage.removeItem('currentOrderTimestamp');
+          localStorage.removeItem('currentBookingForm');
+          return null;
+        }
+        
         return JSON.parse(storedOrder);
       } catch (error) {
         console.error('Error parsing stored order:', error);
@@ -144,7 +159,7 @@ const PaymentPage: React.FC = () => {
       // Get auth token from backend server
       let authToken = '';
       try {
-        const tokenResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/token`);
+        const tokenResponse = await fetch('https://app.escrowcourier.com/website-backend-services/api/auth/token');
         if (tokenResponse.ok) {
           const tokenData = await tokenResponse.json();
           authToken = tokenData.token || tokenData.access_token || tokenData.bearer_token;
@@ -189,7 +204,7 @@ const PaymentPage: React.FC = () => {
       setOrderId(trackingNumber);
       setPaymentInitiated(true);
 
-      // Schedule single payment status confirmation after 50 seconds
+      // Schedule single payment status confirmation after 15 seconds
       schedulePaymentStatusCheck(merchantReqId, authToken);
     } catch (err: any) {
       console.error('Payment initiation error:', err);
@@ -250,9 +265,10 @@ const PaymentPage: React.FC = () => {
           setIsStatusSuccess(true);
           setStatusMessage(statusMsg || 'Payment completed successfully!');
           setShowStatusModal(true);
-          // Clear cached order
+          // Clear all cached booking and order data
           localStorage.removeItem('currentOrder');
           localStorage.removeItem('currentOrderTimestamp');
+          localStorage.removeItem('currentBookingForm');
         } else {
           setIsProcessing(false);
           setIsStatusSuccess(false);
@@ -269,7 +285,7 @@ const PaymentPage: React.FC = () => {
         setCheckingStatus(false);
         setStatusTimeoutId(null);
       }
-    }, 30000); // 30 seconds
+    }, 15000); // 15 seconds
     setStatusTimeoutId(timeout);
   };
 
@@ -392,7 +408,7 @@ const PaymentPage: React.FC = () => {
                   <p className="text-xs text-gray-500 mt-2">Checking payment status...</p>
                 )}
                 {!checkingStatus && paymentInitiated && (
-                  <p className="text-xs text-gray-500 mt-2">We will auto-check status after 30 seconds.</p>
+                  <p className="text-xs text-gray-500 mt-2">We will auto-check status after 15 seconds.</p>
                 )}
               </div>
 
