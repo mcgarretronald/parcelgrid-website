@@ -711,7 +711,7 @@ const BookingPage: React.FC = () => {
     <div className="min-h-screen bg-white">
       <div className="flex flex-col lg:flex-row min-h-screen">
         {/* Left Side - Animated Illustration */}
-        <div className="lg:w-1/2 bg-gradient-to-br from-[#00473E] to-[#006644] flex items-center justify-center p-4 lg:p-8 relative overflow-hidden mobile-animation-container">
+        <div className="lg:w-1/2 bg-gradient-to-br from-[#00473E] to-[#006644] flex items-center justify-center px-4 py-6 lg:p-8 relative overflow-hidden mobile-animation-container">
           {/* Animated Background Elements */}
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-20 left-20 w-32 h-32 bg-[#E9FF15] rounded-full animate-pulse"></div>
@@ -720,10 +720,10 @@ const BookingPage: React.FC = () => {
           </div>
 
           {/* Main Illustration Content */}
-          <div className="relative z-10 text-center space-y-4 lg:space-y-8 max-w-lg flex-1 flex flex-col justify-center py-4">
+          <div className="relative z-10 text-center space-y-3 lg:space-y-8 max-w-lg w-full">
             {/* Motivational Banner */}
-            <div className="mb-2 lg:mb-8">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
+            <div className="mb-1 lg:mb-8">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1.5">
                 BOOK A PARCEL IN UNDER 60 SECONDS.
               </h2>
               <p className="text-sm sm:text-base lg:text-xl text-white/90">
@@ -732,7 +732,7 @@ const BookingPage: React.FC = () => {
             </div>
 
             {/* Animated Truck Delivery */}
-            <div className="relative mx-auto w-full max-w-md my-2 lg:my-0">
+            <div className="relative mx-auto w-full max-w-md">
               <div className="loader">
                 <div className="truckWrapper">
                   <div className="truckBody">
@@ -773,7 +773,7 @@ h78.747C231.693,100.736,232.77,106.162,232.77,111.694z" />
             </div>
 
             {/* Feature Points */}
-            <div className="space-y-2 lg:space-y-3 text-left">
+            <div className="space-y-1.5 lg:space-y-3 text-left mt-3">
               <div className="flex items-center gap-2 lg:gap-3 text-white text-sm lg:text-base">
                 <div className="w-2 h-2 bg-[#E9FF15] rounded-full animate-pulse flex-shrink-0"></div>
                 <span>Track your parcel in real-time</span>
@@ -788,7 +788,7 @@ h78.747C231.693,100.736,232.77,106.162,232.77,111.694z" />
               </div>
               
               {/* Animated Scroll Indicator - Only visible on mobile */}
-              <div className="lg:hidden mt-4 flex justify-center">
+              <div className="lg:hidden mt-3 flex justify-center">
                 <div 
                   className="scrolldown"
                   onClick={() => {
