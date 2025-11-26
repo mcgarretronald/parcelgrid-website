@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { CheckCircle, Loader2, AlertCircle, Smartphone } from 'lucide-react';
+import Receipt from '../components/Receipt';
 
 interface LocationState {
   bookingData: any;
@@ -62,6 +63,7 @@ const PaymentPage: React.FC = () => {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [isStatusSuccess, setIsStatusSuccess] = useState<boolean>(false);
+  const [showReceipt, setShowReceipt] = useState(false);
   const handleBackToSummary = () => {
     navigate('/book-parcel', {
       state: {
@@ -264,7 +266,7 @@ const PaymentPage: React.FC = () => {
           setError(null);
           setIsStatusSuccess(true);
           setStatusMessage(statusMsg || 'Payment completed successfully!');
-          setShowStatusModal(true);
+          setShowReceipt(true);
           // Clear all cached booking and order data
           localStorage.removeItem('currentOrder');
           localStorage.removeItem('currentOrderTimestamp');
@@ -367,6 +369,14 @@ const PaymentPage: React.FC = () => {
                   <p className="text-sm text-red-800">{error}</p>
                 </div>
               )}
+
+              <Button
+                onClick={() => setShowReceipt(true)}
+                variant="outline"
+                className="w-full border-2 border-[#00473E] text-[#00473E] font-semibold text-lg py-6"
+              >
+                Preview Receipt
+              </Button>
 
               <Button
                 onClick={handleCreateOrder}
@@ -501,6 +511,19 @@ const PaymentPage: React.FC = () => {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Receipt Modal */}
+        {showReceipt && (
+          <Receipt
+            orderData={state?.bookingData || getOrderData() || state?.orderData}
+            onClose={() => {
+              setShowReceipt(false);
+              if (success) {
+                navigate('/');
+              }
+            }}
+          />
         )}
       </div>
     </div>

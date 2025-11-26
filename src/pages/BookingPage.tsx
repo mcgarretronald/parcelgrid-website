@@ -102,6 +102,340 @@ const BookingPage: React.FC = () => {
         animation-delay: 1s;
       }
       
+      /* Enhanced Dropdown Styles */
+      .custom-select-wrapper {
+        position: relative;
+      }
+      
+      .custom-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300473E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 20px;
+        padding-right: 44px;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background-color: white;
+        border: 2px solid #e5e7eb;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      }
+      
+      .custom-select:hover {
+        border-color: #00473E;
+        box-shadow: 0 4px 6px -1px rgba(0, 71, 62, 0.1), 0 2px 4px -1px rgba(0, 71, 62, 0.06);
+      }
+      
+      .custom-select:focus {
+        outline: none;
+        border-color: #00473E;
+        box-shadow: 0 0 0 3px rgba(0, 71, 62, 0.1), 0 4px 6px -1px rgba(0, 71, 62, 0.15);
+        transform: translateY(-1px);
+      }
+      
+      .custom-select option {
+        padding: 16px 20px;
+        font-size: 15px;
+        line-height: 1.6;
+        background-color: white;
+        color: #1f2937;
+        border-bottom: 1px solid #f3f4f6;
+        font-weight: 400;
+        letter-spacing: 0.01em;
+      }
+      
+      .custom-select option:first-child {
+        color: #6b7280;
+        font-weight: 500;
+        background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+      }
+      
+      .custom-select option:not(:first-child):not(:disabled) {
+        background: linear-gradient(to right, white 0%, #fafafa 100%);
+        position: relative;
+      }
+      
+      .custom-select option:hover,
+      .custom-select option:focus,
+      .custom-select option:checked {
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        color: #00473E;
+        font-weight: 600;
+        border-left: 4px solid #00473E;
+        padding-left: 16px;
+      }
+      
+      .custom-select option:disabled {
+        color: #9ca3af;
+        font-style: italic;
+        background: #fef3c7;
+        border-left: 3px solid #f59e0b;
+      }
+      
+      .custom-select:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: #f9fafb;
+      }
+      
+      @keyframes selectPulse {
+        0%, 100% {
+          box-shadow: 0 0 0 0 rgba(0, 71, 62, 0.2);
+        }
+        50% {
+          box-shadow: 0 0 0 8px rgba(0, 71, 62, 0);
+        }
+      }
+      
+      .custom-select.has-value {
+        background-color: #f0fdf4;
+        border-color: #00473E;
+      }
+      
+      /* Custom Radio Dropdown Styles */
+      .custom-radio-select {
+        width: 100%;
+        cursor: pointer;
+        position: relative;
+        transition: 300ms;
+        color: #1f2937;
+        border-radius: 8px;
+      }
+
+      .custom-radio-selected {
+        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+        padding: 14px 16px;
+        border-radius: 8px;
+        border: 2px solid #e5e7eb;
+        position: relative;
+        z-index: 10;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      }
+      
+      .custom-radio-selected:hover {
+        border-color: #00473E;
+        box-shadow: 0 4px 6px -1px rgba(0, 71, 62, 0.1);
+      }
+
+      .custom-radio-selected.active {
+        border-color: #00473E;
+        background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+        box-shadow: 0 4px 12px -1px rgba(0, 71, 62, 0.15);
+      }
+
+      .custom-radio-arrow {
+        height: 20px;
+        width: 20px;
+        fill: #00473E;
+        transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .custom-radio-select.open .custom-radio-arrow {
+        transform: rotate(180deg);
+      }
+
+      .custom-radio-options {
+        display: flex;
+        flex-direction: column;
+        border-radius: 8px;
+        padding: 8px;
+        background: white;
+        border: 2px solid #00473E;
+        position: absolute;
+        width: 100%;
+        max-height: 280px;
+        overflow-y: auto;
+        top: calc(100% + 4px);
+        opacity: 0;
+        transform: translateY(-10px);
+        pointer-events: none;
+        transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1000;
+        box-shadow: 0 10px 25px -5px rgba(0, 71, 62, 0.2), 0 8px 10px -6px rgba(0, 71, 62, 0.1);
+      }
+
+      .custom-radio-select.open .custom-radio-options {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: all;
+      }
+
+      .custom-radio-option {
+        border-radius: 6px;
+        padding: 12px 14px;
+        transition: all 200ms ease;
+        background-color: white;
+        font-size: 14px;
+        line-height: 1.5;
+        cursor: pointer;
+        border-left: 3px solid transparent;
+        margin-bottom: 4px;
+      }
+      
+      .custom-radio-option:hover {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border-left-color: #00473E;
+        padding-left: 18px;
+        transform: translateX(2px);
+      }
+
+      .custom-radio-option.selected {
+        background: linear-gradient(135deg, #00473E 0%, #005a4d 100%);
+        color: white;
+        font-weight: 600;
+        border-left-color: #e9ff15;
+        box-shadow: 0 2px 8px rgba(0, 71, 62, 0.3);
+      }
+
+      .custom-radio-option.disabled {
+        color: #9ca3af;
+        font-style: italic;
+        background: #fef3c7;
+        border-left-color: #f59e0b;
+        cursor: not-allowed;
+      }
+
+      .custom-radio-option.disabled:hover {
+        transform: none;
+        padding-left: 14px;
+      }
+
+      .custom-radio-options::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .custom-radio-options::-webkit-scrollbar-track {
+        background: #f3f4f6;
+        border-radius: 3px;
+      }
+
+      .custom-radio-options::-webkit-scrollbar-thumb {
+        background: #00473E;
+        border-radius: 3px;
+      }
+
+      .custom-radio-options::-webkit-scrollbar-thumb:hover {
+        background: #005a4d;
+      }
+      
+      /* Typing Animation Styles */
+      @keyframes typing1 {
+        0% {
+          width: 0;
+        }
+        25%, 45% {
+          width: 100%;
+        }
+        60% {
+          width: 0;
+        }
+        60.01%, 100% {
+          width: 0;
+        }
+      }
+
+      @keyframes typing2 {
+        0%, 60% {
+          width: 0;
+        }
+        75%, 95% {
+          width: 100%;
+        }
+        100% {
+          width: 0;
+        }
+      }
+
+      @keyframes blink-caret {
+        50% {
+          border-color: transparent;
+        }
+      }
+
+      @keyframes show1 {
+        0%, 50% {
+          opacity: 1;
+          visibility: visible;
+        }
+        50.01%, 100% {
+          opacity: 0;
+          visibility: hidden;
+        }
+      }
+
+      @keyframes show2 {
+        0%, 50% {
+          opacity: 0;
+          visibility: hidden;
+        }
+        50.01%, 100% {
+          opacity: 1;
+          visibility: visible;
+        }
+      }
+
+      .typing-container {
+        position: relative;
+        min-height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .typing-animation {
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-weight: 700;
+        border-right: 0.15em solid #E9FF15;
+        width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        margin: 0 auto;
+        display: inline-block;
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: clamp(0.75rem, 3.5vw, 2rem);
+        max-width: 95%;
+      }
+
+      @media (min-width: 640px) {
+        .typing-animation {
+          font-size: clamp(1rem, 3.5vw, 2rem);
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .typing-animation {
+          font-size: clamp(1.25rem, 2.5vw, 2rem);
+        }
+      }
+
+      @media (min-width: 1280px) {
+        .typing-animation {
+          font-size: clamp(1.5rem, 2vw, 2rem);
+        }
+      }
+
+      .typing-animation.line1 {
+        animation: 
+          typing1 12s steps(39, end) infinite,
+          blink-caret 0.75s step-end infinite,
+          show1 12s step-end infinite;
+      }
+
+      .typing-animation.line2 {
+        animation: 
+          typing2 12s steps(36, end) infinite,
+          blink-caret 0.75s step-end infinite,
+          show2 12s step-end infinite;
+      }
+      
       /* Truck Loader Styles */
       .loader {
         width: 100%;
@@ -331,6 +665,8 @@ const BookingPage: React.FC = () => {
   const [deliveryFee, setDeliveryFee] = useState<number | null>(null);
   const [feeLoading, setFeeLoading] = useState(false);
   const [feeError, setFeeError] = useState<string | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedPointLabel, setSelectedPointLabel] = useState('Select a pickup point');
 
   // Filter pickup points based on county - only show active agents
   useEffect(() => {
@@ -709,106 +1045,35 @@ const BookingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="flex flex-col lg:flex-row min-h-screen">
-        {/* Left Side - Animated Illustration */}
-        <div className="lg:w-1/2 bg-gradient-to-br from-[#00473E] to-[#006644] flex items-center justify-center px-4 py-6 lg:p-8 relative overflow-hidden mobile-animation-container">
-          {/* Animated Background Elements */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-20 left-20 w-32 h-32 bg-[#E9FF15] rounded-full animate-pulse"></div>
-            <div className="absolute bottom-32 right-20 w-24 h-24 bg-[#E9FF15] rounded-full animate-pulse delay-1000"></div>
-            <div className="absolute top-1/2 left-10 w-16 h-16 bg-[#E9FF15] rounded-full animate-bounce"></div>
-          </div>
+      <div className="min-h-screen">
+        {/* Form Section */}
+        <div className="py-8 px-4 sm:px-6 lg:px-8 overflow-y-auto bg-white">
+          <div className="max-w-4xl mx-auto">
+            {/* Animated Header Banner */}
+            <div className="bg-gradient-to-br from-[#00473E] to-[#006644] rounded-2xl p-8 mb-4 relative overflow-hidden">
+              {/* Animated Background Elements */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-10 left-10 w-24 h-24 bg-[#E9FF15] rounded-full animate-pulse"></div>
+                <div className="absolute bottom-10 right-10 w-20 h-20 bg-[#E9FF15] rounded-full animate-pulse delay-1000"></div>
+                <div className="absolute top-1/2 right-20 w-12 h-12 bg-[#E9FF15] rounded-full animate-bounce"></div>
+              </div>
 
-          {/* Main Illustration Content */}
-          <div className="relative z-10 text-center space-y-5 lg:space-y-8 max-w-lg w-full">
-            {/* Motivational Banner */}
-            <div className="mb-1 lg:mb-8">
-              <h2 className="text-3xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">
-                BOOK A PARCEL IN UNDER 60 SECONDS.
-              </h2>
-              <p className="text-base sm:text-base lg:text-xl text-white/90">
-                Skip the long process & book a parcel in seconds. Drop Off When You're Ready.
-              </p>
-            </div>
-
-            {/* Animated Truck Delivery */}
-            <div className="relative mx-auto w-full max-w-md">
-              <div className="loader">
-                <div className="truckWrapper">
-                  <div className="truckBody">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 198 93" className="trucksvg">
-                      <path strokeWidth={3} stroke="#282828" fill="#F83D3D" d="M135 22.5H177.264C178.295 22.5 179.22 23.133 179.594 24.0939L192.33 56.8443C192.442 57.1332 192.5 57.4404 192.5 57.7504V89C192.5 90.3807 191.381 91.5 190 91.5H135C133.619 91.5 132.5 90.3807 132.5 89V25C132.5 23.6193 133.619 22.5 135 22.5Z" />
-                      <path strokeWidth={3} stroke="#282828" fill="#7D7C7C" d="M146 33.5H181.741C182.779 33.5 183.709 34.1415 184.078 35.112L190.538 52.112C191.16 53.748 189.951 55.5 188.201 55.5H146C144.619 55.5 143.5 54.3807 143.5 53V36C143.5 34.6193 144.619 33.5 146 33.5Z" />
-                      <path strokeWidth={2} stroke="#282828" fill="#282828" d="M150 65C150 65.39 149.763 65.8656 149.127 66.2893C148.499 66.7083 147.573 67 146.5 67C145.427 67 144.501 66.7083 143.873 66.2893C143.237 65.8656 143 65.39 143 65C143 64.61 143.237 64.1344 143.873 63.7107C144.501 63.2917 145.427 63 146.5 63C147.573 63 148.499 63.2917 149.127 63.7107C149.763 64.1344 150 64.61 150 65Z" />
-                      <rect strokeWidth={2} stroke="#282828" fill="#FFFCAB" rx={1} height={7} width={5} y={63} x={187} />
-                      <rect strokeWidth={2} stroke="#282828" fill="#282828" rx={1} height={11} width={4} y={81} x={193} />
-                      <rect strokeWidth={3} stroke="#282828" fill="#DFDFDF" rx="2.5" height={90} width={121} y="1.5" x="6.5" />
-                      <rect strokeWidth={2} stroke="#282828" fill="#DFDFDF" rx={2} height={4} width={6} y={84} x={1} />
-                    </svg>
+              {/* Typing Animation Content */}
+              <div className="relative z-10 text-center">
+                <div className="typing-container">
+                  <div className="typing-animation line1 text-white">
+                    BOOK A PARCEL IN UNDER 60 SECONDS.
                   </div>
-                  <div className="truckTires">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 30 30" className="tiresvg">
-                      <circle strokeWidth={3} stroke="#282828" fill="#282828" r="13.5" cy={15} cx={15} />
-                      <circle fill="#DFDFDF" r={7} cy={15} cx={15} />
-                    </svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 30 30" className="tiresvg">
-                      <circle strokeWidth={3} stroke="#282828" fill="#282828" r="13.5" cy={15} cx={15} />
-                      <circle fill="#DFDFDF" r={7} cy={15} cx={15} />
-                    </svg>
-                  </div>
-                  <div className="road" />
-                  <svg xmlSpace="preserve" viewBox="0 0 453.459 453.459" xmlns="http://www.w3.org/2000/svg" id="Capa_1" version="1.1" fill="#000000" className="lampPost">
-                    <path d="M252.882,0c-37.781,0-68.686,29.953-70.245,67.358h-6.917v8.954c-26.109,2.163-45.463,10.011-45.463,19.366h9.993
-c-1.65,5.146-2.507,10.54-2.507,16.017c0,28.956,23.558,52.514,52.514,52.514c28.956,0,52.514-23.558,52.514-52.514
-c0-5.478-0.856-10.872-2.506-16.017h9.992c0-9.354-19.352-17.204-45.463-19.366v-8.954h-6.149C200.189,38.779,223.924,16,252.882,16
-c29.952,0,54.32,24.368,54.32,54.32c0,28.774-11.078,37.009-25.105,47.437c-17.444,12.968-37.216,27.667-37.216,78.884v113.914
-h-0.797c-5.068,0-9.174,4.108-9.174,9.177c0,2.844,1.293,5.383,3.321,7.066c-3.432,27.933-26.851,95.744-8.226,115.459v11.202h45.75
-v-11.202c18.625-19.715-4.794-87.527-8.227-115.459c2.029-1.683,3.322-4.223,3.322-7.066c0-5.068-4.107-9.177-9.176-9.177h-0.795
-V196.641c0-43.174,14.942-54.283,30.762-66.043c14.793-10.997,31.559-23.461,31.559-60.277C323.202,31.545,291.656,0,252.882,0z
-M232.77,111.694c0,23.442-19.071,42.514-42.514,42.514c-23.442,0-42.514-19.072-42.514-42.514c0-5.531,1.078-10.957,3.141-16.017
-h78.747C231.693,100.736,232.77,106.162,232.77,111.694z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Feature Points */}
-            <div className="space-y-2.5 lg:space-y-3 text-left mt-4">
-              <div className="flex items-center gap-2 lg:gap-3 text-white text-base lg:text-base">
-                <div className="w-2 h-2 bg-[#E9FF15] rounded-full animate-pulse flex-shrink-0"></div>
-                <span>Track your parcel in real-time</span>
-              </div>
-              <div className="flex items-center gap-2 lg:gap-3 text-white text-base lg:text-base">
-                <div className="w-2 h-2 bg-[#E9FF15] rounded-full animate-pulse delay-300 flex-shrink-0"></div>
-                <span>Instant COD settlements</span>
-              </div>
-              <div className="flex items-center gap-2 lg:gap-3 text-white text-base lg:text-base">
-                <div className="w-2 h-2 bg-[#E9FF15] rounded-full animate-pulse delay-700 flex-shrink-0"></div>
-                <span>Fast, Secure & Reliable Delivery</span>
-              </div>
-              
-              {/* Animated Scroll Indicator - Only visible on mobile */}
-              <div className="lg:hidden mt-5 flex justify-center">
-                <div 
-                  className="scrolldown"
-                  onClick={() => {
-                    const formSection = document.querySelector('.lg\\:w-1\\/2.py-8');
-                    formSection?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                >
-                  <div className="chevrons">
-                    <div className="chevrondown" />
-                    <div className="chevrondown" />
+                  <div className="typing-animation line2 text-white">
+                    FAST, SECURE & RELIABLE DELIVERY.
                   </div>
                 </div>
+                <p className="text-sm sm:text-base lg:text-xl text-white/90 mt-3" style={{ fontSize: 'clamp(0.875rem, 2.5vw, 1.25rem)' }}>
+                  Skip the long process & book a parcel in seconds. Drop Off When You're Ready.
+                </p>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Right Side - Form */}
-        <div className="lg:w-1/2 py-8 px-4 sm:px-6 lg:px-8 overflow-y-auto bg-white">
-          <div className="max-w-2xl mx-auto">
             {/* Form Container */}
             <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 border border-gray-100">
           {/* Step 1: Vendor & Customer Information Combined */}
@@ -893,38 +1158,56 @@ h78.747C231.693,100.736,232.77,106.162,232.77,111.694z" />
                     type="text"
                     value={formData.customerCounty}
                     onChange={(e) => handleInputChange('customerCounty', e.target.value)}
-                    placeholder="e.g., Nairobi, Mombasa, Nakuru"
+                    placeholder="e.g., Kisumu, Mombasa, Nakuru"
                     className="w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-[#00473E]" />
                     Preferred Pickup Point <span className="text-red-500">*</span>
                   </label>
-                  <select
-                    value={formData.pickupPoint}
-                    onChange={(e) => handleInputChange('pickupPoint', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00473E] focus:border-transparent"
+                  <div 
+                    className={`custom-radio-select ${dropdownOpen ? 'open' : ''}`}
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    onBlur={() => setTimeout(() => setDropdownOpen(false), 200)}
+                    tabIndex={0}
                   >
-                    <option value="">Select a pickup point</option>
-                    {filteredPickupPoints.length > 0 ? (
-                      filteredPickupPoints.map((point) => (
-                        <option key={point.id} value={point.id}>
-                          {point.name} - {point.info}
-                        </option>
-                      ))
-                    ) : (
-                      <option value="" disabled>
-                        No pickup points found for this county
-                      </option>
-                    )}
-                  </select>
-                  {filteredPickupPoints.length === 0 && formData.customerCounty && (
-                    <p className="text-xs text-amber-600 mt-1">
-                      No pickup points found. Try a different county or contact us.
-                    </p>
-                  )}
+                    <div className={`custom-radio-selected ${formData.pickupPoint ? 'active' : ''}`}>
+                      <span className={formData.pickupPoint ? 'font-medium text-[#00473E]' : 'text-gray-500'}>
+                        {selectedPointLabel}
+                      </span>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="custom-radio-arrow">
+                        <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
+                      </svg>
+                    </div>
+                    <div className="custom-radio-options">
+                      {filteredPickupPoints.length > 0 ? (
+                        filteredPickupPoints.map((point) => (
+                          <div
+                            key={point.id}
+                            className={`custom-radio-option ${formData.pickupPoint === point.id ? 'selected' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleInputChange('pickupPoint', point.id);
+                              setSelectedPointLabel(point.info);
+                              setDropdownOpen(false);
+                            }}
+                          >
+                            {point.info}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="custom-radio-option disabled">
+                          {formData.customerCounty 
+                            ? '⚠️ No pickup points found for this county'
+                            : '📍 Please select a customer location first'
+                          }
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
