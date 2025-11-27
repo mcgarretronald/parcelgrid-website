@@ -381,7 +381,7 @@ const BookingPage: React.FC = () => {
 
       .typing-container {
         position: relative;
-        min-height: 120px;
+        min-height: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -707,14 +707,7 @@ const BookingPage: React.FC = () => {
     }
   }, [formData.customerCounty, points]);
 
-  const packageTypes = [
-    'Box',
-    'Non-woven bag',
-    'Sack',
-    'Wrapped with cellotape',
-    'Not sealed',
-    'Other',
-  ];
+ 
 
   const weightRanges = [
     '0-4 KG',
@@ -724,6 +717,15 @@ const BookingPage: React.FC = () => {
     '15-20 KG',
     '20-25 KG',
     '25-30 KG',
+  ];
+
+  const packageTypes = [
+    'Box',
+    'Non-woven bag',
+    'Sack',
+    'Wrapped with cellotape',
+    'Not sealed',
+    'Other',
   ];
 
   const handleInputChange = (field: keyof FormData, value: any) => {
@@ -1068,7 +1070,7 @@ const BookingPage: React.FC = () => {
                     FAST, SECURE & RELIABLE DELIVERY.
                   </div>
                 </div>
-                <p className="text-sm sm:text-base lg:text-xl text-white/90 mt-3" style={{ fontSize: 'clamp(0.875rem, 2.5vw, 1.25rem)' }}>
+                <p className="text-sm sm:text-base lg:text-xl text-[#E9FF15]/90 mt-3" style={{ fontSize: 'clamp(0.875rem, 2.5vw, 1.25rem)' }}>
                   Skip the long process & book a parcel in seconds. Drop Off When You're Ready.
                 </p>
               </div>
@@ -1329,12 +1331,12 @@ const BookingPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Special Instructions
+                  Parcel Details
                 </label>
                 <textarea
                   value={formData.specialInstructions}
                   onChange={(e) => handleInputChange('specialInstructions', e.target.value)}
-                  placeholder="Any special handling instructions..."
+                  placeholder="Enter items name, pieces, and variations.E.g., 2 phones, 1 tablet (Samsung), chargers, etc."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00473E] focus:border-transparent resize-none"
                   rows={4}
                 />
@@ -1374,7 +1376,7 @@ const BookingPage: React.FC = () => {
                     <p><strong>Phone:</strong> {formData.customerPhone}</p>
                     <p><strong>County:</strong> {formData.customerCounty}</p>
                     <p><strong>Pickup Point:</strong> {
-                      points.find(p => String(p.id) === String(formData.pickupPoint))?.name || formData.pickupPoint
+                      points.find(p => String(p.id) === String(formData.pickupPoint))?.info || formData.pickupPoint
                     }</p>
                   </div>
                 </div>
@@ -1403,7 +1405,7 @@ const BookingPage: React.FC = () => {
                       </p>
                     )}
                     {formData.specialInstructions && (
-                      <p><strong>Special Instructions:</strong> {formData.specialInstructions}</p>
+                      <p><strong>Parcel Description:</strong> {formData.specialInstructions}</p>
                     )}
                   </div>
                 </div>
@@ -1421,8 +1423,7 @@ const BookingPage: React.FC = () => {
 
               <div className="bg-[#E9FF15]/20 border border-[#E9FF15] rounded-lg p-4 mt-6">
                 <p className="text-sm text-gray-700">
-                  <strong>Note:</strong> Our team will contact you within 24 hours to confirm your
-                  booking and provide delivery estimates.
+                  <strong>Note:</strong> Your Parcel Tracking number has been created. Pay the parcel fees so that you get a receipt NOW
                 </p>
               </div>
             </div>

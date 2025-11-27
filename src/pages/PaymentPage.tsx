@@ -312,7 +312,13 @@ const PaymentPage: React.FC = () => {
             <p className="text-sm text-gray-500 mb-6">Order ID: {orderId}</p>
             <div className="bg-[#E9FF15]/20 border border-[#E9FF15] rounded-lg p-4 mb-6">
               <p className="text-sm text-gray-700">
-                Your parcel is now <strong>awaiting handover</strong>. We will contact you with pickup details shortly.
+                You have successfully booked your parcel. Kindly drop it to 
+
+Jitihada Shopping Complex, Ground Floor, Shop F7 – Taveta Road (Next to Taveta Mall, Opposite Samagat Building)
+
+Or 
+
+Iconic Business Plaza, Ground Floor, Shop G13 – Moi Avenue (Between Sasa Mall and Sawa Mall)
               </p>
             </div>
             <Button
@@ -516,7 +522,10 @@ const PaymentPage: React.FC = () => {
         {/* Receipt Modal */}
         {showReceipt && (
           <Receipt
-            orderData={state?.bookingData || getOrderData() || state?.orderData}
+            orderData={{
+              ...(state?.bookingData || getOrderData() || state?.orderData || {}),
+              trackingNo: state?.trackingNo || (state?.bookingData || getOrderData() || state?.orderData)?.trackingNo
+            }}
             onClose={() => {
               setShowReceipt(false);
               if (success) {

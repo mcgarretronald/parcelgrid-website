@@ -64,11 +64,13 @@ const Receipt: React.FC<ReceiptProps> = ({ orderData, onClose }) => {
               || matchedAgent.phoneNumber 
               || matchedAgent.phone_number 
               || matchedAgent.contact 
+              || matchedAgent.mobile 
               || '+254XXXXXXXXX',
-            location: matchedAgent.address 
+            location: matchedAgent.detailedAddress 
+              || matchedAgent.detailed_address 
+              || matchedAgent.address 
               || matchedAgent.location 
-              || matchedAgent.county 
-              || matchedAgent.town 
+              || `${matchedAgent.town || ''}, ${matchedAgent.county || ''}`.trim()
               || 'N/A'
           });
         } else {
@@ -116,10 +118,15 @@ const Receipt: React.FC<ReceiptProps> = ({ orderData, onClose }) => {
   // Extract data from orderData - handle nested structure and formData
   // For preview mode, data comes directly from bookingData/formData
   const trackingNo = orderData.trackingNo 
+    || orderData.trackingNumber
     || orderData.tracking_no 
+    || orderData.tracking_number
     || orderData.data?.trackingNo 
+    || orderData.data?.trackingNumber
     || orderData.data?.tracking_no
+    || orderData.data?.tracking_number
     || orderData.data?.order?.[0]?.trackingNo
+    || orderData.data?.order?.[0]?.trackingNumber
     || 'PENDING';
     
   const customerName = orderData.customerName 
@@ -182,16 +189,7 @@ const Receipt: React.FC<ReceiptProps> = ({ orderData, onClose }) => {
     || orderData.data?.paymentStatus
     || 'Pre-paid';
     
-  const amountToCollect = orderData.packageValue
-    || orderData.package_value
-    || orderData.parcelValue
-    || orderData.amountToCollect 
-    || orderData.amount_to_collect 
-    || orderData.data?.packageValue
-    || orderData.data?.amountToCollect
-    || orderData.data?.order?.[0]?.packageValue
-    || orderData.data?.order?.[0]?.parcelValue
-    || '0.00';
+  const amountToCollect = '0.00';
     
   const deliveryFee = orderData.deliveryFee 
     || orderData.delivery_fee 
