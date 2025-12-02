@@ -52,7 +52,7 @@ const KenyaMapVisual = () => (
   <img
     src="/map.png"
     alt="Kenya map"
-    className="w-full rounded-2xl max-h-[460px] object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105"
+    className="w-full h-[400px] rounded-2xl object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105"
   />
 )
 
@@ -60,7 +60,7 @@ const LicenseVisual = () => (
   <img
     src="/Certificate.jpeg"
     alt="Certificate"
-    className="w-full rounded-2xl max-h-[460px] object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105"
+    className="w-full h-[400px] rounded-2xl object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105"
   />
 )
 
@@ -68,7 +68,7 @@ const WalletVisual = () => (
     <img
       src="/withdrawal.png"
       alt="Wallet"
-      className="max-w-full max-h-[420px] sm:max-h-[270px] md:max-h-[460px] object-contain transition-transform duration-300 ease-out transform hover:scale-105"
+      className="w-full h-[400px] object-contain transition-transform duration-300 ease-out transform hover:scale-105"
     />
 )
 
@@ -76,7 +76,7 @@ const GrowthChartVisual = () => (
     <img
       src="/Realgrowth.jpeg"
       alt="Growth"
-      className="max-w-full max-h-[360px] object-contain transition-transform duration-300 ease-out transform hover:scale-105"
+      className="w-full h-[400px] object-contain transition-transform duration-300 ease-out transform hover:scale-105"
     />
 )
 
@@ -84,12 +84,12 @@ const VendorShopVisual = () => (
     <img
       src="/Onlinevendor.jpeg"
       alt="Online vendor"
-      className="max-w-full max-h-[360px] object-contain transition-transform duration-300 ease-out transform hover:scale-105"
+      className="w-full h-[400px] object-contain transition-transform duration-300 ease-out transform hover:scale-105"
     />
 )
 
 const NotificationsVisual = () => (
-  <img src="/Notification.png" alt="Notifications" className="w-full rounded-2xl max-h-[560px] object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105" />
+  <img src="/Notification.png" alt="Notifications" className="w-full h-[400px] rounded-2xl object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105" />
 );
 
 const getVisualComponent = (visual: FeatureSlide['visual']) => {
@@ -168,7 +168,7 @@ export const FeaturesCarousel: React.FC = () => {
           </div>
 
           {/* Visual - Right Side */}
-          <div className="flex-1 w-full max-w-lg">
+          <div className="flex-1 w-full max-w-lg h-[400px] flex items-center justify-center">
             {getVisualComponent(currentSlideData.visual)}
           </div>
         </div>

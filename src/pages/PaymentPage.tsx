@@ -377,14 +377,6 @@ Iconic Business Plaza, Ground Floor, Shop G13 – Moi Avenue (Between Sasa Mall 
               )}
 
               <Button
-                onClick={() => setShowReceipt(true)}
-                variant="outline"
-                className="w-full border-2 border-[#00473E] text-[#00473E] font-semibold text-lg py-6"
-              >
-                Preview Receipt
-              </Button>
-
-              <Button
                 onClick={handleCreateOrder}
                 disabled={isProcessing || !validatePhone(phoneNumber)}
                 className="w-full bg-[#E9FF15] hover:bg-[#d4e614] text-[#00473E] font-bold text-lg py-6"
@@ -481,15 +473,24 @@ Iconic Business Plaza, Ground Floor, Shop G13 – Moi Avenue (Between Sasa Mall 
                 {/* Action Buttons */}
                 <div className="flex flex-col gap-3">
                   {isStatusSuccess ? (
-                    <Button
-                      onClick={() => {
-                        setShowStatusModal(false);
-                        navigate('/');
-                      }}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg"
-                    >
-                      Go to Home
-                    </Button>
+                    <>
+                      <Button
+                        onClick={() => setShowReceipt(true)}
+                        className="w-full bg-[#00473E] hover:bg-[#00473E]/90 text-white py-3 text-lg"
+                      >
+                        Download/Share Receipt
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setShowStatusModal(false);
+                          navigate('/');
+                        }}
+                        variant="outline"
+                        className="w-full py-3 text-lg"
+                      >
+                        Go to Home
+                      </Button>
+                    </>
                   ) : (
                     <>
                       <Button

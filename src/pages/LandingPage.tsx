@@ -161,6 +161,56 @@ const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const storiesContainerRef = useRef<HTMLDivElement>(null);
+  const videoSectionRef = useRef<HTMLDivElement>(null);
+
+  // Auto-play/pause video based on visibility
+  useEffect(() => {
+    const videoSection = videoSectionRef.current;
+    const iframe = document.getElementById('landing-video-iframe') as HTMLIFrameElement;
+    
+    if (!videoSection || !iframe) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Video section is visible - play video with muted audio
+            try {
+              iframe.contentWindow?.postMessage(
+                '{"event":"command","func":"playVideo","args":""}',
+                '*'
+              );
+              iframe.contentWindow?.postMessage(
+                '{"event":"command","func":"mute","args":""}',
+                '*'
+              );
+            } catch (error) {
+              console.log('Could not control video playback:', error);
+            }
+          } else {
+            // Video section is out of view - pause video
+            try {
+              iframe.contentWindow?.postMessage(
+                '{"event":"command","func":"pauseVideo","args":""}',
+                '*'
+              );
+            } catch (error) {
+              console.log('Could not pause video:', error);
+            }
+          }
+        });
+      },
+      {
+        threshold: 0.5, // Trigger when 50% of the section is visible
+      }
+    );
+
+    observer.observe(videoSection);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   // Scroll to hash targets (e.g. /#pickup-points) with offset for the fixed header
   useEffect(() => {
@@ -235,7 +285,7 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* About Video Section */}
-      <section className="py-6 md:py-12 bg-white">
+      <section ref={videoSectionRef} className="py-6 md:py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-3 md:mb-6">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1.5 md:mb-2">Who We Are & What We Do</h2>
@@ -246,6 +296,7 @@ const LandingPage: React.FC = () => {
             <div className="w-full max-w-4xl aspect-video rounded-lg overflow-hidden shadow-lg">
               {/* Google Drive preview embed - use the file id in the preview URL */}
               <iframe
+                id="landing-video-iframe"
                 title="ParcelGrid Overview Video"
                 src="https://drive.google.com/file/d/1gmlf_I9Ij9cLuJzMuUVuh0Y9WHG1Jyka/preview"
                 className="w-full h-full"
