@@ -178,6 +178,37 @@ const HowToUseAppPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      <Helmet>
+        {/* Primary Meta Tags */}
+        <title>How to Use ParcelGrid App - Complete Guide for Online Vendors | COD Delivery Kenya</title>
+        <meta name="title" content="How to Use ParcelGrid App - Complete Guide for Online Vendors | COD Delivery Kenya" />
+        <meta name="description" content="Step-by-step guide to using ParcelGrid mobile app. Learn how to book parcels, track deliveries, manage COD payments, and get instant settlements across Kenya. Download and start selling nationwide today." />
+        <meta name="keywords" content="ParcelGrid app guide, how to use ParcelGrid, COD delivery tutorial, parcel booking guide, track delivery Kenya, instant settlement guide, online vendor app Kenya, ParcelGrid tutorial" />
+        <meta name="robots" content="index, follow" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="og:title" content="How to Use ParcelGrid App - Complete Vendor Guide" />
+        <meta property="og:description" content="Master ParcelGrid in minutes. Book parcels, track deliveries, manage COD payments, and get instant settlements. Complete step-by-step guide for online vendors." />
+        <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="twitter:title" content="How to Use ParcelGrid App - Complete Vendor Guide" />
+        <meta property="twitter:description" content="Master ParcelGrid in minutes. Book parcels, track deliveries, and get instant COD settlements." />
+        <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/how-to-use-app` : ''} />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(howToStructuredData)}
+        </script>
+      </Helmet>
+      
       <Header transparent={false} />
 
       {/* Hero Section */}
