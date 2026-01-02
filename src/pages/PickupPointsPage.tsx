@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Store, Truck, Package } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import Header from '@/components/layout/Header';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
@@ -9,6 +10,34 @@ import { useScrollToTop } from '../hooks/useScrollToTop';
 const PickupPointsPage: React.FC = () => {
   // Scroll to top when navigating to this page
   useScrollToTop();
+
+  // Structured Data for Pickup Points
+  const pickupPointsStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: 'ParcelGrid Pickup Points',
+    description: 'Nationwide pickup points across Kenya for convenient parcel collection',
+    areaServed: {
+      '@type': 'Country',
+      name: 'Kenya'
+    },
+    hasMap: 'https://parcelgrid.com/pickup-points',
+    telephone: '+254-XXX-XXXX',
+    address: [
+      {
+        '@type': 'PostalAddress',
+        streetAddress: 'Iconic Business Plaza, Ground Floor, Moi Avenue',
+        addressLocality: 'Nairobi',
+        addressCountry: 'KE'
+      },
+      {
+        '@type': 'PostalAddress',
+        streetAddress: 'Jitihada Shopping Complex, Taveta Road',
+        addressLocality: 'Nairobi',
+        addressCountry: 'KE'
+      }
+    ]
+  };
 
   const location = useLocation();
 
@@ -29,6 +58,40 @@ const PickupPointsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        {/* Primary Meta Tags */}
+        <title>Pickup Points Across Kenya - ParcelGrid | Drop Off & Collection Locations</title>
+        <meta name="title" content="Pickup Points Across Kenya - ParcelGrid | Drop Off & Collection Locations" />
+        <meta name="description" content="Find ParcelGrid pickup points and drop-off locations across Kenya. Vendors drop off at Nairobi branches (Moi Avenue & Taveta Road), customers collect from 400+ pickup points nationwide." />
+        <meta name="keywords" content="pickup points Kenya, ParcelGrid locations, drop off Nairobi, collection points Kenya, Moi Avenue drop off, Taveta Road drop off, parcel collection Kenya, pickup network" />
+        <meta name="robots" content="index, follow" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="og:title" content="ParcelGrid Pickup Points - Nationwide Coverage Across Kenya" />
+        <meta property="og:description" content="400+ pickup points across Kenya. Drop off in Nairobi, collect anywhere. Convenient parcel delivery infrastructure for online vendors." />
+        <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="twitter:title" content="ParcelGrid Pickup Points - Nationwide Coverage" />
+        <meta property="twitter:description" content="400+ pickup points across Kenya. Drop off in Nairobi, collect anywhere." />
+        <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/pickup-points` : ''} />
+        
+        {/* Geo Tags */}
+        <meta name="geo.region" content="KE" />
+        <meta name="geo.placename" content="Kenya" />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(pickupPointsStructuredData)}
+        </script>
+      </Helmet>
       <Header transparent={false} />
 
       {/* Hero Section */}

@@ -1,0 +1,12 @@
+# Robots.txt for ParcelGrid
+User-agent: *
+Allow: /
+
+# Disallow admin or private sections if any
+# Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://yoursite.com/sitemap.xml
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1

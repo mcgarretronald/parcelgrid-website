@@ -1,9 +1,50 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import Footer from '../components/Footer';
 
 const FAQ: React.FC = () => {
   const [openItems, setOpenItems] = useState<string[]>([]);
+
+  // Structured Data for FAQ
+  const faqStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: 'What is ParcelGrid?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'ParcelGrid® is a registered trademark of Escrow Courier Networks Limited, a licensed courier company regulated by the Communications Authority of Kenya (CA). We provide a delivery infrastructure with drop-off points in Nairobi and pickup points in all major towns across Kenya.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'How does COD work with ParcelGrid?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'When booking a parcel, vendors enter the exact COD amount. At pickup, the customer receives an M-Pesa STK prompt. Once payment is successful, the parcel is released. The money reflects instantly in your ParcelGrid wallet, minus a 1.8% handling fee.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'What does the 1.8% COD handling fee cover?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'The fee covers secure M-Pesa collection from customers, instant credit to your ParcelGrid wallet, direct transfer to your M-Pesa number, and safe, reliable COD systems with fraud prevention and support included.'
+        }
+      },
+      {
+        '@type': 'Question',
+        name: 'How long does delivery take?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: 'Delivery typically takes 1-3 business days depending on the destination. Parcels are dispatched daily, and you can track your delivery in real-time through the ParcelGrid app.'
+        }
+      }
+    ]
+  };
 
   const toggleItem = (itemId: string) => {
     setOpenItems(prev => 
@@ -201,6 +242,37 @@ const FAQ: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Helmet>
+        {/* Primary Meta Tags */}
+        <title>FAQ - ParcelGrid | Frequently Asked Questions About COD Delivery in Kenya</title>
+        <meta name="title" content="FAQ - ParcelGrid | Frequently Asked Questions About COD Delivery in Kenya" />
+        <meta name="description" content="Get answers to common questions about ParcelGrid's COD delivery service, pickup points, instant settlements, delivery times, and how our parcel delivery system works across Kenya." />
+        <meta name="keywords" content="ParcelGrid FAQ, COD delivery questions, pickup points Kenya, instant settlements, delivery times Kenya, parcel delivery help, vendor support Kenya, how COD works" />
+        <meta name="robots" content="index, follow" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="og:title" content="ParcelGrid FAQ - All Your Delivery Questions Answered" />
+        <meta property="og:description" content="Learn about COD delivery, pickup points, settlements, and more. Get instant answers to your ParcelGrid questions." />
+        <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="twitter:title" content="ParcelGrid FAQ - All Your Delivery Questions Answered" />
+        <meta property="twitter:description" content="Learn about COD delivery, pickup points, settlements, and more." />
+        <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/faq` : ''} />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(faqStructuredData)}
+        </script>
+      </Helmet>
+
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Title and Subheading */}

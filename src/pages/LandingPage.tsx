@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { FeaturesCarousel } from '../components/FeaturesCarousel';
 import Footer from '../components/Footer';
@@ -163,6 +164,92 @@ const LandingPage: React.FC = () => {
   const storiesContainerRef = useRef<HTMLDivElement>(null);
   const videoSectionRef = useRef<HTMLDivElement>(null);
 
+  // Next.js-style Structured Data for SEO
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'ParcelGrid',
+    description: 'Kenya\'s leading Cash on Delivery (COD) delivery service for online vendors with instant settlements and nationwide coverage',
+    url: typeof window !== 'undefined' ? window.location.origin : '',
+    logo: typeof window !== 'undefined' ? `${window.location.origin}/logo.png` : '',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      telephone: '+254-XXX-XXXX',
+      contactType: 'Customer Service',
+      areaServed: 'KE',
+      availableLanguage: ['English', 'Swahili']
+    },
+    sameAs: [
+      'https://play.google.com/store/apps/details?id=com.escrow.escrowApp'
+    ],
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'KE',
+      addressLocality: 'Nairobi'
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      reviewCount: '1250',
+      bestRating: '5',
+      worstRating: '1'
+    }
+  };
+
+  const breadcrumbStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: typeof window !== 'undefined' ? window.location.origin : ''
+      }
+    ]
+  };
+
+  const serviceStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    serviceType: 'Courier and Delivery Service',
+    provider: {
+      '@type': 'Organization',
+      name: 'ParcelGrid'
+    },
+    areaServed: {
+      '@type': 'Country',
+      name: 'Kenya'
+    },
+    availableChannel: {
+      '@type': 'ServiceChannel',
+      serviceUrl: 'https://play.google.com/store/apps/details?id=com.escrow.escrowApp',
+      serviceName: 'ParcelGrid Mobile App'
+    },
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Delivery Services',
+      itemListElement: [
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Cash on Delivery (COD)',
+            description: 'Instant settlement COD delivery service for online vendors across Kenya. Get paid immediately when customers collect their orders.'
+          }
+        },
+        {
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: 'Prepaid Delivery',
+            description: 'Secure prepaid parcel delivery to 400+ pickup points nationwide'
+          }
+        }
+      ]
+    }
+  };
+
   // Auto-play/pause video based on visibility
   useEffect(() => {
     const videoSection = videoSectionRef.current;
@@ -252,86 +339,170 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full">
+      {/* Next.js-style SEO Head using Helmet */}
+      <Helmet>
+        {/* Primary Meta Tags */}
+        <title>ParcelGrid - Kenya's Leading COD Delivery Service for Online Vendors | Instant Settlements</title>
+        <meta name="title" content="ParcelGrid - Kenya's Leading COD Delivery Service for Online Vendors | Instant Settlements" />
+        <meta name="description" content="Expand your online business across Kenya with ParcelGrid's extensive delivery network. Cash on Delivery (COD) with instant settlements, 400+ pickup points nationwide, and smart notifications. Trusted by thousands of online sellers in Nairobi, Mombasa, Kisumu, Eldoret, and beyond." />
+        <meta name="keywords" content="COD delivery Kenya, cash on delivery, online vendor delivery, parcel delivery Kenya, instant settlements, pickup points Kenya, Nairobi delivery, Mombasa delivery, Kisumu delivery, Eldoret delivery, nationwide courier, ecommerce delivery Kenya, online business Kenya, vendor delivery service" />
+        <meta name="author" content="ParcelGrid" />
+        <meta name="robots" content="index, follow" />
+        <meta name="language" content="English" />
+        <meta name="revisit-after" content="7 days" />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="og:title" content="ParcelGrid - Expand Your Online Business Across Kenya" />
+        <meta property="og:description" content="Join thousands of online vendors using ParcelGrid. 400+ pickup points, instant COD settlements, and delivery to all major Kenyan towns. Download the app today!" />
+        <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
+        <meta property="og:site_name" content="ParcelGrid" />
+        <meta property="og:locale" content="en_KE" />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="twitter:title" content="ParcelGrid - Kenya's Leading COD Delivery Service" />
+        <meta property="twitter:description" content="Instant COD settlements, 400+ pickup points nationwide, and smart notifications for online vendors." />
+        <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
+        
+        {/* Canonical URL */}
+        <link rel="canonical" href={typeof window !== 'undefined' ? window.location.origin : ''} />
+        
+        {/* Mobile Optimization */}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+        <meta name="theme-color" content="#00473E" />
+        
+        {/* Geo Tags for Local SEO */}
+        <meta name="geo.region" content="KE" />
+        <meta name="geo.placename" content="Kenya" />
+        
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(structuredData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbStructuredData)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(serviceStructuredData)}
+        </script>
+      </Helmet>
+
       <HeroCarousel />
 
-      <section className="min-h-screen bg-white flex items-center py-4 md:py-8">
+      {/* Main Value Proposition Section - Semantic HTML for SEO */}
+      <section className="min-h-screen bg-white flex items-center py-4 md:py-8" aria-labelledby="value-proposition">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4 items-center py-2 md:py-0">
+          <article className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4 items-center py-2 md:py-0">
             <div className="flex justify-center md:justify-start">
               <div className="w-full h-full">
-                <div className="space-y-3 md:space-y-6 text-center md:text-left">
-                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00473E]">BUILT FOR ONLINE VENDORS LIKE YOU.</h3>
-                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Expand beyond Nairobi with Kenya's broadest delivery infrastructure.</p>
-                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Deliver to all major towns and growing, from Nairobi to remote counties.</p>
-                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Cash on Delivery (COD) with instant wallet payouts for vendors.</p>
-                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Prepaid & COD options that build customer trust and drive repeat sales.</p>
-                  <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">Easy-to-use app with a clean, straightforward design.</p>
-                </div>
+                <header className="space-y-3 md:space-y-6 text-center md:text-left">
+                  <h1 id="value-proposition" className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00473E]">BUILT FOR ONLINE VENDORS LIKE YOU.</h1>
+                  <ul className="space-y-3 list-none">
+                    <li className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">
+                      <strong>Expand beyond Nairobi</strong> with Kenya's broadest delivery infrastructure.
+                    </li>
+                    <li className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">
+                      <strong>Deliver to all major towns</strong> and growing, from Nairobi to remote counties.
+                    </li>
+                    <li className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">
+                      <strong>Cash on Delivery (COD)</strong> with instant wallet payouts for vendors.
+                    </li>
+                    <li className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">
+                      <strong>Prepaid & COD options</strong> that build customer trust and drive repeat sales.
+                    </li>
+                    <li className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700">
+                      <strong>Easy-to-use app</strong> with a clean, straightforward design.
+                    </li>
+                  </ul>
+                </header>
                 <div className="mt-3 md:mt-6 flex justify-center md:justify-start">
-                  <a href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp" className="inline-block px-6 py-3 bg-[#e9ff15] text-[#00473E] rounded-lg  transition-colors duration-200 font-semibold">Download App</a>
+                  <a 
+                    href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp" 
+                    className="inline-block px-6 py-3 bg-[#e9ff15] text-[#00473E] rounded-lg transition-colors duration-200 font-semibold"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Download ParcelGrid App from Google Play Store"
+                  >
+                    Download App
+                  </a>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-center md:col-start-2 mt-3 md:mt-0">
+            <aside className="flex items-center justify-center md:col-start-2 mt-3 md:mt-0">
               <div className="w-full max-w-sm md:w-80 lg:w-[920px] xl:w-[1200px] md:flex md:items-center md:justify-end md:pr-8">
-                <div className="overflow-visible rounded-xl shadow-none group">
-                  <img src="/phone.png" alt="Phone screenshot" className="w-full max-h-[50vh] md:max-h-[80vh] h-auto object-contain transform transition-transform duration-500 ease-out group-hover:scale-110 md:origin-right" style={{ willChange: 'transform' }} />
-                </div>
+                <figure className="overflow-visible rounded-xl shadow-none group">
+                  <img 
+                    src="/phone.png" 
+                    alt="ParcelGrid mobile app interface showing delivery tracking and COD features" 
+                    className="w-full max-h-[50vh] md:max-h-[80vh] h-auto object-contain transform transition-transform duration-500 ease-out group-hover:scale-110 md:origin-right" 
+                    style={{ willChange: 'transform' }}
+                    loading="eager"
+                    width="400"
+                    height="800"
+                  />
+                </figure>
               </div>
-            </div>
-          </div>
+            </aside>
+          </article>
         </div>
       </section>
 
-      {/* About Video Section */}
-      <section ref={videoSectionRef} className="py-6 md:py-12 bg-white">
+      {/* About Video Section - Semantic and Accessible */}
+      <section ref={videoSectionRef} className="py-6 md:py-12 bg-white" aria-labelledby="about-video">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-3 md:mb-6">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1.5 md:mb-2">Who We Are & What We Do</h2>
+          <header className="text-center mb-3 md:mb-6">
+            <h2 id="about-video" className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1.5 md:mb-2">Who We Are & What We Do</h2>
             <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">Watch this short video to learn more about ParcelGrid and how we help online sellers scale across Kenya.</p>
-          </div>
+          </header>
 
           <div className="w-full mt-3 md:mt-6 flex justify-center">
-            <div className="w-full max-w-4xl aspect-video rounded-lg overflow-hidden shadow-lg">
+            <figure className="w-full max-w-4xl aspect-video rounded-lg overflow-hidden shadow-lg">
               {/* Google Drive preview embed - use the file id in the preview URL */}
               <iframe
                 id="landing-video-iframe"
-                title="ParcelGrid Overview Video"
+                title="ParcelGrid Overview Video - Learn About Our COD Delivery Service"
                 src="https://drive.google.com/file/d/1gmlf_I9Ij9cLuJzMuUVuh0Y9WHG1Jyka/preview"
                 className="w-full h-full"
                 allow="autoplay; encrypted-media"
                 frameBorder="0"
                 allowFullScreen
+                loading="lazy"
               />
-            </div>
+            </figure>
           </div>
         </div>
       </section>
 
-      <section className="bg-gray-50">
+      <section className="bg-gray-50" aria-label="Features carousel">
         <FeaturesCarousel />
       </section>
 
-      <section className="bg-[#00473E] py-12 md:py-16 lg:py-20">
+      {/* Core Features Section - Semantic and Accessible */}
+      <section className="bg-[#00473E] py-12 md:py-16 lg:py-20" aria-labelledby="core-features">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="text-center mb-8 md:mb-12 lg:mb-16">
-            <h3 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 md:mb-6">Core Features</h3>
+          <header className="text-center mb-8 md:mb-12 lg:mb-16">
+            <h2 id="core-features" className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 md:mb-6">Core Features</h2>
             <p className="text-lg md:text-xl text-gray-200 max-w-3xl mx-auto">Key capabilities built for online vendors. Tap any card to learn more.</p>
-          </div>
+          </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
+          <nav aria-label="Core features navigation">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8" role="list">
             {/* Pickup Points Card */}
-            <div className="w-full max-w-sm mx-auto cursor-pointer group">
+            <article className="w-full max-w-sm mx-auto cursor-pointer group" role="listitem">
               {/* Mobile Design - Simple Card Layout */}
               <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-4">
                 <div className="text-center mb-3">
-                  <MapPin className="w-12 h-12 text-[#00473E] mx-auto mb-2" />
+                  <MapPin className="w-12 h-12 text-[#00473E] mx-auto mb-2" aria-hidden="true" />
                   <h3 className="text-base font-bold text-[#00473E]">Drop-Off & Pickup Points</h3>
                 </div>
                 <button 
                   onClick={() => navigate('/pickup-points')}
                   className="w-full bg-white text-[#00473E] py-2.5 px-4 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                  aria-label="Learn more about Drop-Off and Pickup Points"
                 >
                   Learn More
                 </button>
@@ -358,10 +529,10 @@ const LandingPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </article>
 
             {/* Prepaid & COD Card */}
-            <div className="w-full max-w-sm mx-auto cursor-pointer group">
+            <article className="w-full max-w-sm mx-auto cursor-pointer group" role="listitem">
               {/* Mobile Design - Simple Card Layout */}
               <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-4">
                 <div className="text-center mb-3">
@@ -401,10 +572,10 @@ const LandingPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </article>
 
             {/* Instant Settlements Card */}
-            <div className="w-full max-w-sm mx-auto cursor-pointer group">
+            <article className="w-full max-w-sm mx-auto cursor-pointer group" role="listitem">
               {/* Mobile Design - Simple Card Layout */}
               <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-4">
                 <div className="text-center mb-3">
@@ -440,10 +611,10 @@ const LandingPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </article>
 
             {/* Smart Notifications Card */}
-            <div className="w-full max-w-sm mx-auto cursor-pointer group">
+            <article className="w-full max-w-sm mx-auto cursor-pointer group" role="listitem">
               {/* Mobile Design - Simple Card Layout */}
               <div className="md:hidden bg-[#E9FF15] rounded-lg shadow-lg p-4">
                 <div className="text-center mb-3">
@@ -479,20 +650,21 @@ const LandingPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </article>
           </div>
+        </nav>
         </div>
       </section>
 
       <MapWithControls />
 
-      {/* Real Stories Section */}
-      <section className="min-h-screen bg-gray-50 flex items-center py-12 md:py-16 lg:py-20 overflow-hidden">
+      {/* Real Stories Section - Enhanced for SEO */}
+      <section className="min-h-screen bg-gray-50 flex items-center py-12 md:py-16 lg:py-20 overflow-hidden" aria-labelledby="customer-testimonials">
         <div className="w-full">
-          <div className="text-center mb-8 md:mb-12 lg:mb-16 px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-3 md:mb-4">What Our Online Sellers Say</h2>
+          <header className="text-center mb-8 md:mb-12 lg:mb-16 px-4 sm:px-6 lg:px-8">
+            <h2 id="customer-testimonials" className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-3 md:mb-4">What Our Online Sellers Say</h2>
             <p className="text-base md:text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">Real stories from businesses that have transformed their delivery operations with ParcelGrid.</p>
-          </div>
+          </header>
 
           {/* Custom CSS for scrollable carousel */}
           <style dangerouslySetInnerHTML={{
@@ -566,18 +738,19 @@ const LandingPage: React.FC = () => {
               ref={storiesContainerRef}
               className="stories-scroll flex gap-3 md:gap-6 px-4 md:px-16 overflow-x-auto pb-4">
                 {/* Story 1 */}
-                <div className="story-card bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0">
-                  <div className="flex items-center mb-3 md:mb-4">
-                    <div>
-                      <h3 className="text-base md:text-lg font-semibold text-gray-900">Sarah Kimani</h3>
+                <article className="story-card bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0" itemScope itemType="https://schema.org/Review">
+                  <header className="flex items-center mb-3 md:mb-4">
+                    <div itemProp="author" itemScope itemType="https://schema.org/Person">
+                      <h3 itemProp="name" className="text-base md:text-lg font-semibold text-gray-900">Sarah Kimani</h3>
                       <p className="text-sm md:text-base text-gray-600">Fashion & Accessories</p>
                     </div>
-                  </div>
-                  <p className="text-sm md:text-base text-gray-700 italic mb-3 md:mb-4">"Before ParcelGrid, I could only sell to customers in Nairobi. Now I reach over 400+ towns across Kenya. My monthly sales have tripled, and the instant COD settlements mean I never worry about cash flow anymore."</p>
+                  </header>
+                  <p itemProp="reviewBody" className="text-sm md:text-base text-gray-700 italic mb-3 md:mb-4">"Before ParcelGrid, I could only sell to customers in Nairobi. Now I reach over 400+ towns across Kenya. My monthly sales have tripled, and the instant COD settlements mean I never worry about cash flow anymore."</p>
                   <div className="flex items-center">
                     <span className="text-sm md:text-base text-gray-600 ml-2">Nairobi to Nationwide</span>
                   </div>
-                </div>
+                  <meta itemProp="itemReviewed" content="ParcelGrid Delivery Service" />
+                </article>
 
                 {/* Story 2 */}
                 <div className="story-card bg-white rounded-lg shadow-lg p-4 md:p-6 hover:shadow-xl transition-shadow duration-300 w-72 md:w-80 flex-shrink-0">

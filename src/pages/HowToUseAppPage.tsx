@@ -1,4 +1,5 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import Header from '../components/layout/Header';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
@@ -17,6 +18,52 @@ import {
 
 const HowToUseAppPage: React.FC = () => {
   useScrollToTop();
+
+  // Structured Data for How To Guide
+  const howToStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: 'How to Use ParcelGrid App for COD Delivery',
+    description: 'Complete guide to using ParcelGrid mobile app for sending parcels with Cash on Delivery (COD) across Kenya',
+    step: [
+      {
+        '@type': 'HowToStep',
+        name: 'Download and Log In',
+        text: 'Download ParcelGrid from Google Play Store or App Store, sign up using your business phone number, and complete your business profile',
+        position: 1
+      },
+      {
+        '@type': 'HowToStep',
+        name: 'Create a New Booking',
+        text: 'Tap Send Parcel, enter receiver details, destination town, parcel description and choose between Prepaid or COD',
+        position: 2
+      },
+      {
+        '@type': 'HowToStep',
+        name: 'Select Drop-off Point',
+        text: 'Choose your preferred drop-off location in Nairobi - Moi Avenue or Taveta Road',
+        position: 3
+      },
+      {
+        '@type': 'HowToStep',
+        name: 'Attach Parcel Photos',
+        text: 'Take a clear photo of the parcel, upload it, and submit booking to receive tracking code',
+        position: 4
+      },
+      {
+        '@type': 'HowToStep',
+        name: 'Track Your Parcel',
+        text: 'Monitor your parcel status in real-time from Received to Delivered with instant notifications',
+        position: 5
+      },
+      {
+        '@type': 'HowToStep',
+        name: 'Receive Payment',
+        text: 'For COD parcels, get instant settlement to your ParcelGrid wallet minus 1.8% fee, withdraw to M-Pesa anytime',
+        position: 6
+      }
+    ]
+  };
 
   const steps = [
     {
