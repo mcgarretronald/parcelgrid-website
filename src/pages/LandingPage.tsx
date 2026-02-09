@@ -243,7 +243,7 @@ const LandingPage: React.FC = () => {
           itemOffered: {
             '@type': 'Service',
             name: 'Prepaid Delivery',
-            description: 'Secure prepaid parcel delivery to 400+ pickup points nationwide'
+            description: 'Secure prepaid parcel delivery to several pickup points nationwide'
           }
         }
       ]
@@ -344,7 +344,7 @@ const LandingPage: React.FC = () => {
         {/* Primary Meta Tags */}
         <title>ParcelGrid - Kenya's Leading COD Delivery Service for Online Vendors | Instant Settlements</title>
         <meta name="title" content="ParcelGrid - Kenya's Leading COD Delivery Service for Online Vendors | Instant Settlements" />
-        <meta name="description" content="Expand your online business across Kenya with ParcelGrid's extensive delivery network. Cash on Delivery (COD) with instant settlements, 400+ pickup points nationwide, and smart notifications. Trusted by thousands of online sellers in Nairobi, Mombasa, Kisumu, Eldoret, and beyond." />
+        <meta name="description" content="Expand your online business across Kenya with ParcelGrid's extensive delivery network. Cash on Delivery (COD) with instant settlements, several pickup points nationwide, and smart notifications. Trusted by thousands of online sellers in Nairobi, Mombasa, Kisumu, Eldoret, and beyond." />
         <meta name="keywords" content="COD delivery Kenya, cash on delivery, online vendor delivery, parcel delivery Kenya, instant settlements, pickup points Kenya, Nairobi delivery, Mombasa delivery, Kisumu delivery, Eldoret delivery, nationwide courier, ecommerce delivery Kenya, online business Kenya, vendor delivery service" />
         <meta name="author" content="ParcelGrid" />
         <meta name="robots" content="index, follow" />
@@ -355,7 +355,7 @@ const LandingPage: React.FC = () => {
         <meta property="og:type" content="website" />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:title" content="ParcelGrid - Expand Your Online Business Across Kenya" />
-        <meta property="og:description" content="Join thousands of online vendors using ParcelGrid. 400+ pickup points, instant COD settlements, and delivery to all major Kenyan towns. Download the app today!" />
+        <meta property="og:description" content="Join thousands of online vendors using ParcelGrid. Several pickup points, instant COD settlements, and delivery to all major Kenyan towns. Download the app today!" />
         <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
         <meta property="og:site_name" content="ParcelGrid" />
         <meta property="og:locale" content="en_KE" />
@@ -364,7 +364,7 @@ const LandingPage: React.FC = () => {
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="twitter:title" content="ParcelGrid - Kenya's Leading COD Delivery Service" />
-        <meta property="twitter:description" content="Instant COD settlements, 400+ pickup points nationwide, and smart notifications for online vendors." />
+        <meta property="twitter:description" content="Instant COD settlements, several pickup points nationwide, and smart notifications for online vendors." />
         <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
         
         {/* Canonical URL */}
@@ -745,7 +745,7 @@ const LandingPage: React.FC = () => {
                       <p className="text-sm md:text-base text-gray-600">Fashion & Accessories</p>
                     </div>
                   </header>
-                  <p itemProp="reviewBody" className="text-sm md:text-base text-gray-700 italic mb-3 md:mb-4">"Before ParcelGrid, I could only sell to customers in Nairobi. Now I reach over 400+ towns across Kenya. My monthly sales have tripled, and the instant COD settlements mean I never worry about cash flow anymore."</p>
+                  <p itemProp="reviewBody" className="text-sm md:text-base text-gray-700 italic mb-3 md:mb-4">"Before ParcelGrid, I could only sell to customers in Nairobi. Now I reach several towns across Kenya. My monthly sales have tripled, and the instant COD settlements mean I never worry about cash flow anymore."</p>
                   <div className="flex items-center">
                     <span className="text-sm md:text-base text-gray-600 ml-2">Nairobi to Nationwide</span>
                   </div>

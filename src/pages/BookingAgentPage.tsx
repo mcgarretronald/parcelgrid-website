@@ -80,7 +80,7 @@ const BookingAgentPage: React.FC = () => {
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Become a ParcelGrid Booking Agent</h2>
 
-            <p className="text-gray-700 mb-6">ParcelGrid is expanding its drop-off network in Nairobi CBD, Ngara, Eastleigh, and Gikomba. We're looking for reliable booking agents to help vendors and customers send parcels to over 400+ pickup points across Kenya.</p>
+            <p className="text-gray-700 mb-6">ParcelGrid is expanding its drop-off network in Nairobi CBD, Ngara, Eastleigh, and Gikomba. We're looking for reliable booking agents to help vendors and customers send parcels to several pickup points across Kenya.</p>
 
             <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-2">What You'll Do</h3>
             <p className="text-gray-700 mb-4">As a ParcelGrid Booking Agent, you'll collect parcels from senders, book them on the ParcelGrid App, and ensure they are safely handed over to our Nairobi hub team for dispatch.</p>

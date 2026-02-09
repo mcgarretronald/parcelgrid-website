@@ -62,7 +62,7 @@ const PickupPointsPage: React.FC = () => {
         {/* Primary Meta Tags */}
         <title>Pickup Points Across Kenya - ParcelGrid | Drop Off & Collection Locations</title>
         <meta name="title" content="Pickup Points Across Kenya - ParcelGrid | Drop Off & Collection Locations" />
-        <meta name="description" content="Find ParcelGrid pickup points and drop-off locations across Kenya. Vendors drop off at Nairobi branches (Moi Avenue & Taveta Road), customers collect from 400+ pickup points nationwide." />
+        <meta name="description" content="Find ParcelGrid pickup points and drop-off locations across Kenya. Vendors drop off at Nairobi branches (Moi Avenue & Taveta Road), customers collect from several pickup points nationwide." />
         <meta name="keywords" content="pickup points Kenya, ParcelGrid locations, drop off Nairobi, collection points Kenya, Moi Avenue drop off, Taveta Road drop off, parcel collection Kenya, pickup network" />
         <meta name="robots" content="index, follow" />
         
@@ -70,14 +70,14 @@ const PickupPointsPage: React.FC = () => {
         <meta property="og:type" content="website" />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:title" content="ParcelGrid Pickup Points - Nationwide Coverage Across Kenya" />
-        <meta property="og:description" content="400+ pickup points across Kenya. Drop off in Nairobi, collect anywhere. Convenient parcel delivery infrastructure for online vendors." />
+        <meta property="og:description" content="several pickup points across Kenya. Drop off in Nairobi, collect anywhere. Convenient parcel delivery infrastructure for online vendors." />
         <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
         
         {/* Twitter */}
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="twitter:title" content="ParcelGrid Pickup Points - Nationwide Coverage" />
-        <meta property="twitter:description" content="400+ pickup points across Kenya. Drop off in Nairobi, collect anywhere." />
+        <meta property="twitter:description" content="several pickup points across Kenya. Drop off in Nairobi, collect anywhere." />
         <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
         
         {/* Canonical URL */}

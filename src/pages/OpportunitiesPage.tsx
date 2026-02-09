@@ -113,7 +113,7 @@ const OpportunitiesPage: React.FC = () => {
                 <div className="mb-6">
                   <h4 className="font-semibold text-gray-900 mb-3">Overview</h4>
                   <p className="text-gray-600 mb-4">
-                    Help vendors and customers send parcels to over 400+ pickup points across Kenya. 
+                    Help vendors and customers send parcels to over several pickup points across Kenya. 
                     Collect parcels, book them on the app, and coordinate dispatch.
                   </p>
                 </div>

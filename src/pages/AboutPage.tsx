@@ -53,7 +53,7 @@ const AboutPage: React.FC = () => {
         <meta property="og:type" content="website" />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:title" content="About ParcelGrid - Kenya's Most Reliable E-Commerce Delivery Partner" />
-        <meta property="og:description" content="Licensed by CA, trusted nationwide. Building Kenya's leading parcel delivery infrastructure for online vendors with instant settlements and 400+ pickup points." />
+        <meta property="og:description" content="Licensed by CA, trusted nationwide. Building Kenya's leading parcel delivery infrastructure for online vendors with instant settlements and several pickup points." />
         <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
         
         {/* Twitter */}
