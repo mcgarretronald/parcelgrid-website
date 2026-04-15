@@ -7,6 +7,8 @@ import { defineConfig } from "vite"
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    port: 5174,
+    strictPort: true,
     proxy: {
       // Proxy all /api/* requests to the local Express backend
       // This allows the backend to handle authentication, token refresh, and API calls

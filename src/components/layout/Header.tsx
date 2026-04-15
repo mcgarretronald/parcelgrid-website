@@ -46,8 +46,8 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
   const sidebarItems: SidebarItem[] = [
     { name: 'How to Use the App', href: '/how-to-use-app' },
     { 
-      name: 'Opportunities', 
-      href: '/opportunities',
+      name: 'Careers', 
+      href: '/careers',
       hasDropdown: true,
       subItems: [
         { name: 'Apply to Become a Pickup Agent', href: '/pickup-agent' },

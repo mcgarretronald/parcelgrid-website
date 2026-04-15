@@ -8,7 +8,7 @@ import SmartNotificationsPage from "../pages/SmartNotificationsPage";
 import FAQ from "../pages/FAQ";
 import AboutPage from "../pages/AboutPage";
 import ContactPage from "../pages/ContactPage";
-import OpportunitiesPage from "../pages/OpportunitiesPage";
+import CareersPage from "../pages/CareersPage";
 import PickupAgentPage from "../pages/PickupAgentPage";
 import BookingAgentPage from "../pages/BookingAgentPage";
 import HowToUseAppPage from "../pages/HowToUseAppPage";
@@ -54,7 +54,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/opportunities",
-        element: <OpportunitiesPage />,
+        element: <Navigate to="/careers" replace />,
       },
       {
         path: "/pickup-agent",
@@ -78,7 +78,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/careers",
-        element: <Navigate to="/opportunities" replace />,
+        element: <CareersPage />,
       },
       {
         path: "/apply-pickup-agent",

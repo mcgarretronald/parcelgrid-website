@@ -60,16 +60,16 @@ const PickupAgentPage: React.FC = () => {
         <div className="absolute inset-0 bg-black/30"></div>
 
         <div className="relative z-10 text-[#E9FF15] pt-20 pb-12 sm:pt-24 sm:pb-16 md:pt-28 md:pb-20 lg:pt-32 lg:pb-28 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">Pickup Agent Opportunities</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">Pickup Agent Careers</h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed px-2 sm:px-0">
             Join Kenya's widest pickup point network and earn commission on every parcel handled.
           </p>
           <div className="mt-6">
             <Link 
-              to="/opportunities" 
+              to="/careers" 
               className="text-white hover:text-[#E9FF15] transition-colors inline-flex items-center gap-2"
             >
-              ← Back to All Opportunities
+              ← Back to All Careers
             </Link>
           </div>
         </div>
