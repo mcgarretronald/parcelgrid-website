@@ -6,7 +6,7 @@
     
     <!-- Homepage -->
     <url>
-        <loc>https://yoursite.com/</loc>
+        <loc>https://escrowcourier.com/</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
@@ -14,7 +14,7 @@
     
     <!-- Pickup Points -->
     <url>
-        <loc>https://yoursite.com/pickup-points</loc>
+        <loc>https://escrowcourier.com/pickup-points</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
@@ -22,7 +22,7 @@
     
     <!-- Prepaid COD -->
     <url>
-        <loc>https://yoursite.com/prepaid-cod</loc>
+        <loc>https://escrowcourier.com/prepaid-cod</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
@@ -30,7 +30,7 @@
     
     <!-- Instant Settlements -->
     <url>
-        <loc>https://yoursite.com/instant-settlements</loc>
+        <loc>https://escrowcourier.com/instant-settlements</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
@@ -38,7 +38,7 @@
     
     <!-- Notifications -->
     <url>
-        <loc>https://yoursite.com/notifications</loc>
+        <loc>https://escrowcourier.com/smart-notifications</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
@@ -46,7 +46,7 @@
     
     <!-- FAQ -->
     <url>
-        <loc>https://yoursite.com/faq</loc>
+        <loc>https://escrowcourier.com/faq</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
@@ -54,7 +54,7 @@
     
     <!-- About -->
     <url>
-        <loc>https://yoursite.com/about</loc>
+        <loc>https://escrowcourier.com/about</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
@@ -62,7 +62,7 @@
     
     <!-- Contact -->
     <url>
-        <loc>https://yoursite.com/contact</loc>
+        <loc>https://escrowcourier.com/contact</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
@@ -70,7 +70,7 @@
     
     <!-- Opportunities -->
     <url>
-        <loc>https://yoursite.com/opportunities</loc>
+        <loc>https://escrowcourier.com/opportunities</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
@@ -78,7 +78,7 @@
     
     <!-- Pickup Agent -->
     <url>
-        <loc>https://yoursite.com/pickup-agent</loc>
+        <loc>https://escrowcourier.com/pickup-agent</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
@@ -86,7 +86,7 @@
     
     <!-- Booking Agent -->
     <url>
-        <loc>https://yoursite.com/booking-agent</loc>
+        <loc>https://escrowcourier.com/booking-agent</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
@@ -94,7 +94,7 @@
     
     <!-- How To Use App -->
     <url>
-        <loc>https://yoursite.com/how-to-use-app</loc>
+        <loc>https://escrowcourier.com/how-to-use-app</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.7</priority>
@@ -102,7 +102,7 @@
     
     <!-- Book Parcel -->
     <url>
-        <loc>https://yoursite.com/book-parcel</loc>
+        <loc>https://escrowcourier.com/booking</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.9</priority>
