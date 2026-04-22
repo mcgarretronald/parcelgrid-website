@@ -15,13 +15,13 @@ const VendorGrowthJobPage: React.FC = () => {
       <section className="pt-15 pb-8 bg-white border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
-            to="/opportunities"
+            to="/careers"
             className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-6"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Opportunities
+            Back to Careers
           </Link>
 
           <div className="flex flex-wrap gap-2 mb-4">
