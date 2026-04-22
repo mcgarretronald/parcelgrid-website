@@ -71,7 +71,7 @@ const CareersPage: React.FC = () => {
                   Help ParcelGrid grow its vendor base across Kenya. You will cold-call prospects, visit shops,
                   onboard new vendors, train them on our services, and create social media content to drive sign-ups.
                 </p>
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                   <div className="flex flex-wrap gap-2">
                     <span className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm px-3 py-1 rounded-full">
                       <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,15 +87,23 @@ const CareersPage: React.FC = () => {
                       Full-time
                     </span>
                   </div>
-                  <Link
-                    to="/careers/vendor-growth-officer"
-                    className="hidden sm:inline-flex items-center gap-1 text-gray-900 font-semibold text-lg hover:text-[#00473E] transition-colors duration-150 shrink-0 pt-1"
-                  >
-                    Apply
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </Link>
+                  <div className="flex sm:items-center gap-3 pt-1 sm:pt-0 flex-col sm:flex-row justify-center sm:justify-end">
+                    <Link
+                      to="/careers/vendor-growth-officer"
+                      className="sm:hidden flex justify-center items-center gap-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors duration-150"
+                    >
+                      More Details
+                    </Link>
+                    <Link
+                      to="/careers/vendor-growth-officer"
+                      className="hidden sm:inline-flex items-center gap-1 text-gray-900 font-semibold text-lg hover:text-[#00473E] transition-colors duration-150 shrink-0"
+                    >
+                      Apply
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
