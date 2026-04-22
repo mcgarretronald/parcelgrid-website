@@ -9,6 +9,8 @@ import FAQ from "../pages/FAQ";
 import AboutPage from "../pages/AboutPage";
 import ContactPage from "../pages/ContactPage";
 import CareersPage from "../pages/CareersPage";
+import OpportunitiesPage from "../pages/OpportunitiesPage";
+import VendorGrowthJobPage from "../pages/VendorGrowthJobPage";
 import PickupAgentPage from "../pages/PickupAgentPage";
 import BookingAgentPage from "../pages/BookingAgentPage";
 import HowToUseAppPage from "../pages/HowToUseAppPage";
@@ -54,7 +56,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/opportunities",
-        element: <Navigate to="/careers" replace />,
+        element: <OpportunitiesPage />,
       },
       {
         path: "/pickup-agent",
@@ -79,6 +81,10 @@ const router = createBrowserRouter([
       {
         path: "/careers",
         element: <CareersPage />,
+      },
+      {
+        path: "/careers/vendor-growth-officer",
+        element: <VendorGrowthJobPage />,
       },
       {
         path: "/apply-pickup-agent",

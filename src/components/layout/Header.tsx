@@ -39,6 +39,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
     { name: 'Home', href: '/' },
     { name: 'FAQ', href: '/faq' },
     { name: 'About', href: '/about' },
+    { name: 'Careers', href: '/careers' },
     { name: 'Contact Us', href: '/contact' },
   ];
 
@@ -46,8 +47,8 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
   const sidebarItems: SidebarItem[] = [
     { name: 'How to Use the App', href: '/how-to-use-app' },
     { 
-      name: 'Careers', 
-      href: '/careers',
+      name: 'Opportunities', 
+      href: '/opportunities',
       hasDropdown: true,
       subItems: [
         { name: 'Apply to Become a Pickup Agent', href: '/pickup-agent' },
@@ -121,7 +122,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
               <Link
                 key={item.name}
                 to={item.href}
-                className="text-sm font-medium text-white/90 hover:text-white hover:text-[#E9FF15] transition-colors duration-200 whitespace-nowrap"
+                className="text-sm font-medium text-white/90 hover:text-[#E9FF15] transition-colors duration-200 whitespace-nowrap"
               >
                 {item.name}
               </Link>

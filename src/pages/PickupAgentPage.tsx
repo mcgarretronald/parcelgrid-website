@@ -46,38 +46,35 @@ const PickupAgentPage: React.FC = () => {
     <div className="min-h-screen bg-white">
       <Header transparent={false} />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-[48vh] sm:min-h-[56vh] lg:min-h-[64vh]">
-        <div
-          className="absolute inset-0 bg-cover bg-no-repeat"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1687422809654-579d81c29d32?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1112)',
-            backgroundPosition: 'center right',
-            backgroundSize: 'cover',
-          }}
-        />
+      {/* Top bar */}
+      <section className="pt-20 pb-8 bg-white border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Link
+            to="/opportunities"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-6"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to All Opportunities
+          </Link>
 
-        <div className="absolute inset-0 bg-black/30"></div>
-
-        <div className="relative z-10 text-[#E9FF15] pt-20 pb-12 sm:pt-24 sm:pb-16 md:pt-28 md:pb-20 lg:pt-32 lg:pb-28 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">Pickup Agent Careers</h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed px-2 sm:px-0">
-            Join Kenya's widest pickup point network and earn commission on every parcel handled.
-          </p>
-          <div className="mt-6">
-            <Link 
-              to="/careers" 
-              className="text-white hover:text-[#E9FF15] transition-colors inline-flex items-center gap-2"
-            >
-              ← Back to All Careers
-            </Link>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm px-3 py-1 rounded-full">Nationwide</span>
+            <span className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm px-3 py-1 rounded-full">Flexible hours</span>
+            <span className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm px-3 py-1 rounded-full">ParcelGrid</span>
           </div>
+
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-3">Pickup Agent</h1>
+          <p className="text-lg text-gray-500">Join Kenya's widest pickup point network and earn commission on every parcel handled.</p>
         </div>
       </section>
 
-      <section className="py-12 sm:py-16 bg-gradient-to-br from-gray-50 to-white">
+      <section className="py-10 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <section className="prose max-w-none">
+          <div className="lg:grid lg:grid-cols-3 lg:gap-12">
+            <div className="lg:col-span-2">
+              <section className="prose max-w-none">
             <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 mb-4">Apply to Become a Pickup Agent</h2>
 
             <p className="text-gray-700 mb-6">Join Kenya's Widest Pickup Point Network</p>
@@ -107,11 +104,11 @@ const PickupAgentPage: React.FC = () => {
 
             <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Benefits of Becoming a Pickup Agent</h3>
             <ul className="text-gray-700 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <li className="flex items-start space-x-2"><span className="text-green-600">✅</span><span>Increased foot traffic to your shop (boosts your main business).</span></li>
-              <li className="flex items-start space-x-2"><span className="text-green-600">✅</span><span>Listing on our national pickup directory (free marketing for your shop).</span></li>
-              <li className="flex items-start space-x-2"><span className="text-green-600">✅</span><span>Automated COD handling — no chasing payments.</span></li>
-              <li className="flex items-start space-x-2"><span className="text-green-600">✅</span><span>Digital tracking of all parcels via the ParcelGrid Agent App.</span></li>
-              <li className="flex items-start space-x-2"><span className="text-green-600">✅</span><span>Support from our regional coordinators and Nairobi head office.</span></li>
+              <li className="flex items-start space-x-2"><span className="text-green-600 font-semibold">-</span><span>Increased foot traffic to your shop (boosts your main business).</span></li>
+              <li className="flex items-start space-x-2"><span className="text-green-600 font-semibold">-</span><span>Listing on our national pickup directory (free marketing for your shop).</span></li>
+              <li className="flex items-start space-x-2"><span className="text-green-600 font-semibold">-</span><span>Automated COD handling — no chasing payments.</span></li>
+              <li className="flex items-start space-x-2"><span className="text-green-600 font-semibold">-</span><span>Digital tracking of all parcels via the ParcelGrid Agent App.</span></li>
+              <li className="flex items-start space-x-2"><span className="text-green-600 font-semibold">-</span><span>Support from our regional coordinators and Nairobi head office.</span></li>
             </ul>
 
             <h3 className="text-lg font-semibold text-gray-900 mt-6 mb-3">Documents Required</h3>
@@ -156,7 +153,37 @@ const PickupAgentPage: React.FC = () => {
                 </button>
               </div>
             </div>
-          </section>
+              </section>
+            </div>
+
+            <div className="hidden lg:block">
+              <div className="sticky top-24 space-y-6">
+                <div className="rounded-2xl border border-[#00473E]/20 bg-[#00473E]/5 p-6">
+                  <h2 className="text-lg font-bold text-gray-900 mb-3">Apply for This Role</h2>
+                  <p className="text-gray-700 text-sm leading-relaxed mb-4">
+                    Ready to become a Pickup Agent? Start your application and we will review your details with the next steps.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(true)}
+                    className="inline-flex items-center justify-center gap-2 bg-[#00473E] text-white font-semibold px-5 py-3 rounded-xl hover:bg-[#00362f] transition-colors duration-150 w-full"
+                  >
+                    Apply Now
+                  </button>
+                </div>
+
+                <div className="rounded-2xl border border-gray-200 p-6 space-y-4">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Quick Facts</h3>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>Commission-based earnings</li>
+                    <li>Open Mon-Sat, 8:00 a.m. - 7:00 p.m.</li>
+                    <li>Physical shop and secure parcel space required</li>
+                    <li>Smartphone with ParcelGrid Agent App required</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -178,14 +205,14 @@ const PickupAgentPage: React.FC = () => {
             <div className="p-8 overflow-y-auto max-h-[calc(95vh-120px)]">
               {submitStatus === 'success' && (
                 <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-800 font-semibold">✓ Application submitted successfully!</p>
+                  <p className="text-green-800 font-semibold">Success: Application submitted successfully.</p>
                   <p className="text-green-700 text-sm mt-1">We will review your application and contact you soon.</p>
                 </div>
               )}
               
               {submitStatus === 'error' && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-800 font-semibold">✗ Submission failed</p>
+                  <p className="text-red-800 font-semibold">Error: Submission failed.</p>
                   <p className="text-red-700 text-sm mt-1">Please try again or contact support.</p>
                 </div>
               )}

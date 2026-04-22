@@ -46,38 +46,35 @@ const BookingAgentPage: React.FC = () => {
     <div className="min-h-screen bg-white">
       <Header transparent={false} />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-[48vh] sm:min-h-[56vh] lg:min-h-[64vh]">
-        <div
-          className="absolute inset-0 bg-cover bg-no-repeat"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1687422809654-579d81c29d32?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1112)',
-            backgroundPosition: 'center right',
-            backgroundSize: 'cover',
-          }}
-        />
+      {/* Top bar */}
+      <section className="pt-20 pb-8 bg-white border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Link
+            to="/opportunities"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors mb-6"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to All Opportunities
+          </Link>
 
-        <div className="absolute inset-0 bg-black/30"></div>
-
-        <div className="relative z-10 text-[#E9FF15] pt-20 pb-12 sm:pt-24 sm:pb-16 md:pt-28 md:pb-20 lg:pt-32 lg:pb-28 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">Booking Agent Careers</h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed px-2 sm:px-0">
-            Expand our drop-off network in Nairobi and earn commission on every parcel booked.
-          </p>
-          <div className="mt-6">
-            <Link 
-              to="/careers" 
-              className="text-white hover:text-[#E9FF15] transition-colors inline-flex items-center gap-2"
-            >
-              ← Back to All Careers
-            </Link>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm px-3 py-1 rounded-full">Nairobi</span>
+            <span className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm px-3 py-1 rounded-full">Full-time</span>
+            <span className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm px-3 py-1 rounded-full">ParcelGrid</span>
           </div>
+
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-3">Booking Agent</h1>
+          <p className="text-lg text-gray-500">Expand our drop-off network in Nairobi and earn commission on every parcel booked.</p>
         </div>
       </section>
 
-      <section className="py-12 sm:py-16 bg-gradient-to-br from-gray-50 to-white">
+      <section className="py-10 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <section>
+          <div className="lg:grid lg:grid-cols-3 lg:gap-12">
+            <div className="lg:col-span-2">
+              <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">Become a ParcelGrid Booking Agent</h2>
 
             <p className="text-gray-700 mb-6">ParcelGrid is expanding its drop-off network in Nairobi CBD, Ngara, Eastleigh, and Gikomba. We're looking for reliable booking agents to help vendors and customers send parcels to several pickup points across Kenya.</p>
@@ -90,14 +87,14 @@ const BookingAgentPage: React.FC = () => {
 
             <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-2">Minimum Requirements</h3>
             <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
-              <li>✅ Must be located in Nairobi CBD, Ngara, Eastleigh, or Gikomba</li>
-              <li>✅ Must have at least 20 square feet (about 5ft x 4ft) of safe, dry, and clean space with shelves for storing parcels</li>
-              <li>✅ Must operate on the ground floor of your building for easy access</li>
-              <li>✅ Must open from 9:00am to 7:00pm, Monday to Saturday</li>
-              <li>✅ Must have a smartphone capable of running the ParcelGrid App</li>
-              <li>✅ Must hold a valid business permit</li>
-              <li>✅ Must be the actual shop owner — no brokers or employees applying on behalf of owners</li>
-              <li>✅ Must ensure the premises are secure, visible, and accessible to customers</li>
+              <li>Must be located in Nairobi CBD, Ngara, Eastleigh, or Gikomba</li>
+              <li>Must have at least 20 square feet (about 5ft x 4ft) of safe, dry, and clean space with shelves for storing parcels</li>
+              <li>Must operate on the ground floor of your building for easy access</li>
+              <li>Must open from 9:00am to 7:00pm, Monday to Saturday</li>
+              <li>Must have a smartphone capable of running the ParcelGrid App</li>
+              <li>Must hold a valid business permit</li>
+              <li>Must be the actual shop owner — no brokers or employees applying on behalf of owners</li>
+              <li>Must ensure the premises are secure, visible, and accessible to customers</li>
             </ul>
 
             <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-2">Documents to Upload</h3>
@@ -129,7 +126,37 @@ const BookingAgentPage: React.FC = () => {
                 </button>
               </div>
             </div>
-          </section>
+              </section>
+            </div>
+
+            <div className="hidden lg:block">
+              <div className="sticky top-24 space-y-6">
+                <div className="rounded-2xl border border-[#00473E]/20 bg-[#00473E]/5 p-6">
+                  <h2 className="text-lg font-bold text-gray-900 mb-3">Apply for This Role</h2>
+                  <p className="text-gray-700 text-sm leading-relaxed mb-4">
+                    Ready to become a Booking Agent? Start your application and we will review your details with the next steps.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(true)}
+                    className="inline-flex items-center justify-center gap-2 bg-[#00473E] text-white font-semibold px-5 py-3 rounded-xl hover:bg-[#00362f] transition-colors duration-150 w-full"
+                  >
+                    Apply Now
+                  </button>
+                </div>
+
+                <div className="rounded-2xl border border-gray-200 p-6 space-y-4">
+                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Quick Facts</h3>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>Nairobi CBD, Ngara, Eastleigh, or Gikomba</li>
+                    <li>Open Mon-Sat, 9:00 a.m. - 7:00 p.m.</li>
+                    <li>At least 20 sq ft of secure storage space</li>
+                    <li>Smartphone with ParcelGrid app required</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -151,14 +178,14 @@ const BookingAgentPage: React.FC = () => {
             <div className="p-8 overflow-y-auto max-h-[calc(95vh-120px)]">
               {submitStatus === 'success' && (
                 <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-green-800 font-semibold">✓ Application submitted successfully!</p>
+                  <p className="text-green-800 font-semibold">Success: Application submitted successfully.</p>
                   <p className="text-green-700 text-sm mt-1">We will review your application and contact you soon.</p>
                 </div>
               )}
               
               {submitStatus === 'error' && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-800 font-semibold">✗ Submission failed</p>
+                  <p className="text-red-800 font-semibold">Error: Submission failed.</p>
                   <p className="text-red-700 text-sm mt-1">Please try again or contact support.</p>
                 </div>
               )}
