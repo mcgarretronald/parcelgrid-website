@@ -51,7 +51,9 @@ const slides: FeatureSlide[] = [
 const KenyaMapVisual = () => (
   <img
     src="/map.png"
-    alt="Kenya map"
+    alt="ParcelGrid coverage map showing pickup points and delivery routes across Kenya"
+    width="600"
+    height="400"
     className="w-full h-[400px] rounded-2xl object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105"
   />
 )
@@ -59,7 +61,9 @@ const KenyaMapVisual = () => (
 const LicenseVisual = () => (
   <img
     src="/Certificate.jpeg"
-    alt="Certificate"
+    alt="Official courier licensing certificate from the Communications Authority of Kenya (CA) for Escrow Courier Services"
+    width="600"
+    height="400"
     className="w-full h-[400px] rounded-2xl object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105"
   />
 )
@@ -67,7 +71,9 @@ const LicenseVisual = () => (
 const WalletVisual = () => (
     <img
       src="/withdrawal.png"
-      alt="Wallet"
+      alt="ParcelGrid vendor digital wallet interface displaying instant COD payment withdrawals"
+      width="600"
+      height="400"
       className="w-full h-[400px] object-contain transition-transform duration-300 ease-out transform hover:scale-105"
     />
 )
@@ -75,7 +81,9 @@ const WalletVisual = () => (
 const GrowthChartVisual = () => (
     <img
       src="/Realgrowth.jpeg"
-      alt="Growth"
+      alt="Infographic showing business sales growth of online vendors using ParcelGrid courier service in Kenya"
+      width="600"
+      height="400"
       className="w-full h-[400px] object-contain transition-transform duration-300 ease-out transform hover:scale-105"
     />
 )
@@ -83,13 +91,21 @@ const GrowthChartVisual = () => (
 const VendorShopVisual = () => (
     <img
       src="/Onlinevendor.jpeg"
-      alt="Online vendor"
+      alt="An online business owner in Kenya managing order shipments using the ParcelGrid app"
+      width="600"
+      height="400"
       className="w-full h-[400px] object-contain transition-transform duration-300 ease-out transform hover:scale-105"
     />
 )
 
 const NotificationsVisual = () => (
-  <img src="/Notification.png" alt="Notifications" className="w-full h-[400px] rounded-2xl object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105" />
+  <img
+    src="/Notification.png"
+    alt="Smart notifications showing delivery tracking updates on a mobile phone"
+    width="600"
+    height="400"
+    className="w-full h-[400px] rounded-2xl object-contain block mx-auto transition-transform duration-300 ease-out transform hover:scale-105"
+  />
 );
 
 const getVisualComponent = (visual: FeatureSlide['visual']) => {

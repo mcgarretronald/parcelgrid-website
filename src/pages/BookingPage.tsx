@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -1047,6 +1048,17 @@ const BookingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>Book a Parcel Delivery Online in Kenya | ParcelGrid</title>
+        <meta name="title" content="Book a Parcel Delivery Online in Kenya | ParcelGrid" />
+        <meta name="description" content="Ship packages in under 60 seconds. Fill in customer details, select pickup points, choose COD or prepaid options, and book your delivery with ParcelGrid." />
+        <meta name="keywords" content="book delivery online, parcel grid booking, escrow courier parcel, online shipment booking, send parcel Kenya, e-commerce shipping" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Book a Parcel Delivery Online" />
+        <meta property="og:description" content="Ship packages in under 60 seconds. Fill in customer details, select pickup points, choose COD or prepaid options, and book your delivery." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/book-parcel` : ''} />
+      </Helmet>
+
       <div className="min-h-screen">
         {/* Form Section */}
         <div className="py-8 px-4 sm:px-6 lg:px-8 overflow-y-auto bg-white">
@@ -1063,9 +1075,9 @@ const BookingPage: React.FC = () => {
               {/* Typing Animation Content */}
               <div className="relative z-10 text-center">
                 <div className="typing-container">
-                  <div className="typing-animation line1 text-white">
-                    BOOK A PARCEL IN UNDER 60 SECONDS.
-                  </div>
+                  <h1 className="typing-animation line1 text-white text-xl sm:text-2xl lg:text-3xl font-bold">
+                    BOOK A PARCEL IN UNDER 60 SECONDS
+                  </h1>
                   <div className="typing-animation line2 text-white">
                     FAST, SECURE & RELIABLE DELIVERY.
                   </div>

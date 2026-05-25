@@ -101,7 +101,9 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
           <Link to="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-all duration-500 ease-out flex-shrink-0">
             <img
               src="/logo1.png"
-              alt="ParcelGrid logo"
+              alt="ParcelGrid Courier Service Logo"
+              width="48"
+              height="48"
               className={`object-contain transition-all duration-500 ease-out ${
                 scrolled ? 'h-8 w-8' : 'h-10 sm:h-12 w-10 sm:w-12'
               }`}

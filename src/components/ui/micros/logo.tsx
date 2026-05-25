@@ -52,7 +52,9 @@ export function Logo({
     <div className={`flex items-center gap-2 ${className}`}>
       <img
         src={logoSrc}
-        alt="Escrow Admin Logo"
+        alt="ParcelGrid Courier Service Admin Logo"
+        width="32"
+        height="32"
         className={`${sizeClasses[size]} w-auto`}
         onError={(e) => {
           const target = e.currentTarget;

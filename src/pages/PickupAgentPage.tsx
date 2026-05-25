@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Header from '../components/layout/Header';
+import { Helmet } from 'react-helmet-async';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -44,7 +44,16 @@ const PickupAgentPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header transparent={false} />
+      <Helmet>
+        <title>Become a Pickup Agent in Kenya | ParcelGrid</title>
+        <meta name="title" content="Become a Pickup Agent in Kenya | ParcelGrid" />
+        <meta name="description" content="Register your retail shop as a ParcelGrid pickup point. Earn extra revenue by securely handling package collections for online shoppers in your neighborhood." />
+        <meta name="keywords" content="pickup agent, escrow pickup point, collection shop, local shop partner, parcel collection business, retail logistics partner" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Become a ParcelGrid Pickup Agent - Boost Shop Payouts" />
+        <meta property="og:description" content="Register your retail shop as a ParcelGrid pickup point. Earn extra revenue by securely handling package collections for online shoppers." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/pickup-agent` : ''} />
+      </Helmet>
 
       {/* Top bar */}
       <section className="pt-20 pb-8 bg-white border-b border-gray-100">

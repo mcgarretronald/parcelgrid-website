@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Smartphone, CreditCard, Truck, MessageSquare, UserCheck, Wallet, Key, Clock, CheckCircle } from 'lucide-react';
-import Header from '@/components/layout/Header';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -39,7 +39,16 @@ const PrepaidCODPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-        <Header transparent={false} />
+      <Helmet>
+        <title>COD & Prepaid Courier Services in Kenya | ParcelGrid</title>
+        <meta name="title" content="COD & Prepaid Courier Services in Kenya | ParcelGrid" />
+        <meta name="description" content="Choose between flexible Cash on Delivery (COD) and prepaid shipping. Build buyer trust with secure nation-wide deliveries and instant seller settlements." />
+        <meta name="keywords" content="cash on delivery Kenya, COD courier service, prepaid shipping, parcel delivery shop, secure online vendor, e-commerce delivery" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Flexible COD & Prepaid Courier Services" />
+        <meta property="og:description" content="Choose between flexible Cash on Delivery (COD) and prepaid shipping. Build buyer trust with secure nation-wide deliveries." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/prepaid-cod` : ''} />
+      </Helmet>
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-20 sm:pt-24 sm:pb-20 md:pt-20 md:pb-32 overflow-hidden min-h-[70vh] flex items-center">
@@ -57,7 +66,7 @@ const PrepaidCODPage: React.FC = () => {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#E9FF15] mb-6">
-              Flexible Deliveries: Prepaid or COD
+              COD and Prepaid Courier Service for Online Sellers
             </h1>
             <p className="text-xl sm:text-2xl text-gray-200 leading-relaxed">
               Vendors choose how each parcel will be paid—either prepaid upfront or Cash on Delivery (COD) at the pickup point. 

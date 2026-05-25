@@ -172,7 +172,9 @@ export const HeroCarousel: React.FC = () => {
             {/* Slide number badge removed as requested */}
          
             {/* Title */}
-            <h1
+            <div
+              role="heading"
+              aria-level={2}
               key={`title-${currentSlide}`}
               className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight animate-fade-in"
               style={{
@@ -181,7 +183,7 @@ export const HeroCarousel: React.FC = () => {
               }}
             >
               {currentSlideData.title}
-            </h1>
+            </div>
 
             {/* Subtitle - only show if not empty */}
             {currentSlideData.subtitle && (

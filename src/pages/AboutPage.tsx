@@ -43,24 +43,24 @@ const AboutPage: React.FC = () => {
     <div className="min-h-screen bg-white">
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>About ParcelGrid - Kenya's Leading E-Commerce Delivery Infrastructure | Licensed by CA</title>
-        <meta name="title" content="About ParcelGrid - Kenya's Leading E-Commerce Delivery Infrastructure | Licensed by CA" />
-        <meta name="description" content="ParcelGrid is a registered trademark of Escrow Courier Networks Limited, licensed by the Communications Authority of Kenya. Building Kenya's most reliable parcel delivery infrastructure for e-commerce vendors with instant COD settlements and nationwide coverage." />
+        <title>About Our Courier Service in Kenya | ParcelGrid</title>
+        <meta name="title" content="About Our Courier Service in Kenya | ParcelGrid" />
+        <meta name="description" content="ParcelGrid by Escrow Courier Networks provides reliable e-commerce delivery infrastructure in Kenya with instant wallet settlements. Learn about our mission!" />
         <meta name="keywords" content="about ParcelGrid, Escrow Courier Networks, licensed courier Kenya, CA registered, e-commerce delivery Kenya, online vendor solutions, ParcelGrid mission, delivery infrastructure Kenya" />
         <meta name="robots" content="index, follow" />
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
-        <meta property="og:title" content="About ParcelGrid - Kenya's Most Reliable E-Commerce Delivery Partner" />
-        <meta property="og:description" content="Licensed by CA, trusted nationwide. Building Kenya's leading parcel delivery infrastructure for online vendors with instant settlements and several pickup points." />
+        <meta property="og:title" content="About Our Courier Service in Kenya | ParcelGrid" />
+        <meta property="og:description" content="ParcelGrid by Escrow Courier Networks provides reliable e-commerce delivery infrastructure in Kenya with instant wallet settlements." />
         <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
         
         {/* Twitter */}
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
-        <meta property="twitter:title" content="About ParcelGrid - Kenya's Most Reliable E-Commerce Delivery Partner" />
-        <meta property="twitter:description" content="Licensed by CA, trusted nationwide. Building Kenya's leading delivery infrastructure." />
+        <meta property="twitter:title" content="About Our Courier Service in Kenya" />
+        <meta property="twitter:description" content="ParcelGrid by Escrow Courier Networks provides reliable e-commerce delivery infrastructure." />
         <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
         
         {/* Canonical URL */}

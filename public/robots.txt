@@ -6,7 +6,7 @@ Allow: /
 # Disallow: /admin/
 
 # Sitemap location
-Sitemap: https://yoursite.com/sitemap.xml
+Sitemap: https://escrowcourier.com/sitemap.xml
 
 # Crawl-delay for polite crawling
 Crawl-delay: 1

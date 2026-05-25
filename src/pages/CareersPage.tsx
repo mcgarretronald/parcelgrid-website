@@ -1,5 +1,5 @@
 import React from 'react';
-import Header from '../components/layout/Header';
+import { Helmet } from 'react-helmet-async';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -10,7 +10,16 @@ const CareersPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header transparent={false} />
+      <Helmet>
+        <title>Join Our Courier Service Team in Kenya | ParcelGrid</title>
+        <meta name="title" content="Join Our Courier Service Team in Kenya | ParcelGrid" />
+        <meta name="description" content="Build the future of logistics. Explore open job opportunities, internships, and career roles at ParcelGrid. Join a fast-growing Kenyan e-commerce partner." />
+        <meta name="keywords" content="logistics careers, parcelgrid jobs, escrow courier hiring, logistics officer, customer relations job Nairobi, courier jobs Kenya" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Careers at ParcelGrid - Build the Future of Logistics" />
+        <meta property="og:description" content="Build the future of logistics. Explore open job opportunities, internships, and career roles at ParcelGrid. Join a fast-growing team." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/careers` : ''} />
+      </Helmet>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden" style={{ backgroundColor: '#f0e6e0' }}>

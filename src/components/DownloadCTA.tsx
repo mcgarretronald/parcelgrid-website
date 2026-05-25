@@ -34,7 +34,7 @@ export default function DownloadCTA() {
               className="flex items-center gap-3 bg-[#E9FF15] text-[#00473E] px-5 py-3 sm:px-6 sm:py-4 rounded-xl hover:bg-[#d4e614] transition-colors shadow-sm w-full sm:w-auto justify-center"
               aria-label="Download on Google Play"
             >
-              <img src="/playstorelogo.png" alt="Google Play" className="w-8 h-8 sm:w-12 sm:h-12 object-contain" />
+              <img src="/playstorelogo.png" alt="Download ParcelGrid App on Google Play Store for Android" width="48" height="48" className="w-8 h-8 sm:w-12 sm:h-12 object-contain" />
               <span className="text-base sm:text-lg font-semibold">Get it on Google Play</span>
             </a>
 
@@ -45,7 +45,7 @@ export default function DownloadCTA() {
               className="flex items-center gap-3 bg-[#E9FF15] text-[#00473E] px-5 py-3 sm:px-6 sm:py-4 rounded-xl hover:bg-[#d4e614] transition-colors shadow-sm w-full sm:w-auto justify-center"
               aria-label="Download on the App Store"
             >
-              <img src="/Applelogo.png" alt="App Store" className="w-8 h-8 sm:w-12 sm:h-12 object-contain" />
+              <img src="/Applelogo.png" alt="Download ParcelGrid App on Apple App Store for iOS" width="48" height="48" className="w-8 h-8 sm:w-12 sm:h-12 object-contain" />
               <span className="text-base sm:text-lg font-semibold">Download on the App Store</span>
             </a>
           </div>

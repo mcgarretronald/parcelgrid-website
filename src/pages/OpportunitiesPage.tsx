@@ -1,5 +1,5 @@
 import React from 'react';
-import Header from '../components/layout/Header';
+import { Helmet } from 'react-helmet-async';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -10,7 +10,16 @@ const OpportunitiesPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header transparent={false} />
+      <Helmet>
+        <title>Logistics Agent Opportunities in Kenya | ParcelGrid</title>
+        <meta name="title" content="Logistics Agent Opportunities in Kenya | ParcelGrid" />
+        <meta name="description" content="Earn commissions with ParcelGrid. Partner with us as a booking or pickup agent and turn your shop or business into an active delivery node in your town." />
+        <meta name="keywords" content="logistics agent, escrow agent opportunities, delivery business, retail agent, commission business Kenya, booking point" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Partner with ParcelGrid - Agent Opportunities" />
+        <meta property="og:description" content="Earn commissions with ParcelGrid. Partner with us as a booking or pickup agent and turn your shop or business into an active delivery node." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/opportunities` : ''} />
+      </Helmet>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden min-h-[48vh] sm:min-h-[56vh] lg:min-h-[64vh]">
@@ -26,7 +35,7 @@ const OpportunitiesPage: React.FC = () => {
         <div className="absolute inset-0 bg-black/30"></div>
 
         <div className="relative z-10 text-[#E9FF15] pt-20 pb-12 sm:pt-24 sm:pb-16 md:pt-28 md:pb-20 lg:pt-32 lg:pb-28 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">Opportunities</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">Logistics Agent Opportunities in Kenya</h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed px-2 sm:px-0">
             Become part of our national network — flexible opportunities for shop owners and agents.
           </p>

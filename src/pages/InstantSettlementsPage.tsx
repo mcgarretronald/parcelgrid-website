@@ -1,6 +1,6 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Smartphone, CreditCard, Shield, Zap, Users, TrendingUp } from 'lucide-react';
-import Header from '@/components/layout/Header';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -13,7 +13,16 @@ const InstantSettlementsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header transparent={false} />
+      <Helmet>
+        <title>Instant COD Wallet Settlements for Sellers | ParcelGrid</title>
+        <meta name="title" content="Instant COD Wallet Settlements for Sellers | ParcelGrid" />
+        <meta name="description" content="Boost your cash flow. ParcelGrid pays out cash-on-delivery collections to your vendor digital wallet immediately after customer package pickup." />
+        <meta name="keywords" content="instant settlements, COD wallet payouts, cash flow online shop, secure vendor payouts, mobile escrow wallet, cash on delivery Kenya" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Instant COD Wallet Settlements for Online Sellers" />
+        <meta property="og:description" content="Boost your cash flow. ParcelGrid pays out cash-on-delivery collections to your vendor digital wallet immediately after customer package pickup." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/instant-settlements` : ''} />
+      </Helmet>
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-16 sm:pt-24 sm:pb-20 md:pt-20 md:pb-32 overflow-hidden min-h-[60vh] sm:min-h-[70vh] flex items-center">
@@ -27,11 +36,11 @@ const InstantSettlementsPage: React.FC = () => {
         
         {/* Slightly dark overlay */}
         <div className="absolute inset-0 bg-black/50"></div>
-
+ 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#E9FF15] mb-4 sm:mb-6">
-              Cash Flow You Can Trust
+              Instant COD Settlements: Courier Service for Sellers
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl text-gray-300 leading-relaxed px-2 sm:px-0">
               COD payments are credited to your ParcelGrid wallet instantly—secure, transparent, and designed to keep your business liquid.

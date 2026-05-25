@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Phone, Mail, MapPin, Clock, MessageCircle } from 'lucide-react';
 import Footer from '../components/Footer';
 
@@ -40,6 +41,17 @@ const ContactPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Helmet>
+        <title>Contact Our Courier Service Support | ParcelGrid</title>
+        <meta name="title" content="Contact Our Courier Service Support | ParcelGrid" />
+        <meta name="description" content="Need help with your deliveries? Contact the ParcelGrid customer support team via phone, email, or WhatsApp. We are ready to help your business scale." />
+        <meta name="keywords" content="contact parcelgrid, escrow courier phone, logistics support Kenya, delivery support, courier helpline, WhatsApp courier" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Contact ParcelGrid Support" />
+        <meta property="og:description" content="Need help with your deliveries? Contact the ParcelGrid customer support team via phone, email, or WhatsApp." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/contact` : ''} />
+      </Helmet>
+
       {/* Hero Section (background image only here) */}
       <div
         className="relative bg-cover bg-center"
@@ -50,7 +62,7 @@ const ContactPage: React.FC = () => {
         <div className="absolute inset-0 bg-black/60" />
         <div className="relative z-10 text-white py-24">
           <div className="max-w-7xl mx-auto px-6 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Contact Us</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Contact Our Courier Service Team in Kenya</h1>
             <p className="text-xl text-white/90 max-w-2xl mx-auto">
               We're here to help! Get in touch with our team for support, partnerships, or any questions about ParcelGrid.
             </p>

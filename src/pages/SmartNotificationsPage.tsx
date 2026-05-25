@@ -1,6 +1,6 @@
 import React from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Package, Truck, Bell, Wallet, Check, MapPin, Zap } from 'lucide-react';
-import Header from '../components/layout/Header';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -13,7 +13,16 @@ const SmartNotificationsPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+      <Helmet>
+        <title>Smart Real-Time Parcel Tracking Alerts | ParcelGrid</title>
+        <meta name="title" content="Smart Real-Time Parcel Tracking Alerts | ParcelGrid" />
+        <meta name="description" content="Never lose track of a delivery. ParcelGrid sends automated SMS and in-app status notifications to both online vendors and customers at every route stage." />
+        <meta name="keywords" content="parcel tracking, SMS alerts, delivery notifications, shipping status, real-time tracking Kenya, vendor notifications" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Smart Tracking & Delivery Alerts" />
+        <meta property="og:description" content="Never lose track of a delivery. ParcelGrid sends automated SMS and in-app status notifications to both online vendors and customers." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/notifications` : ''} />
+      </Helmet>
       
       {/* Hero Section */}
       <section className="relative h-[70vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-20 md:pt-0">
@@ -29,7 +38,7 @@ const SmartNotificationsPage: React.FC = () => {
         <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#E9FF15] mb-6">
-            Always In the Loop.
+            Smart Courier Service Notifications
           </h1>
           
           <p className="text-xl sm:text-2xl text-gray-200 mb-12 max-w-3xl mx-auto leading-relaxed">

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import Header from '../components/layout/Header';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -180,9 +179,9 @@ const HowToUseAppPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>How to Use ParcelGrid App - Complete Guide for Online Vendors | COD Delivery Kenya</title>
-        <meta name="title" content="How to Use ParcelGrid App - Complete Guide for Online Vendors | COD Delivery Kenya" />
-        <meta name="description" content="Step-by-step guide to using ParcelGrid mobile app. Learn how to book parcels, track deliveries, manage COD payments, and get instant settlements across Kenya. Download and start selling nationwide today." />
+        <title>How to Use Our E-Commerce Courier App | ParcelGrid</title>
+        <meta name="title" content="How to Use Our E-Commerce Courier App | ParcelGrid" />
+        <meta name="description" content="Master the ParcelGrid mobile app in minutes. Learn how to book shipments, manage COD payouts, track items, and set up your vendor wallet profile." />
         <meta name="keywords" content="ParcelGrid app guide, how to use ParcelGrid, COD delivery tutorial, parcel booking guide, track delivery Kenya, instant settlement guide, online vendor app Kenya, ParcelGrid tutorial" />
         <meta name="robots" content="index, follow" />
         
@@ -190,7 +189,7 @@ const HowToUseAppPage: React.FC = () => {
         <meta property="og:type" content="article" />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:title" content="How to Use ParcelGrid App - Complete Vendor Guide" />
-        <meta property="og:description" content="Master ParcelGrid in minutes. Book parcels, track deliveries, manage COD payments, and get instant settlements. Complete step-by-step guide for online vendors." />
+        <meta property="og:description" content="Master ParcelGrid in minutes. Book parcels, track deliveries, manage COD payments, and get instant settlements." />
         <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
         
         {/* Twitter */}
@@ -208,8 +207,6 @@ const HowToUseAppPage: React.FC = () => {
           {JSON.stringify(howToStructuredData)}
         </script>
       </Helmet>
-      
-      <Header transparent={false} />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden min-h-[48vh] sm:min-h-[56vh] lg:min-h-[64vh]">

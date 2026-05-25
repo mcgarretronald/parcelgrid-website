@@ -244,24 +244,24 @@ const FAQ: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>FAQ - ParcelGrid | Frequently Asked Questions About COD Delivery in Kenya</title>
-        <meta name="title" content="FAQ - ParcelGrid | Frequently Asked Questions About COD Delivery in Kenya" />
-        <meta name="description" content="Get answers to common questions about ParcelGrid's COD delivery service, pickup points, instant settlements, delivery times, and how our parcel delivery system works across Kenya." />
+        <title>Courier Service FAQs & Answers | ParcelGrid</title>
+        <meta name="title" content="Courier Service FAQs & Answers | ParcelGrid" />
+        <meta name="description" content="Get quick answers to questions about COD delivery, wallet withdrawals, pickup agent locations, shipping rates, and parcel booking with ParcelGrid Kenya." />
         <meta name="keywords" content="ParcelGrid FAQ, COD delivery questions, pickup points Kenya, instant settlements, delivery times Kenya, parcel delivery help, vendor support Kenya, how COD works" />
         <meta name="robots" content="index, follow" />
         
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
-        <meta property="og:title" content="ParcelGrid FAQ - All Your Delivery Questions Answered" />
-        <meta property="og:description" content="Learn about COD delivery, pickup points, settlements, and more. Get instant answers to your ParcelGrid questions." />
+        <meta property="og:title" content="Courier Service FAQs & Answers | ParcelGrid" />
+        <meta property="og:description" content="Get quick answers to questions about COD delivery, wallet withdrawals, pickup agent locations, shipping rates, and parcel booking." />
         <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
         
         {/* Twitter */}
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
-        <meta property="twitter:title" content="ParcelGrid FAQ - All Your Delivery Questions Answered" />
-        <meta property="twitter:description" content="Learn about COD delivery, pickup points, settlements, and more." />
+        <meta property="twitter:title" content="Courier Service FAQs & Answers" />
+        <meta property="twitter:description" content="Get quick answers to questions about COD delivery, wallet withdrawals, and pickup agent locations." />
         <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
         
         {/* Canonical URL */}

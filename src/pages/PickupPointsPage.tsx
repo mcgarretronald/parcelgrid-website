@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Store, Truck, Package } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
-import Header from '@/components/layout/Header';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -60,9 +59,9 @@ const PickupPointsPage: React.FC = () => {
     <div className="min-h-screen bg-white">
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>Pickup Points Across Kenya - ParcelGrid | Drop Off & Collection Locations</title>
-        <meta name="title" content="Pickup Points Across Kenya - ParcelGrid | Drop Off & Collection Locations" />
-        <meta name="description" content="Find ParcelGrid pickup points and drop-off locations across Kenya. Vendors drop off at Nairobi branches (Moi Avenue & Taveta Road), customers collect from several pickup points nationwide." />
+        <title>Courier Service Pickup Points in Kenya | ParcelGrid</title>
+        <meta name="title" content="Courier Service Pickup Points in Kenya | ParcelGrid" />
+        <meta name="description" content="Find ParcelGrid parcel drop-off and pickup agent points across Nairobi, Mombasa, Kisumu, Eldoret, and all major Kenyan towns. Locate your nearest station." />
         <meta name="keywords" content="pickup points Kenya, ParcelGrid locations, drop off Nairobi, collection points Kenya, Moi Avenue drop off, Taveta Road drop off, parcel collection Kenya, pickup network" />
         <meta name="robots" content="index, follow" />
         
@@ -70,7 +69,7 @@ const PickupPointsPage: React.FC = () => {
         <meta property="og:type" content="website" />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:title" content="ParcelGrid Pickup Points - Nationwide Coverage Across Kenya" />
-        <meta property="og:description" content="several pickup points across Kenya. Drop off in Nairobi, collect anywhere. Convenient parcel delivery infrastructure for online vendors." />
+        <meta property="og:description" content="several pickup points across Kenya. Drop off in Nairobi, collect anywhere." />
         <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
         
         {/* Twitter */}
@@ -92,7 +91,6 @@ const PickupPointsPage: React.FC = () => {
           {JSON.stringify(pickupPointsStructuredData)}
         </script>
       </Helmet>
-      <Header transparent={false} />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
@@ -107,7 +105,7 @@ const PickupPointsPage: React.FC = () => {
 
         <div className="relative z-10 text-[#E9FF15] pt-20 pb-12 sm:pt-24 sm:pb-16 md:pt-20 md:pb-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
-            Drop Off Easily. Pick Up Anywhere.
+            Courier Service Pickup Points Across Kenya
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed px-2 sm:px-0">
             Vendors drop off parcels at our Nairobi branches, and customers collect from pickup points in all major towns nationwide.

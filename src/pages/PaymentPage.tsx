@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -300,6 +301,16 @@ const PaymentPage: React.FC = () => {
   if (success) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+        <Helmet>
+          <title>Complete Courier Shipment Payment | ParcelGrid</title>
+          <meta name="title" content="Complete Courier Shipment Payment | ParcelGrid" />
+          <meta name="description" content="Securely complete payment for your booked parcel delivery. Pay via M-Pesa push checkout to generate your shipping receipt and proceed to drop-off." />
+          <meta name="keywords" content="complete payment, mpesa checkout, parcel payment, escrow payment, parcelgrid payment" />
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content="Complete Shipment Payment" />
+          <meta property="og:description" content="Securely complete payment for your booked parcel delivery. Pay via M-Pesa push checkout." />
+          <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/payment` : ''} />
+        </Helmet>
         <div className="max-w-2xl mx-auto mt-20">
           <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
             <div className="mb-6">
@@ -335,6 +346,16 @@ Iconic Business Plaza, Ground Floor, Shop G13 – Moi Avenue (Between Sasa Mall 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+      <Helmet>
+        <title>Complete Courier Shipment Payment | ParcelGrid</title>
+        <meta name="title" content="Complete Courier Shipment Payment | ParcelGrid" />
+        <meta name="description" content="Securely complete payment for your booked parcel delivery. Pay via M-Pesa push checkout to generate your shipping receipt and proceed to drop-off." />
+        <meta name="keywords" content="complete payment, mpesa checkout, parcel payment, escrow payment, parcelgrid payment" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Complete Shipment Payment" />
+        <meta property="og:description" content="Securely complete payment for your booked parcel delivery. Pay via M-Pesa push checkout." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/payment` : ''} />
+      </Helmet>
       <div className="max-w-2xl mx-auto mt-20">
         <div className="mb-4">
           <Button variant="outline" onClick={handleBackToSummary} className="flex items-center gap-2">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Header from '../components/layout/Header';
+import { Helmet } from 'react-helmet-async';
 import Footer from '../components/Footer';
 import DownloadCTA from '../components/DownloadCTA';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -44,7 +44,16 @@ const BookingAgentPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header transparent={false} />
+      <Helmet>
+        <title>Become a Booking Agent in Kenya | ParcelGrid</title>
+        <meta name="title" content="Become a Booking Agent in Kenya | ParcelGrid" />
+        <meta name="description" content="Onboard new online vendors and book shipments directly from your premises. Partner with ParcelGrid and earn commissions on every parcel booked through you." />
+        <meta name="keywords" content="booking agent, logistics partner, escrow courier agent, parcel booking agent, commission agent, courier business Kenya" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Become a ParcelGrid Booking Agent - Earn Commissions" />
+        <meta property="og:description" content="Onboard new online vendors and book shipments directly from your premises. Partner with ParcelGrid and earn commissions." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/booking-agent` : ''} />
+      </Helmet>
 
       {/* Top bar */}
       <section className="pt-20 pb-8 bg-white border-b border-gray-100">

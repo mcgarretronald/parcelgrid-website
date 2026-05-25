@@ -1,5 +1,5 @@
 import React from 'react';
-import Header from '../components/layout/Header';
+import { Helmet } from 'react-helmet-async';
 import Footer from '../components/Footer';
 import { useScrollToTop } from '../hooks/useScrollToTop';
 import { Link } from 'react-router-dom';
@@ -9,7 +9,16 @@ const VendorGrowthJobPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header transparent={false} />
+      <Helmet>
+        <title>Vendor Growth & Support Job Opening | ParcelGrid</title>
+        <meta name="title" content="Vendor Growth & Support Job Opening | ParcelGrid" />
+        <meta name="description" content="Join ParcelGrid as a Vendor Growth and Customer Relations Officer in Nairobi. Help onboard online merchants and scale our delivery network. Apply now!" />
+        <meta name="keywords" content="vendor growth officer, customer relations job, logistics job Nairobi, escrow courier career, digital marketer job" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="Join ParcelGrid - Vendor Growth & Customer Relations" />
+        <meta property="og:description" content="Join ParcelGrid as a Vendor Growth and Customer Relations Officer in Nairobi. Help onboard online merchants and scale our delivery network." />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/careers/vendor-growth-officer` : ''} />
+      </Helmet>
 
       {/* Top bar */}
       <section className="pt-15 pb-8 bg-white border-b border-gray-100">
