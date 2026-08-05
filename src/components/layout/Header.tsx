@@ -181,12 +181,11 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
         </div>
 
         {/* Mobile Navigation */}
-        <div className={`xl:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+        <div className={`xl:hidden bg-black/20 backdrop-blur-xl border-t border-white/10 rounded-b-2xl overflow-hidden transition-all duration-200 ease-out ${
           isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
         }`}>
-          <div className="bg-[#00473E] border-t border-[#E9FF15]/20">
-            <nav className="px-4 py-4">
-              <div className="space-y-1">
+          <nav className="px-4 py-4">
+            <div className="space-y-1">
                 {/* Main navigation items for mobile */}
                 {mainNavItems.map((item) => (
                   <Link
@@ -246,7 +245,6 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
                 ))}
               </div>
             </nav>
-          </div>
         </div>
       </div>
 

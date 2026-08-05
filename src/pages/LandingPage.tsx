@@ -393,13 +393,13 @@ const LandingPage: React.FC = () => {
       <HeroCarousel />
 
       {/* Main Value Proposition Section - Semantic HTML for SEO */}
-      <section className="min-h-screen bg-white flex items-center py-4 md:py-8" aria-labelledby="value-proposition">
+      <section id="value-proposition" className="min-h-screen bg-white flex items-center py-4 md:py-8" aria-labelledby="value-proposition-heading">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <article className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-4 items-center py-2 md:py-0">
             <div className="flex justify-center md:justify-start">
               <div className="w-full h-full">
                 <header className="space-y-3 md:space-y-6 text-center md:text-left">
-                  <h1 id="value-proposition" className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00473E] leading-tight">
+                  <h1 id="value-proposition-heading" className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#00473E] leading-tight">
                     Courier Service for Online Sellers in Kenya
                     <span className="block text-xl sm:text-2xl md:text-3xl font-medium mt-2 text-gray-600">Built for online vendors like you.</span>
                   </h1>
