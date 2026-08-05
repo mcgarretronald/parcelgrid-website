@@ -35,13 +35,34 @@
 /* Scroll down animation */
 @keyframes bounce-slow {
   0%, 100% {
-    transform: translateY(0) translateX(-50%);
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-8px) translateX(-50%);
+    transform: translateY(-8px);
   }
 }
 
 .animate-bounce-slow {
   animation: bounce-slow 2s infinite ease-in-out;
+}
+
+/* Gradient text for hero title - brand styling */
+.gradient-text {
+  background: linear-gradient(135deg, #ffffff 0%, #d9ff3d 50%, #E9FF15 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 3px 14px rgba(233, 255, 21, 0.18));
+}
+
+/* Hero description styling */
+.hero-description {
+  color: #e2edea;
+}
+
+/* Accent highlight within description */
+.hero-description .accent {
+  color: #E9FF15;
+  font-weight: 600;
+  text-shadow: 0 0 18px rgba(233, 255, 21, 0.35);
 }

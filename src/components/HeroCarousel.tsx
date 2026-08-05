@@ -1,88 +1,118 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './HeroCarousel.css';
-import truckImage from '../assets/Truck.png';
+import parcelsImage from '../assets/Parcels.png';
+
+interface HeroSlide {
+  id: number;
+  title: string;
+  description: React.ReactNode;
+}
+
+const slides: HeroSlide[] = [
+  {
+    id: 1,
+    title: "DELIVERY INFRASTRUCTURE THAT POWERS YOUR GROWTH",
+    description: (
+      <>
+        From Nairobi to the furthest town, ParcelGrid helps you scale with{" "}
+        <span className="accent">prepaid and COD deliveries</span> to pickup points across major towns.
+      </>
+    )
+  },
+  {
+    id: 2,
+    title: "HAPPY CUSTOMERS, REPEAT BUYERS",
+    description: (
+      <>
+        Smart notifications keep your buyers informed at every step—building trust that turns{" "}
+        <span className="accent">first-time buyers into loyal customers</span>.
+      </>
+    )
+  },
+  {
+    id: 3,
+    title: "KENYA'S BROADEST PICKUP NETWORK",
+    description: (
+      <>
+        Beat Nairobi's high competition by selling to{" "}
+        <span className="accent">untapped towns</span>. From One Branch, to the Whole Country.
+      </>
+    )
+  }
+];
 
 export const HeroCarousel: React.FC = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Rotate the words automatically, but keep the background fixed
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const slide = slides[currentSlide];
+
   return (
     <div className="relative h-screen w-full overflow-hidden">
-      {/* Single Road Background */}
+      {/* Fixed Parcels Background - does NOT change */}
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1506521781262-d4582ff2b0e0?q=80&w=1770&auto=format&fit=crop&ixlib=rb-4.1.0')`,
+            backgroundImage: `url(${parcelsImage})`,
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
       </div>
 
-      {/* Modern Geometric Decorations */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-16 h-16 bg-cyan-500 rounded-full opacity-20 animate-float"></div>
-        <div className="absolute top-40 right-20 w-12 h-12 bg-purple-500 rounded-lg opacity-15 animate-float delay-1000 rotate-45"></div>
-        <div className="absolute bottom-40 left-1/4 w-20 h-20 bg-emerald-500 rounded-full opacity-10 animate-float delay-2000"></div>
-        <div className="absolute bottom-20 right-1/3 w-8 h-8 bg-orange-500 rounded-lg opacity-25 animate-pulse delay-500"></div>
-      </div>
-
-      {/* Main Content */}
-      <div className="relative z-10 h-full flex items-center">
-        <div className="w-full flex flex-col lg:flex-row lg:items-center">
-          {/* Truck Image - flush to left edge */}
-          <div className="lg:w-1/2 flex justify-start animate-fade-in">
-            <div className="w-full sm:w-4/5 md:w-3/4 lg:w-full max-w-2xl 2xl:max-w-4xl">
-              <img
-                src={truckImage}
-                alt="ParcelGrid delivery truck"
-                className="w-full h-auto object-contain"
-              />
-            </div>
-          </div>
-
-          {/* Text Content */}
-          <div className="lg:w-1/2 px-4 sm:px-6 lg:px-8 xl:px-12 mt-6 lg:mt-0 text-center lg:text-left">
+      {/* Content - words on the far left, aligned toward the bottom */}
+      <div className="relative z-10 h-full flex items-end">
+        <div className="w-full max-w-3xl px-5 sm:px-6 lg:px-12 xl:px-16 pb-32 md:pb-20">
+          {/* Rotating words - keyed by slide to re-trigger the slide-in animation */}
+          <div key={slide.id} className="carousel-slide">
             {/* Title */}
-            <div
-              role="heading"
-              aria-level={2}
-              className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-6 leading-tight animate-fade-in"
+            <h1
+              className="gradient-text text-[1.65rem] sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-5 sm:mb-6 leading-tight"
               style={{
                 fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
                 letterSpacing: '-0.025em'
               }}
             >
-              DELIVERY INFRASTRUCTURE THAT POWERS YOUR GROWTH
-            </div>
+              {slide.title}
+            </h1>
 
             {/* Description */}
             <p
-              className="text-base sm:text-lg lg:text-xl text-gray-200 font-light max-w-xl leading-relaxed mb-8 animate-fade-in"
+              className="hero-description text-[15px] sm:text-lg lg:text-xl font-light max-w-xl leading-relaxed mb-8 sm:mb-10"
               style={{
                 fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
                 letterSpacing: '0.01em',
                 lineHeight: '1.6'
               }}
             >
-              From Nairobi to the furthest town, ParcelGrid helps you scale with prepaid and COD deliveries to pickup points across major towns.
+              {slide.description}
             </p>
+          </div>
 
-            {/* CTA Button */}
-            <div className="flex justify-center lg:justify-start animate-fade-in">
-              <a
-                href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp"
-                className="bg-[#E9FF15] hover:bg-[#E9FF15]/90 text-[#00473E] font-semibold px-8 py-4 text-lg shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 rounded-xl border-0"
-                style={{
-                  fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-                  letterSpacing: '0.025em'
-                }}
-              >
-                Download and Deliver
-              </a>
-            </div>
+          {/* CTA Button - full width on mobile for an easy tap target */}
+          <div className="carousel-slide">
+            <a
+              href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp"
+              className="text-[#E9FF15] bg-transparent font-semibold px-8 py-4 text-base sm:text-lg transition-all duration-300 hover:bg-[#E9FF15]/10 rounded-xl border-2 border-[#E9FF15] inline-flex items-center justify-center w-full sm:w-auto"
+              style={{
+                fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+                letterSpacing: '0.025em'
+              }}
+            >
+              Download and Deliver
+            </a>
           </div>
         </div>
 
         {/* Scroll Down - Mobile */}
-        <div className="md:hidden absolute bottom-10 left-0 right-0 flex flex-col items-center animate-bounce-slow">
+        <div className="md:hidden absolute bottom-8 left-0 right-0 flex flex-col items-center animate-bounce-slow pointer-events-none">
           <span className="text-[#E9FF15] text-sm mb-2 font-medium">Scroll Down</span>
           <svg
             className="w-6 h-6 text-[#E9FF15]"
