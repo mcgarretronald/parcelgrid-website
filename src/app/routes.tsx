@@ -16,6 +16,7 @@ import BookingAgentPage from "../pages/BookingAgentPage";
 import HowToUseAppPage from "../pages/HowToUseAppPage";
 import BookingPage from "../pages/BookingPage";
 import PaymentPage from "../pages/PaymentPage";
+import TrackingPage from "../pages/TrackingPage";
 
 const router = createBrowserRouter([
   {
@@ -73,6 +74,10 @@ const router = createBrowserRouter([
       {
         path: "/book-parcel",
         element: <BookingPage />,
+      },
+      {
+        path: "/track-parcel",
+        element: <TrackingPage />,
       },
       {
         path: "/payment",

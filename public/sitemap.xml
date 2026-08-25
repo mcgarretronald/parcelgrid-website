@@ -108,6 +108,14 @@
         <priority>0.9</priority>
     </url>
     
+    <!-- Track Parcel -->
+    <url>
+        <loc>https://escrowcourier.com/track-parcel</loc>
+        <lastmod>2025-12-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
     <!-- Careers -->
     <url>
         <loc>https://escrowcourier.com/careers</loc>

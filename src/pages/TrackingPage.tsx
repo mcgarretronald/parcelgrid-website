@@ -1,0 +1,1020 @@
+import React, { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
+import {
+  Search,
+  Package,
+  MapPin,
+  Truck,
+  Loader2,
+  Clock,
+  Navigation,
+  FileText,
+  User,
+  Store,
+  AlertCircle,
+  CalendarClock,
+  CheckCircle2,
+  PackageCheck,
+  PackageX,
+  RotateCcw,
+  Copy,
+  Check,
+  ChevronRight,
+  type LucideIcon,
+} from 'lucide-react';
+import { useScrollToTop } from '../hooks/useScrollToTop';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
+
+/* ------------------------------------------------------------------ */
+/* Types                                                               */
+/* ------------------------------------------------------------------ */
+
+interface TrackingEvent {
+  status: string;
+  description?: string;
+  location?: string;
+  timestamp?: string;
+  date?: Date | null;
+  completed?: boolean;
+}
+
+interface TrackingData {
+  trackingNumber: string;
+  status: string;
+  statusCode?: string;
+  statusLabel: string;
+  statusStage: number;
+  isReturned?: boolean;
+  forwardStage?: number;
+  events: TrackingEvent[];
+  destination?: string;
+  origin?: string;
+  customerName?: string;
+  vendorName?: string;
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Helpers                                                             */
+/* ------------------------------------------------------------------ */
+
+function parseDate(value?: string): Date | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function formatDate(d?: Date | null): string {
+  if (!d || isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Africa/Nairobi',
+  }).format(d);
+}
+
+function getFirstString(obj: any, keys: string[]): string | undefined {
+  if (!obj || typeof obj !== 'object') return undefined;
+  for (const key of keys) {
+    const v = obj[key];
+    if (typeof v === 'string' && v.trim()) return v.trim();
+    if (typeof v === 'number' && !isNaN(v)) return String(v);
+  }
+  return undefined;
+}
+
+/** Return a displayable location, or undefined for placeholder/empty values (null, Unknown, N/A, ...). */
+function cleanLocation(value?: string): string | undefined {
+  const v = (value || '').trim();
+  if (!v) return undefined;
+  if (/^(unknown|n\/?a|na|none|null|nil|unspecified|not\s*specified|-+|\.\.\.|tbd)$/i.test(v)) {
+    return undefined;
+  }
+  return v;
+}
+
+/** Tidy up an event description (e.g. replace 'by Admin' with the courier brand). */
+function cleanDescription(value?: string): string | undefined {
+  const v = (value || '').trim();
+  if (!v) return undefined;
+  return v.replace(/\bby\s+admin\b/gi, 'by ParcelGrid');
+}
+
+/** Map Escrow track status (code + milestones) to a normalized label + journey stage (0-4). */
+function mapTrackStatus(
+  statusCode: string,
+  milestones: Record<string, any>,
+  rawLabel?: string
+): { label: string; stage: number } {
+  const code = (statusCode || '').toLowerCase();
+
+  // Prefer an exact match on the live status code.
+  const codeMap: Array<[RegExp, string, number]> = [
+    [/delivered/, 'Delivered', 4],
+    [/cancel/, 'Cancelled', -1],
+    [/return/, 'Returned / Not Delivered', -1],
+    [/failed|rejected/, 'Returned / Not Delivered', -1],
+    [/ready_for_collection/, 'Ready for Collection', 3],
+    [/out_for_delivery|dispatched/, 'Out for Delivery', 3],
+    [/received_by_escrow|received_by_hq/, 'Received by Escrow', 3],
+    [/arrived_at_hq|arrived_at/, 'Arrived at Hub', 3],
+    [/in_transit|transit/, 'In Transit', 2],
+    [/received_at_origin|picked|collected|scanned/, 'Picked Up', 1],
+    [/pending|booked|created/, 'Parcel Booked', 0],
+  ];
+  for (const [re, label, stage] of codeMap) {
+    if (re.test(code)) return { label, stage };
+  }
+
+  // Fallback: the furthest reached milestone determines the current stage.
+  const milestoneOrder: Array<[string, string, number]> = [
+    ['deliveredAt', 'Delivered', 4],
+    ['returnedAt', 'Returned / Not Delivered', -1],
+    ['cancelledAt', 'Cancelled', -1],
+    ['readyForCollectionAt', 'Ready for Collection', 3],
+    ['dispatchedAt', 'Out for Delivery', 3],
+    ['receivedByEscrowAt', 'Received by Escrow', 3],
+    ['arrivedAtHqAt', 'Arrived at Hub', 3],
+    ['inTransitToHqAt', 'In Transit', 2],
+    ['receivedAtOriginAt', 'Picked Up', 1],
+    ['bookedAt', 'Parcel Booked', 0],
+  ];
+  if (milestones && typeof milestones === 'object') {
+    for (const [key, label, stage] of milestoneOrder) {
+      if (milestones[key]) return { label, stage };
+    }
+  }
+
+  return { label: rawLabel || 'Parcel Booked', stage: 0 };
+}
+
+/* ------------------------------------------------------------------ */
+/* Delivery stages                                                     */
+/* ------------------------------------------------------------------ */
+
+interface DeliveryStage {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+}
+
+/** The fixed 6-step journey shown on the tracking page. */
+const DELIVERY_STAGES: DeliveryStage[] = [
+  { title: 'Awaiting handover', description: 'Seller has booked the parcel on the app.', icon: CalendarClock },
+  { title: 'Received by ParcelGrid', description: "We have received the parcel and it's ready for dispatch.", icon: Package },
+  { title: 'In Transit', description: 'The parcel is on its way to the sorting center or destination.', icon: Truck },
+  { title: 'Ready for Collection', description: 'The parcel is at the pickup station and ready to collect.', icon: Store },
+  { title: 'Delivered', description: 'The parcel has been successfully delivered.', icon: CheckCircle2 },
+];
+
+/** Map the current status code + milestones to a delivery stage index (0-4, -1 = cancelled/returned). */
+function mapToDeliveryStage(statusCode: string, milestones: Record<string, any>): number {
+  const code = (statusCode || '').toLowerCase();
+
+  if (/(cancel|return|failed|rejected)/.test(code)) return -1;
+  if (/(delivered)/.test(code)) return 4;
+  if (/(ready_for_collection)/.test(code)) return 3;
+  if (/(out_for_delivery|dispatched|in_transit|transit)/.test(code)) return 2;
+  if (/(received_at_origin|received_by_escrow|received_by_hq|arrived_at_hq|arrived_at|picked|collected|scanned)/.test(code)) return 1;
+  if (/(pending|booked|created)/.test(code)) return 0;
+
+  // Fallback: furthest reached milestone determines the stage.
+  const milestoneOrder: Array<[string, number]> = [
+    ['deliveredAt', 4],
+    ['returnedAt', -1],
+    ['cancelledAt', -1],
+    ['readyForCollectionAt', 3],
+    ['dispatchedAt', 2],
+    ['inTransitToHqAt', 2],
+    ['receivedAtOriginAt', 1],
+    ['arrivedAtHqAt', 1],
+    ['receivedByEscrowAt', 1],
+    ['bookedAt', 0],
+  ];
+  if (milestones && typeof milestones === 'object') {
+    for (const [key, idx] of milestoneOrder) {
+      if (milestones[key]) return idx;
+    }
+  }
+  return 0;
+}
+
+/** The 3-stage return journey appended after the reached outbound stages. */
+const RETURN_STAGES: DeliveryStage[] = [
+  { title: 'Return initiated', description: 'The return process has been started for this parcel.', icon: RotateCcw },
+  { title: 'Returned to head office', description: 'The parcel is being returned to the head office.', icon: PackageX },
+  { title: 'Returned', description: 'The parcel has been returned to the sender.', icon: PackageCheck },
+];
+
+/** Furthest outbound (delivery) stage reached: 0 = Awaiting handover .. 3 = Ready for Collection. */
+function getForwardStageIndex(milestones: Record<string, any>, journey: any[]): number {
+  const m = milestones || {};
+  let idx = 0;
+  if (m.readyForCollectionAt) idx = Math.max(idx, 3);
+  if (m.dispatchedAt || m.inTransitToHqAt) idx = Math.max(idx, 2);
+  if (m.receivedByEscrowAt || m.arrivedAtHqAt || m.receivedAtOriginAt) idx = Math.max(idx, 1);
+
+  // Fallback: scan the journey for the furthest outbound status.
+  for (const e of Array.isArray(journey) ? journey : []) {
+    const c = String(getFirstString(e, ['status', 'label', 'title']) || '').toLowerCase();
+    if (/(ready_for_collection|ready for collection)/.test(c)) idx = Math.max(idx, 3);
+    if (/(dispatched|out_for_delivery|in_transit|transit)/.test(c)) idx = Math.max(idx, 2);
+    if (/(received_by_escrow|received_by_hq|arrived_at|received_at_origin|checked.?in|received)/.test(c)) idx = Math.max(idx, 1);
+  }
+  return idx;
+}
+
+/** Stage offset (within RETURN_STAGES) for a returned parcel. */
+function getReturnStageOffset(statusCode: string): number {
+  const code = (statusCode || '').toLowerCase();
+  if (/(return.*(hq|head.?office|office|depot|hub))/.test(code)) return 1;
+  if (/(return.*(final|complete|finish|done|success|sender|delivered|back))/.test(code)) return 2;
+  if (/^return(ed)?$/.test(code.trim())) return 2;
+  return 0;
+}
+
+/** Build a standard milestone route when the API has no event history. */
+function buildSyntheticEvents(input: {
+  stage: number;
+  statusLabel: string;
+  createdAt?: Date | null;
+  updatedAt?: Date | null;
+}): TrackingEvent[] {
+  const { stage, statusLabel, createdAt, updatedAt } = input;
+  const milestones = [
+    { label: 'Awaiting handover', desc: 'Seller has booked the parcel on the app.' },
+    { label: 'Received by ParcelGrid', desc: "We have received the parcel and it's ready for dispatch." },
+    { label: 'In Transit', desc: 'The parcel is on its way to the sorting center or destination.' },
+    { label: 'Ready for Collection', desc: 'The parcel is at the pickup station and ready to collect.' },
+    { label: 'Delivered', desc: 'The parcel has been successfully delivered.' },
+  ];
+
+  const events: TrackingEvent[] = milestones.map((m, i) => {
+    const isCurrent = i === stage && stage >= 0;
+    const isPast = stage >= 0 && i < stage;
+    const completed = isPast || isCurrent;
+    const hasTime = isCurrent ? !!updatedAt : i === 0 ? !!createdAt : false;
+    return {
+      status: m.label,
+      description: m.desc,
+      completed,
+      date: hasTime ? (isCurrent ? updatedAt ?? null : createdAt ?? null) : null,
+      timestamp: hasTime
+        ? formatDate(isCurrent ? updatedAt ?? undefined : createdAt ?? undefined)
+        : undefined,
+    };
+  });
+
+  // Journey interrupted (returned / cancelled / failed)
+  if (stage < 0) {
+    events.forEach((e, i) => {
+      e.completed = i === 0;
+      e.date = i === 0 ? createdAt ?? null : null;
+      e.timestamp = i === 0 ? formatDate(createdAt ?? undefined) : undefined;
+    });
+    events.push({
+      status: statusLabel || 'Parcel Not Delivered',
+      description: 'This parcel could not be delivered. Please contact ParcelGrid support for assistance.',
+      completed: false,
+      date: updatedAt ?? null,
+      timestamp: formatDate(updatedAt ?? undefined),
+    });
+  }
+
+  return events;
+}
+
+/** Remove near-duplicate history entries (same status/description/location), keeping the first. */
+function dedupeEvents(events: TrackingEvent[]): TrackingEvent[] {
+  const seen = new Set<string>();
+  const out: TrackingEvent[] = [];
+  for (const ev of events) {
+    const key = [ev.status, ev.description, ev.location]
+      .map((s) => (s || '').trim().toLowerCase())
+      .join('|');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(ev);
+  }
+  return out;
+}
+
+/** Normalize the dedicated /api/track/:trackingNo response into TrackingData. */
+function normalizeTrackResponse(payload: any, fallbackTrackingNo: string): TrackingData {
+  const order = payload?.order && typeof payload.order === 'object' ? payload.order : {};
+  const currentStatus =
+    payload?.currentStatus && typeof payload.currentStatus === 'object' ? payload.currentStatus : {};
+  const milestones =
+    payload?.milestones && typeof payload.milestones === 'object' ? payload.milestones : {};
+  const journey = Array.isArray(payload?.journey) ? payload.journey : [];
+
+  const trackingNumber =
+    getFirstString(payload, [
+      'trackingNo',
+      'trackingNumber',
+      'tracking_no',
+      'trackingnumber',
+      'trackingno',
+      'tracking_number',
+    ]) || fallbackTrackingNo;
+
+  const rawStatus =
+    getFirstString(currentStatus, ['label', 'code', 'status']) ||
+    getFirstString(payload, ['status', 'orderStatus', 'deliveryStatus', 'currentStatus', 'state']) ||
+    'Parcel Booked';
+
+  const { label } = mapTrackStatus(currentStatus?.code || '', milestones, rawStatus);
+  const isReturned =
+    /return/.test(currentStatus?.code || '') || !!milestones?.returnedAt;
+  const forwardStage = getForwardStageIndex(milestones, journey);
+  const stage = isReturned
+    ? getReturnStageOffset(currentStatus?.code || '')
+    : mapToDeliveryStage(currentStatus?.code || '', milestones);
+
+  const destination =
+    getFirstString(order, [
+      'destination',
+      'customerCounty',
+      'destinationCounty',
+      'destinationTown',
+      'customerAddress',
+      'deliveryAddress',
+      'toTown',
+      'receiverCounty',
+    ]) || '';
+  const origin =
+    getFirstString(order, [
+      'origin',
+      'fromTown',
+      'originTown',
+      'pickupPointName',
+      'pickupPoint',
+      'sourceCounty',
+      'vendorCounty',
+    ]) ||
+    cleanLocation(getFirstString(journey.find((e: any) => e?.branch) || {}, ['branch'])) ||
+    '';
+
+  const customerName =
+    getFirstString(order, ['customerName', 'receiverName', 'recipientName', 'receiver']) || '';
+  const vendorName =
+    getFirstString(order, ['vendorName', 'senderName', 'sender']) || '';
+
+  const createdAt =
+    parseDate(
+      getFirstString(order, ['bookedAt', 'createdAt', 'created_at', 'orderDate', 'bookingDate']) ||
+        getFirstString(milestones, ['bookedAt'])
+    ) || null;
+
+  const lastJourney = journey.length > 0 ? journey[journey.length - 1] : null;
+  const updatedAt =
+    parseDate(
+      getFirstString(lastJourney, ['timestamp', 'date', 'time', 'datetime', 'createdAt', 'updatedAt']) ||
+        getFirstString(order, ['updatedAt', 'updated_at', 'lastUpdate', 'lastUpdated', 'statusDate', 'modifiedAt'])
+    ) || null;
+
+  let events: TrackingEvent[];
+  if (journey.length > 0) {
+    const mapped = journey
+      .map((e: any): TrackingEvent => {
+        const status =
+          getFirstString(e, ['title', 'label', 'status', 'state', 'name', 'event', 'eventType']) ||
+          getFirstString(e, ['description', 'message', 'details']) ||
+          'Parcel Update';
+        const description = cleanDescription(
+          getFirstString(e, ['description', 'message', 'details', 'note', 'text', 'comment'])
+        );
+        const location = cleanLocation(
+          getFirstString(e, ['branch', 'location', 'town', 'city', 'place', 'hub', 'station'])
+        );
+        const timestamp = getFirstString(e, [
+          'timestamp',
+          'date',
+          'time',
+          'datetime',
+          'createdAt',
+          'created_at',
+          'updatedAt',
+          'updated_at',
+          'eventDate',
+        ]);
+        const parsedDate = parseDate(timestamp);
+        return {
+          status,
+          description,
+          location,
+          timestamp: parsedDate ? formatDate(parsedDate) : timestamp,
+          date: parsedDate,
+          completed: true,
+        };
+      })
+      .filter((e: TrackingEvent) => e.status)
+      .sort((a: TrackingEvent, b: TrackingEvent) => (a.date?.getTime() ?? 0) - (b.date?.getTime() ?? 0));
+    events = dedupeEvents(mapped);
+  } else {
+    events = buildSyntheticEvents({ stage, statusLabel: label, createdAt, updatedAt });
+  }
+
+  return {
+    trackingNumber,
+    status: rawStatus,
+    statusCode: currentStatus?.code || '',
+    statusLabel: label,
+    statusStage: stage,
+    isReturned,
+    forwardStage,
+    events,
+    destination,
+    origin,
+    customerName,
+    vendorName,
+    createdAt,
+    updatedAt,
+  };
+}
+
+/* ------------------------------------------------------------------ */
+/* Data fetching                                                       */
+/* ------------------------------------------------------------------ */
+
+const TRACK_API = 'https://app.escrowcourier.com/order-services/api/track';
+
+async function fetchTracking(trackingNo: string): Promise<TrackingData> {
+  const value = trackingNo.trim();
+  const url = `${TRACK_API}/${encodeURIComponent(value)}`;
+  const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
+
+  // The track endpoint returns 404 when the parcel doesn't exist / isn't trackable.
+  if (res.status === 404) {
+    throw new Error(
+      'Parcel not found. Please double-check your tracking number and try again, or contact our support team for help.'
+    );
+  }
+  if (!res.ok) {
+    throw new Error(`Unable to reach the tracking service right now (${res.status}). Please try again later.`);
+  }
+
+  let json: any = null;
+  try {
+    json = await res.json();
+  } catch {
+    throw new Error('The tracking service returned an invalid response. Please try again in a few minutes.');
+  }
+
+  // The track endpoint returns: { success, data: { trackingNo, currentStatus, order, milestones, journey } }
+  const payload = json?.data && typeof json.data === 'object' ? json.data : json;
+
+  if (
+    json?.success === false ||
+    !payload ||
+    (typeof payload === 'object' && !Array.isArray(payload) && Object.keys(payload).length === 0)
+  ) {
+    throw new Error(
+      'Parcel not found. Please double-check your tracking number and try again, or contact our support team for help.'
+    );
+  }
+
+  return normalizeTrackResponse(payload, value);
+}
+
+/* ------------------------------------------------------------------ */
+/* UI helpers                                                          */
+/* ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ */
+/* Component                                                           */
+/* ------------------------------------------------------------------ */
+
+const TrackingPage: React.FC = () => {
+  useScrollToTop();
+
+  const [trackingNo, setTrackingNo] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<TrackingData | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const value = trackingNo.trim();
+    if (!value) {
+      setError('Please enter a tracking number.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    setHasSearched(true);
+    try {
+      const data = await fetchTracking(value);
+      setResult(data);
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong while tracking your parcel. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const isReturned = !!result?.isReturned;
+  const forwardCount = Math.min(Math.max((result?.forwardStage ?? 0) + 1, 1), 4);
+  const displayStages = isReturned
+    ? [...DELIVERY_STAGES.slice(0, forwardCount), ...RETURN_STAGES]
+    : DELIVERY_STAGES;
+  const stageIdx = isReturned
+    ? forwardCount + getReturnStageOffset(result?.statusCode || '')
+    : (result?.statusStage ?? -1);
+  const currentStage =
+    stageIdx >= 0 && stageIdx < displayStages.length ? displayStages[stageIdx] : null;
+  const progressPercent =
+    stageIdx >= 0 ? Math.round((stageIdx / (displayStages.length - 1)) * 100) : 0;
+
+  const handleCopy = async () => {
+    if (!result) return;
+    const text = result.trackingNumber;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>Track Your Parcel in Real-Time | ParcelGrid</title>
+        <meta
+          name="title"
+          content="Track Your Parcel in Real-Time | ParcelGrid"
+        />
+        <meta
+          name="description"
+          content="Track your ParcelGrid parcel instantly using your tracking number. View live delivery status and the full journey route from booking to delivery across Kenya."
+        />
+        <meta
+          name="keywords"
+          content="track parcel Kenya, parcel tracking, ParcelGrid tracking, track courier delivery, delivery status, track my parcel, parcel route, COD tracking"
+        />
+        <meta name="robots" content="index, follow" />
+
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="og:title" content="Track Your Parcel in Real-Time | ParcelGrid" />
+        <meta
+          property="og:description"
+          content="Enter your tracking number to see live parcel status and the full delivery route."
+        />
+        <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/logo1.png` : ''} />
+
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="twitter:title" content="Track Your Parcel in Real-Time | ParcelGrid" />
+        <meta
+          property="twitter:description"
+          content="Enter your tracking number to see live parcel status and the full delivery route."
+        />
+        <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/logo1.png` : ''} />
+
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/track-parcel` : ''} />
+
+        <meta name="geo.region" content="KE" />
+        <meta name="geo.placename" content="Kenya" />
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: 'Track Your Parcel | ParcelGrid',
+            description:
+              'Track your ParcelGrid parcel instantly using your tracking number. View live delivery status and the full journey route.',
+            url: typeof window !== 'undefined' ? `${window.location.origin}/track-parcel` : '',
+            publisher: {
+              '@type': 'Organization',
+              name: 'Escrow Courier Networks Limited',
+            },
+          })}
+        </script>
+      </Helmet>
+
+      {/* Hero + Tracking form */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#00473E] via-[#006644] to-[#00473E]">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-6 left-6 w-24 h-24 rounded-full bg-[#E9FF15] animate-pulse" />
+          <div className="absolute bottom-8 right-10 w-16 h-16 rounded-full bg-[#E9FF15] animate-pulse delay-500" />
+          <div className="absolute top-1/3 right-1/4 w-10 h-10 rounded-full bg-[#E9FF15] animate-pulse delay-1000" />
+        </div>
+
+        <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3">
+            Track Your Parcel
+          </h1>
+          <p className="text-base sm:text-lg text-[#E9FF15] mb-8 sm:mb-10">
+            Enter your tracking number to see the latest status
+          </p>
+
+          {/* Search form */}
+          <form
+            onSubmit={handleSubmit}
+            className="max-w-xl mx-auto bg-white rounded-full shadow-xl p-2 flex items-center gap-2"
+          >
+            <Search className="ml-3 w-5 h-5 text-gray-400 flex-shrink-0" />
+            <Input
+              type="text"
+              value={trackingNo}
+              onChange={(e) => setTrackingNo(e.target.value)}
+              placeholder="e.g. LILI#57267"
+              className="flex-1 h-12 px-2 text-base bg-transparent border-0 focus-visible:ring-0 focus-visible:border-transparent"
+              aria-label="Tracking number"
+            />
+            <Button
+              type="submit"
+              disabled={loading}
+              className="h-12 px-6 rounded-full bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold text-sm sm:text-base transition-all duration-200 hover:scale-[1.02] disabled:opacity-70 disabled:hover:scale-100 whitespace-nowrap"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                  Tracking...
+                </>
+              ) : (
+                <>
+                  Track Now
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </>
+              )}
+            </Button>
+          </form>
+
+          {error && hasSearched && (
+            <div className="max-w-2xl mx-auto mt-6 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-5 py-4 text-left">
+              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold">Tracking failed</p>
+                <p className="text-sm text-red-600">{error}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Results / status */}
+      {hasSearched && !loading && result && (
+        <section className="py-10 sm:py-14 bg-gradient-to-br from-gray-50 to-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            {/* Status card */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="px-6 sm:px-8 py-6 sm:py-7">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
+                      Tracking Number
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-2xl text-gray-900">
+                        {result.trackingNumber}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleCopy}
+                        aria-label="Copy tracking number"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-[#00473E] hover:bg-gray-100 transition-colors"
+                      >
+                        {copied ? (
+                          <Check className="w-4 h-4 text-green-600" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="sm:text-right">
+                    <p className="text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
+                      Current Status
+                    </p>
+                    {currentStage ? (
+                      <span
+                        className={`inline-flex items-center gap-2.5 font-bold uppercase text-sm sm:text-base tracking-wide ${
+                          stageIdx === displayStages.length - 1
+                            ? 'text-green-700'
+                            : stageIdx < 0
+                            ? 'text-red-600'
+                            : 'text-[#00473E]'
+                        }`}
+                      >
+                        <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#00473E]/10 text-[#00473E]">
+                          <currentStage.icon className="w-5 h-5" />
+                        </span>
+                        {currentStage.title}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2 font-bold uppercase text-sm sm:text-base tracking-wide text-red-600">
+                        <AlertCircle className="w-5 h-5" />
+                        Cancelled
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Details strip */}
+                <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 border-t border-gray-100 pt-5">
+                  <div>
+                    <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
+                      <MapPin className="w-3.5 h-3.5" /> Destination
+                    </p>
+                    <p className="text-sm font-medium text-gray-800">{result.destination || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
+                      <Store className="w-3.5 h-3.5" /> Origin
+                    </p>
+                    <p className="text-sm font-medium text-gray-800">{result.origin || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
+                      <Clock className="w-3.5 h-3.5" /> Last Update
+                    </p>
+                    <p className="text-sm font-medium text-gray-800">
+                      {result.updatedAt
+                        ? formatDate(result.updatedAt)
+                        : result.events[result.events.length - 1]?.timestamp || '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
+                      <User className="w-3.5 h-3.5" /> Receiver
+                    </p>
+                    <p className="text-sm font-medium text-gray-800">{result.customerName || '—'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Delivery progress (linear, left-to-right) */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
+              <div className="px-6 sm:px-8 py-6 sm:py-7">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-lg font-bold text-gray-900">Delivery Progress</h2>
+                  <span className="text-sm font-semibold text-[#00473E]">
+                    {stageIdx < 0 ? '—' : `${progressPercent}%`}
+                  </span>
+                </div>
+
+                {/* Horizontal linear progress bar */}
+                <div className="relative">
+                  <div className="absolute left-0 right-0 top-[18px] h-1 bg-gray-100 rounded-full" />
+                  <div
+                    className={`absolute left-0 top-[18px] h-1 rounded-full transition-all duration-700 ${
+                      stageIdx === displayStages.length - 1
+                        ? 'bg-green-500'
+                        : stageIdx < 0
+                        ? 'bg-red-400'
+                        : 'bg-[#00473E]'
+                    }`}
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                  <div
+                    className="relative grid gap-1"
+                    style={{ gridTemplateColumns: `repeat(${displayStages.length}, minmax(0, 1fr))` }}
+                  >
+                    {displayStages.map((step, i) => {
+                      const isDone = i < stageIdx;
+                      const isActive = i === stageIdx;
+                      return (
+                        <div key={step.title} className="flex flex-col items-center text-center">
+                          <div
+                            className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 transition-colors ${
+                              isDone
+                                ? 'bg-[#00473E] border-[#00473E] text-[#E9FF15]'
+                                : isActive
+                                ? 'bg-[#00473E] border-[#00473E] text-white ring-4 ring-[#00473E]/20'
+                                : 'bg-white border-gray-200 text-gray-300'
+                            }`}
+                          >
+                            <step.icon className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={isDone || isActive ? 2.2 : 2} />
+                          </div>
+                          <span
+                            className={`mt-1.5 text-[10px] font-semibold ${
+                              isActive ? 'text-[#00473E]' : isDone ? 'text-[#00473E]/60' : 'text-gray-300'
+                            }`}
+                          >
+                            {i + 1}
+                          </span>
+                          <span
+                            className={`mt-0.5 text-[10px] sm:text-xs leading-tight font-medium ${
+                              isActive ? 'text-[#00473E]' : isDone ? 'text-gray-800' : 'text-gray-400'
+                            }`}
+                          >
+                            {step.title}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Status history details */}
+                {result.events.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3">Status History</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {result.events.map((event, idx) => (
+                        <div key={idx} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-sm font-semibold text-gray-800">{event.status}</p>
+                            {event.timestamp && (
+                              <time
+                                className="text-xs text-gray-400 tabular-nums whitespace-nowrap"
+                                dateTime={event.date?.toISOString()}
+                              >
+                                {event.timestamp}
+                              </time>
+                            )}
+                          </div>
+                          {event.description && (
+                            <p className="text-xs text-gray-500 mt-1 leading-relaxed">{event.description}</p>
+                          )}
+                          {event.location && (
+                            <p className="flex items-center gap-1 text-xs text-gray-400 mt-1.5">
+                              <MapPin className="w-3 h-3" /> {event.location}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {stageIdx < 0 && (
+                  <div className="mt-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-5 py-4">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <p className="text-sm">
+                      This parcel could not be delivered. Please contact ParcelGrid support for assistance.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Support note */}
+            <div className="mt-6 bg-[#00473E]/5 border border-[#00473E]/10 rounded-2xl px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-4">
+              <AlertCircle className="w-6 h-6 text-[#00473E] flex-shrink-0" />
+              <div className="text-sm text-gray-700">
+                <span className="font-semibold text-[#00473E]">Need help with your parcel?</span>{' '}
+                Our support team is available at{' '}
+                <a href="tel:+254745111555" className="font-semibold text-[#00473E] underline underline-offset-2">
+                  0745 111 555
+                </a>{' '}
+                /{' '}
+                <a href="tel:+254794333888" className="font-semibold text-[#00473E] underline underline-offset-2">
+                  0794 333 888
+                </a>{' '}
+                or{' '}
+                <a
+                  href="mailto:info@escrowcourier.com"
+                  className="font-semibold text-[#00473E] underline underline-offset-2"
+                >
+                  info@escrowcourier.com
+                </a>
+                .
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Loading state */}
+      {hasSearched && loading && (
+        <section className="py-10 sm:py-14 bg-gradient-to-br from-gray-50 to-white">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            {/* Status message */}
+            <div className="flex flex-col items-center text-center mb-8">
+              <div className="relative flex items-center justify-center w-16 h-16 mb-4">
+                <span className="absolute inset-0 rounded-full border-[3px] border-[#00473E]/15 border-t-[#00473E] animate-spin" />
+                <Truck className="w-7 h-7 text-[#00473E]" />
+              </div>
+              <p className="text-base font-semibold text-[#00473E]">Fetching your parcel…</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Looking up the latest status and journey updates.
+              </p>
+            </div>
+
+            {/* Status card skeleton */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="px-6 sm:px-8 py-6 sm:py-7 animate-pulse">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                  <div className="space-y-3">
+                    <div className="h-3 w-28 bg-gray-200 rounded" />
+                    <div className="h-6 w-44 bg-gray-300 rounded" />
+                  </div>
+                  <div className="space-y-3 sm:text-right">
+                    <div className="h-3 w-24 bg-gray-200 rounded sm:ml-auto" />
+                    <div className="h-9 w-44 bg-gray-300 rounded sm:ml-auto" />
+                  </div>
+                </div>
+                <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 border-t border-gray-100 pt-5">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="space-y-2">
+                      <div className="h-3 w-20 bg-gray-200 rounded" />
+                      <div className="h-4 w-28 bg-gray-200 rounded" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Progress skeleton */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
+              <div className="px-6 sm:px-8 py-6 sm:py-7 animate-pulse">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="h-5 w-40 bg-gray-200 rounded" />
+                  <div className="h-5 w-12 bg-gray-200 rounded" />
+                </div>
+                <div className="relative">
+                  <div className="absolute left-0 right-0 top-[18px] h-1 bg-gray-100 rounded-full" />
+                  <div className="relative grid grid-cols-5 gap-1">
+                    {[0, 1, 2, 3, 4].map((i) => (
+                      <div key={i} className="flex flex-col items-center text-center">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-200" />
+                        <div className="mt-2 h-2 w-12 bg-gray-200 rounded" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Status history skeleton */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
+              <div className="px-6 sm:px-8 py-6 sm:py-7 animate-pulse">
+                <div className="h-5 w-32 bg-gray-200 rounded mb-4" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-2">
+                      <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                      <div className="h-3 w-full bg-gray-200 rounded" />
+                      <div className="h-3 w-2/3 bg-gray-200 rounded" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Info section when no search yet */}
+      {!hasSearched && (
+        <section className="py-14 sm:py-16 bg-gradient-to-br from-gray-50 to-white">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                {
+                  icon: FileText,
+                  title: 'Enter Your Tracking Number',
+                  desc: 'Find the tracking number on your booking receipt, payment confirmation SMS, or in the ParcelGrid app.',
+                },
+                {
+                  icon: Truck,
+                  title: 'See Live Status Updates',
+                  desc: 'Instantly see where your parcel is right now and its current delivery status in real-time.',
+                },
+                {
+                  icon: Navigation,
+                  title: 'View the Full Route',
+                  desc: 'Follow every step of the journey — from booking and pickup to transit, out for delivery, and final delivery.',
+                },
+              ].map((card) => (
+                <div
+                  key={card.title}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center hover:shadow-md transition-shadow duration-200"
+                >
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#00473E] text-[#E9FF15] mb-4">
+                    <card.icon className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">{card.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">{card.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+};
+
+export default TrackingPage;
