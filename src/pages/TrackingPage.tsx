@@ -588,7 +588,7 @@ const TrackingPage: React.FC = () => {
         />
         <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/logo1.png` : ''} />
 
-        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/track-parcel` : ''} />
+        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/track` : ''} />
 
         <meta name="geo.region" content="KE" />
         <meta name="geo.placename" content="Kenya" />
@@ -600,7 +600,7 @@ const TrackingPage: React.FC = () => {
             name: 'Track Your Parcel | ParcelGrid',
             description:
               'Track your ParcelGrid parcel instantly using your tracking number. View live delivery status and the full journey route.',
-            url: typeof window !== 'undefined' ? `${window.location.origin}/track-parcel` : '',
+            url: typeof window !== 'undefined' ? `${window.location.origin}/track` : '',
             publisher: {
               '@type': 'Organization',
               name: 'Escrow Courier Networks Limited',

@@ -110,7 +110,7 @@
     
     <!-- Track Parcel -->
     <url>
-        <loc>https://escrowcourier.com/track-parcel</loc>
+        <loc>https://escrowcourier.com/track</loc>
         <lastmod>2025-12-29</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>

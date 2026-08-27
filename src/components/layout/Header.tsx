@@ -37,7 +37,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
   // Original main navigation items
   const mainNavItems = [
     { name: 'Home', href: '/' },
-    { name: 'Track Parcel', href: '/track-parcel' },
+    { name: 'Track Parcel', href: '/track' },
     { name: 'FAQ', href: '/faq' },
     { name: 'About', href: '/about' },
     { name: 'Careers', href: '/careers' },
@@ -46,7 +46,7 @@ const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) =>
 
   // New items to be moved to sidebar
   const sidebarItems: SidebarItem[] = [
-    { name: 'Track Your Parcel', href: '/track-parcel' },
+    { name: 'Track Your Parcel', href: '/track' },
     { name: 'How to Use the App', href: '/how-to-use-app' },
     { 
       name: 'Opportunities', 

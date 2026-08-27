@@ -76,8 +76,12 @@ const router = createBrowserRouter([
         element: <BookingPage />,
       },
       {
-        path: "/track-parcel",
+        path: "/track",
         element: <TrackingPage />,
+      },
+      {
+        path: "/track-parcel",
+        element: <Navigate to="/track" replace />,
       },
       {
         path: "/payment",
