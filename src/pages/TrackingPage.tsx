@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import {
   Search,
@@ -20,6 +20,8 @@ import {
   Copy,
   Check,
   ChevronRight,
+  ChevronUp,
+  Eye,
   type LucideIcon,
 } from 'lucide-react';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -305,6 +307,74 @@ function dedupeEvents(events: TrackingEvent[]): TrackingEvent[] {
   return out;
 }
 
+/**
+ * Try to find the pickup agent (from the pickup-points list) whose business name
+ * appears in the parcel destination string, e.g. destination
+ * "ANDYTECH COMMUNICATIONS (KISUMU TOWN (ANDYTECH))" -> the ANDYTECH agent.
+ * Returns the raw agent record so we can show its fullDetailedAddress.
+ */
+function matchDestinationAgent(agents: any[], destination?: string): any | null {
+  if (!destination || !Array.isArray(agents) || agents.length === 0) return null;
+  const destFull = destination.toLowerCase().replace(/[()]/g, ' ').replace(/\s+/g, ' ').trim();
+  const destBase = destination
+    .replace(/\(.*?\)/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+
+  let best: any = null;
+  let bestScore = 0;
+  for (const a of agents) {
+    const name = String(
+      a.businessName ?? a.business_name ?? a.name ?? a.company ?? a.title ?? ''
+    ).trim();
+    if (!name || name.toLowerCase() === 'unknown') continue;
+    const n = name.toLowerCase();
+    if (n.length < 3) continue;
+
+    let score = 0;
+    if (destFull === n || destBase === n) score = 4;
+    else if (destFull.includes(n) || destBase.includes(n)) score = 3;
+
+    if (score > bestScore) {
+      bestScore = score;
+      best = a;
+    }
+  }
+  return bestScore >= 3 ? best : null;
+}
+
+/** Human-friendly business name for an agent record. */
+function agentDisplayName(agent: any): string {
+  return (
+    agent?.businessName ||
+    agent?.business_name ||
+    agent?.name ||
+    agent?.company ||
+    agent?.title ||
+    'Agent'
+  );
+}
+
+/** The full detailed street address for an agent record (never contact/phone fields). */
+function agentDisplayAddress(agent: any): string {
+  const addr = (
+    agent?.fullDetailedAddress ||
+    agent?.full_detailed_address ||
+    agent?.detailedAddress ||
+    agent?.detailed_address ||
+    agent?.address ||
+    ''
+  ).trim();
+  if (addr) return addr;
+  return [agent?.town, agent?.county].filter(Boolean).join(', ');
+}
+
+/** Town • county • constituency line for an agent record. */
+function agentDisplayMeta(agent: any): string {
+  return [agent?.town, agent?.county, agent?.constituency].filter(Boolean).join(' • ');
+}
+
 /** Normalize the dedicated /api/track/:trackingNo response into TrackingData. */
 function normalizeTrackResponse(payload: any, fallbackTrackingNo: string): TrackingData {
   const order = payload?.order && typeof payload.order === 'object' ? payload.order : {};
@@ -444,6 +514,7 @@ function normalizeTrackResponse(payload: any, fallbackTrackingNo: string): Track
 /* ------------------------------------------------------------------ */
 
 const TRACK_API = 'https://app.escrowcourier.com/order-services/api/track';
+const PICKUP_POINTS_API = 'https://app.escrowcourier.com/website-backend-services/api/pickup-points';
 
 async function fetchTracking(trackingNo: string): Promise<TrackingData> {
   const value = trackingNo.trim();
@@ -500,6 +571,9 @@ const TrackingPage: React.FC = () => {
   const [result, setResult] = useState<TrackingData | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [agentsList, setAgentsList] = useState<any[] | null>(null); // null = not loaded yet
+  const [agentLoading, setAgentLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -512,6 +586,8 @@ const TrackingPage: React.FC = () => {
     setError(null);
     setResult(null);
     setHasSearched(true);
+    setShowDetails(false);
+    setAgentLoading(false);
     try {
       const data = await fetchTracking(value);
       setResult(data);
@@ -535,6 +611,47 @@ const TrackingPage: React.FC = () => {
   const progressPercent =
     stageIdx >= 0 ? Math.round((stageIdx / (displayStages.length - 1)) * 100) : 0;
 
+  // Preload the pickup-agents list as soon as a parcel result arrives, so the
+  // agent's full detailed address is already available when "View Details" opens.
+  useEffect(() => {
+    if (!result || agentsList !== null) return;
+    let cancelled = false;
+    setAgentLoading(true);
+    (async () => {
+      try {
+        const res = await fetch(PICKUP_POINTS_API, {
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: any = await res.json();
+        const arr = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data?.agents)
+          ? data.agents
+          : [];
+        if (!cancelled) setAgentsList(arr);
+      } catch {
+        if (!cancelled) setAgentsList([]);
+      } finally {
+        if (!cancelled) setAgentLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [result, agentsList]);
+
+  const destAgent = useMemo(
+    () => matchDestinationAgent(agentsList || [], result?.destination),
+    [agentsList, result]
+  );
+  const originAgent = useMemo(
+    () => matchDestinationAgent(agentsList || [], result?.origin),
+    [agentsList, result]
+  );
+
   const handleCopy = async () => {
     if (!result) return;
     const text = result.trackingNumber;
@@ -550,6 +667,10 @@ const TrackingPage: React.FC = () => {
     }
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleToggleDetails = () => {
+    setShowDetails((prev) => !prev);
   };
 
   return (
@@ -729,36 +850,98 @@ const TrackingPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Details strip */}
-                <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4 border-t border-gray-100 pt-5">
-                  <div>
-                    <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
-                      <MapPin className="w-3.5 h-3.5" /> Destination
-                    </p>
-                    <p className="text-sm font-medium text-gray-800">{result.destination || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
-                      <Store className="w-3.5 h-3.5" /> Origin
-                    </p>
-                    <p className="text-sm font-medium text-gray-800">{result.origin || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
-                      <Clock className="w-3.5 h-3.5" /> Last Update
-                    </p>
-                    <p className="text-sm font-medium text-gray-800">
-                      {result.updatedAt
-                        ? formatDate(result.updatedAt)
-                        : result.events[result.events.length - 1]?.timestamp || '—'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
-                      <User className="w-3.5 h-3.5" /> Receiver
-                    </p>
-                    <p className="text-sm font-medium text-gray-800">{result.customerName || '—'}</p>
-                  </div>
+                {/* Parcel details — collapsed behind a "View Details" toggle */}
+                <div className="mt-6 border-t border-gray-100 pt-5">
+                  <button
+                    type="button"
+                    onClick={handleToggleDetails}
+                    aria-expanded={showDetails}
+                    aria-controls="parcel-details-panel"
+                    className="mx-auto flex items-center gap-2 rounded-full border border-[#00473E]/25 bg-[#00473E]/5 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-[#00473E] transition-colors hover:bg-[#00473E] hover:text-white"
+                  >
+                    {showDetails ? (
+                      <>
+                        <ChevronUp className="w-4 h-4" />
+                        Hide Details
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="w-4 h-4" />
+                        View Details
+                      </>
+                    )}
+                  </button>
+
+                  {showDetails && (
+                    <div id="parcel-details-panel" className="mt-6">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
+                        <div>
+                          <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
+                            <MapPin className="w-3.5 h-3.5" /> Destination
+                          </p>
+                          <p className="text-sm font-medium text-gray-800">{result.destination || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
+                            <Store className="w-3.5 h-3.5" /> Origin
+                          </p>
+                          <p className="text-sm font-medium text-gray-800">{result.origin || '—'}</p>
+                        </div>
+                        <div>
+                          <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
+                            <Clock className="w-3.5 h-3.5" /> Last Update
+                          </p>
+                          <p className="text-sm font-medium text-gray-800">
+                            {result.updatedAt
+                              ? formatDate(result.updatedAt)
+                              : result.events[result.events.length - 1]?.timestamp || '—'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400 mb-1">
+                            <User className="w-3.5 h-3.5" /> Receiver
+                          </p>
+                          <p className="text-sm font-medium text-gray-800">{result.customerName || '—'}</p>
+                        </div>
+                      </div>
+
+                      {/* Full detailed addresses of the pickup agents (no phone numbers shown) */}
+                      {agentLoading && (
+                        <div className="mt-5 flex items-center gap-2 rounded-xl border border-[#00473E]/10 bg-[#00473E]/5 px-4 py-3 text-sm text-gray-500">
+                          <Loader2 className="w-4 h-4 animate-spin text-[#00473E]" />
+                          Resolving agent address…
+                        </div>
+                      )}
+                      {!agentLoading && destAgent && (
+                        <div className="mt-5 rounded-xl border border-[#00473E]/15 bg-[#00473E]/[0.05] p-4 sm:p-5">
+                          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#00473E] mb-1.5">
+                            <MapPin className="w-3.5 h-3.5" /> Destination Agent
+                          </p>
+                          <p className="text-sm font-bold text-gray-900">{agentDisplayName(destAgent)}</p>
+                          <p className="mt-1 text-sm text-gray-700 leading-relaxed">
+                            {agentDisplayAddress(destAgent) || result.destination || '—'}
+                          </p>
+                          {agentDisplayMeta(destAgent) && (
+                            <p className="mt-2 text-xs text-gray-500">{agentDisplayMeta(destAgent)}</p>
+                          )}
+                        </div>
+                      )}
+                      {!agentLoading && originAgent && (!destAgent || originAgent !== destAgent) && (
+                        <div className="mt-4 rounded-xl border border-[#00473E]/15 bg-[#00473E]/[0.05] p-4 sm:p-5">
+                          <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#00473E] mb-1.5">
+                            <Store className="w-3.5 h-3.5" /> Origin Agent
+                          </p>
+                          <p className="text-sm font-bold text-gray-900">{agentDisplayName(originAgent)}</p>
+                          <p className="mt-1 text-sm text-gray-700 leading-relaxed">
+                            {agentDisplayAddress(originAgent) || result.origin || '—'}
+                          </p>
+                          {agentDisplayMeta(originAgent) && (
+                            <p className="mt-2 text-xs text-gray-500">{agentDisplayMeta(originAgent)}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
