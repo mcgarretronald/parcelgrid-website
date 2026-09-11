@@ -166,13 +166,33 @@ interface DeliveryStage {
   icon: LucideIcon;
 }
 
-/** The fixed 6-step journey shown on the tracking page. */
+/** The fixed 5-step journey shown on the tracking page. */
 const DELIVERY_STAGES: DeliveryStage[] = [
-  { title: 'Awaiting handover', description: 'Seller has booked the parcel on the app.', icon: CalendarClock },
-  { title: 'Received by ParcelGrid', description: "We have received the parcel and it's ready for dispatch.", icon: Package },
-  { title: 'In Transit', description: 'The parcel is on its way to the sorting center or destination.', icon: Truck },
-  { title: 'Ready for Collection', description: 'The parcel is at the pickup station and ready to collect.', icon: Store },
-  { title: 'Delivered', description: 'The parcel has been successfully delivered.', icon: CheckCircle2 },
+  {
+    title: 'Parcel Order Created',
+    description: 'Your parcel has been created and is waiting to be handed over to ParcelGrid.',
+    icon: CalendarClock,
+  },
+  {
+    title: 'Received by ParcelGrid',
+    description: 'ParcelGrid has received your parcel at the dispatch hub.',
+    icon: Package,
+  },
+  {
+    title: 'In Transit',
+    description: 'Your parcel has left Nairobi and is on the way to the pickup station.',
+    icon: Truck,
+  },
+  {
+    title: 'Ready for Collection',
+    description: 'Your parcel has arrived at the pickup station and is ready for customer collection.',
+    icon: Store,
+  },
+  {
+    title: 'Delivered',
+    description: 'The parcel has been successfully delivered.',
+    icon: CheckCircle2,
+  },
 ];
 
 /** Map the current status code + milestones to a delivery stage index (0-4, -1 = cancelled/returned). */
@@ -250,10 +270,22 @@ function buildSyntheticEvents(input: {
 }): TrackingEvent[] {
   const { stage, statusLabel, createdAt, updatedAt } = input;
   const milestones = [
-    { label: 'Awaiting handover', desc: 'Seller has booked the parcel on the app.' },
-    { label: 'Received by ParcelGrid', desc: "We have received the parcel and it's ready for dispatch." },
-    { label: 'In Transit', desc: 'The parcel is on its way to the sorting center or destination.' },
-    { label: 'Ready for Collection', desc: 'The parcel is at the pickup station and ready to collect.' },
+    {
+      label: 'Parcel Order Created',
+      desc: 'Your parcel has been created and is waiting to be handed over to ParcelGrid.',
+    },
+    {
+      label: 'Received by ParcelGrid',
+      desc: 'ParcelGrid has received your parcel at the dispatch hub.',
+    },
+    {
+      label: 'In Transit',
+      desc: 'Your parcel has left Nairobi and is on the way to the pickup station.',
+    },
+    {
+      label: 'Ready for Collection',
+      desc: 'Your parcel has arrived at the pickup station and is ready for customer collection.',
+    },
     { label: 'Delivered', desc: 'The parcel has been successfully delivered.' },
   ];
 
@@ -608,8 +640,10 @@ const TrackingPage: React.FC = () => {
     : (result?.statusStage ?? -1);
   const currentStage =
     stageIdx >= 0 && stageIdx < displayStages.length ? displayStages[stageIdx] : null;
+  const isCompleteJourney =
+    stageIdx >= 0 && stageIdx === displayStages.length - 1;
   const progressPercent =
-    stageIdx >= 0 ? Math.round((stageIdx / (displayStages.length - 1)) * 100) : 0;
+    stageIdx >= 0 ? Math.round(((stageIdx + 1) / displayStages.length) * 100) : 0;
 
   // Preload the pickup-agents list as soon as a parcel result arrives, so the
   // agent's full detailed address is already available when "View Details" opens.
@@ -946,68 +980,127 @@ const TrackingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Delivery progress (linear, left-to-right) */}
+            {/* Delivery progress — vertical step timeline */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
               <div className="px-6 sm:px-8 py-6 sm:py-7">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-lg font-bold text-gray-900">Delivery Progress</h2>
-                  <span className="text-sm font-semibold text-[#00473E]">
-                    {stageIdx < 0 ? '—' : `${progressPercent}%`}
-                  </span>
+                {/* Heading */}
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-900">Delivery Progress</h2>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Track your parcel&rsquo;s journey in real time.
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span
+                      className={`block text-3xl font-extrabold tabular-nums tracking-tight leading-none ${
+                        isCompleteJourney
+                          ? 'text-green-600'
+                          : stageIdx < 0
+                          ? 'text-red-500'
+                          : 'text-[#00473E]'
+                      }`}
+                    >
+                      {stageIdx < 0 ? '—' : `${progressPercent}%`}
+                    </span>
+                    <span
+                      className={`inline-flex items-center mt-2 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                        isCompleteJourney
+                          ? 'bg-green-600/10 text-green-700'
+                          : stageIdx < 0
+                          ? 'bg-red-50 text-red-600'
+                          : 'bg-[#E9FF15] text-[#00473E]'
+                      }`}
+                    >
+                      {isCompleteJourney
+                        ? 'Completed'
+                        : stageIdx < 0
+                        ? 'Not Delivered'
+                        : 'In Progress'}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Horizontal linear progress bar */}
-                <div className="relative">
-                  <div className="absolute left-0 right-0 top-[18px] h-1 bg-gray-100 rounded-full" />
-                  <div
-                    className={`absolute left-0 top-[18px] h-1 rounded-full transition-all duration-700 ${
-                      stageIdx === displayStages.length - 1
-                        ? 'bg-green-500'
-                        : stageIdx < 0
-                        ? 'bg-red-400'
-                        : 'bg-[#00473E]'
-                    }`}
-                    style={{ width: `${progressPercent}%` }}
-                  />
-                  <div
-                    className="relative grid gap-1"
-                    style={{ gridTemplateColumns: `repeat(${displayStages.length}, minmax(0, 1fr))` }}
-                  >
-                    {displayStages.map((step, i) => {
-                      const isDone = i < stageIdx;
-                      const isActive = i === stageIdx;
-                      return (
-                        <div key={step.title} className="flex flex-col items-center text-center">
-                          <div
-                            className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 transition-colors ${
-                              isDone
-                                ? 'bg-[#00473E] border-[#00473E] text-[#E9FF15]'
-                                : isActive
-                                ? 'bg-[#00473E] border-[#00473E] text-white ring-4 ring-[#00473E]/20'
-                                : 'bg-white border-gray-200 text-gray-300'
-                            }`}
-                          >
-                            <step.icon className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={isDone || isActive ? 2.2 : 2} />
-                          </div>
+                {/* Vertical step timeline */}
+                <ol className="mt-5">
+                  {displayStages.map((step, i) => {
+                    const isDone = i < stageIdx || (isCompleteJourney && i === stageIdx);
+                    const isCurrent = i === stageIdx && !isCompleteJourney;
+                    const isLast = i === displayStages.length - 1;
+
+                    const badgeClass = isDone
+                      ? 'border-green-600 bg-green-600 text-white'
+                      : isCurrent
+                      ? 'border-[#E9FF15] bg-[#E9FF15] text-[#00473E] ring-4 ring-[#E9FF15]/40'
+                      : 'border-gray-200 bg-white text-gray-300';
+
+                    const chipText = isDone ? 'Completed' : isCurrent ? 'Current Status' : 'Pending';
+                    const chipClass = isDone
+                      ? 'bg-green-600/10 text-green-700'
+                      : isCurrent
+                      ? 'bg-[#E9FF15] text-[#00473E]'
+                      : 'bg-gray-100 text-gray-400';
+
+                    return (
+                      <li key={step.title} className="relative flex gap-4">
+                        <div className="flex flex-col items-center">
                           <span
-                            className={`mt-1.5 text-[10px] font-semibold ${
-                              isActive ? 'text-[#00473E]' : isDone ? 'text-[#00473E]/60' : 'text-gray-300'
-                            }`}
+                            className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 text-sm font-bold transition-colors duration-300 ${badgeClass}`}
                           >
                             {i + 1}
                           </span>
-                          <span
-                            className={`mt-0.5 text-[10px] sm:text-xs leading-tight font-medium ${
-                              isActive ? 'text-[#00473E]' : isDone ? 'text-gray-800' : 'text-gray-400'
+                          {!isLast && (
+                            <span
+                              aria-hidden="true"
+                              className={`my-1 w-0.5 flex-1 rounded-full ${
+                                isDone ? 'bg-green-500' : 'bg-gray-100'
+                              }`}
+                            />
+                          )}
+                        </div>
+                        <div className={`flex-1 ${isLast ? 'pb-1' : 'pb-6'}`}>
+                          <div
+                            className={`rounded-xl -ml-0.5 ${
+                              isCurrent
+                                ? 'bg-[#E9FF15]/20 ring-1 ring-[#E9FF15]/60 px-3 py-2.5'
+                                : 'py-2'
                             }`}
                           >
-                            {step.title}
-                          </span>
+                            <div className="flex items-start justify-between gap-3">
+                              <h4
+                                className={`text-sm font-bold leading-snug ${
+                                  isCurrent
+                                    ? 'text-[#00473E]'
+                                    : isDone
+                                    ? 'text-gray-800'
+                                    : 'text-gray-400'
+                                }`}
+                              >
+                                {step.title}
+                              </h4>
+                              <span
+                                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${chipClass}`}
+                              >
+                                {chipText}
+                              </span>
+                            </div>
+                            <p
+                              className={`mt-1 text-xs leading-relaxed ${
+                                isCurrent
+                                  ? 'text-[#00473E]/80'
+                                  : isDone
+                                  ? 'text-gray-500'
+                                  : 'text-gray-400'
+                              }`}
+                            >
+                              {step.description}
+                            </p>
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                </div>
+                      </li>
+                    );
+                  })}
+                </ol>
 
                 {/* Status history details */}
                 {result.events.length > 0 && (
@@ -1119,23 +1212,32 @@ const TrackingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Progress skeleton */}
+            {/* Progress skeleton — vertical steps */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
               <div className="px-6 sm:px-8 py-6 sm:py-7 animate-pulse">
-                <div className="flex items-center justify-between mb-8">
-                  <div className="h-5 w-40 bg-gray-200 rounded" />
-                  <div className="h-5 w-12 bg-gray-200 rounded" />
-                </div>
-                <div className="relative">
-                  <div className="absolute left-0 right-0 top-[18px] h-1 bg-gray-100 rounded-full" />
-                  <div className="relative grid grid-cols-5 gap-1">
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <div key={i} className="flex flex-col items-center text-center">
-                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gray-200" />
-                        <div className="mt-2 h-2 w-12 bg-gray-200 rounded" />
-                      </div>
-                    ))}
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div className="space-y-2">
+                    <div className="h-5 w-40 bg-gray-200 rounded" />
+                    <div className="h-3 w-56 bg-gray-200 rounded" />
                   </div>
+                  <div className="space-y-2 text-right">
+                    <div className="h-7 w-14 bg-gray-200 rounded ml-auto" />
+                    <div className="h-4 w-20 bg-gray-200 rounded-full ml-auto" />
+                  </div>
+                </div>
+                <div className="mt-5 space-y-6">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-full bg-gray-200" />
+                      <div className="flex-1 space-y-2 pt-1">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="h-3.5 w-2/5 bg-gray-200 rounded" />
+                          <div className="h-4 w-16 bg-gray-200 rounded-full" />
+                        </div>
+                        <div className="h-3 w-3/4 bg-gray-200 rounded" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
