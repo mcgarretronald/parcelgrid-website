@@ -16,7 +16,19 @@ export default defineConfig({
         target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false,
-      }
+      },
+      // Proxy the escrow pickup-points API for local development.
+      // The API's CORS allowlist rejects http://localhost:5174 (it only allows
+      // escrowcourier.com + localhost:5173), which silently blocked the pickup
+      // station address/phone lookup on /track. Server-side proxying avoids CORS
+      // entirely, and we send an allowed Origin so the API doesn't 500.
+      '/pickup-points-api': {
+        target: 'https://app.escrowcourier.com',
+        changeOrigin: true,
+        secure: true,
+        rewrite: () => '/website-backend-services/api/pickup-points',
+        headers: { origin: 'https://escrowcourier.com' },
+      },
     }
   },
   resolve: {

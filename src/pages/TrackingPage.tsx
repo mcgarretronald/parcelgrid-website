@@ -22,6 +22,7 @@ import {
   ChevronRight,
   ChevronUp,
   Eye,
+  Phone,
   type LucideIcon,
 } from 'lucide-react';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -407,6 +408,53 @@ function agentDisplayMeta(agent: any): string {
   return [agent?.town, agent?.county, agent?.constituency].filter(Boolean).join(' • ');
 }
 
+/**
+ * The published phone number for an agent record (the pickup station's contact).
+ * Prefers the shop attendant's mobile (the person actually at the station), then
+ * falls back to the owner's mobile/alternate number.
+ */
+function agentDisplayPhone(agent: any): string {
+  const value =
+    agent?.shopAttendantMobileNumber ||
+    agent?.shop_attendant_mobile_number ||
+    agent?.ownerMobileNumber ||
+    agent?.owner_mobile_number ||
+    agent?.ownerAlternateMobileNumber ||
+    agent?.owner_alternate_mobile_number ||
+    agent?.mobileNumber ||
+    agent?.phoneNumber ||
+    agent?.phone ||
+    agent?.telephone ||
+    '';
+  return String(value).trim();
+}
+
+/** Phone line with a copy-to-clipboard button, used on the pickup-station cards. */
+const AgentPhoneLine: React.FC<{
+  phone: string;
+  copied: boolean;
+  onCopy: () => void;
+}> = ({ phone, copied, onCopy }) => (
+  <div className="mt-3 flex flex-wrap items-center gap-2">
+    <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-gray-400">
+      <Phone className="w-3.5 h-3.5" /> Phone
+    </span>
+    <span className="select-all font-mono text-sm font-semibold text-gray-900 tabular-nums">
+      {phone}
+    </span>
+    <button
+      type="button"
+      onClick={onCopy}
+      aria-label={`Copy pickup agent phone number ${phone}`}
+      title="Copy phone number"
+      className="inline-flex items-center gap-1.5 rounded-full border border-[#00473E]/25 bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#00473E] transition-colors hover:bg-[#00473E] hover:text-white"
+    >
+      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+      {copied ? 'Copied' : 'Copy'}
+    </button>
+  </div>
+);
+
 /** Normalize the dedicated /api/track/:trackingNo response into TrackingData. */
 function normalizeTrackResponse(payload: any, fallbackTrackingNo: string): TrackingData {
   const order = payload?.order && typeof payload.order === 'object' ? payload.order : {};
@@ -547,6 +595,59 @@ function normalizeTrackResponse(payload: any, fallbackTrackingNo: string): Track
 
 const TRACK_API = 'https://app.escrowcourier.com/order-services/api/track';
 const PICKUP_POINTS_API = 'https://app.escrowcourier.com/website-backend-services/api/pickup-points';
+// Same-origin alternatives to the pickup-points API above:
+//  - `/api/pickup-points` = the serverless function in `api/pickup-points.js`
+//    (returns `Access-Control-Allow-Origin: *`, so it works from any host)
+//  - `/pickup-points-api` = dev-only Vite proxy (see `vite.config.ts`) that
+//    bypasses the API's CORS allowlist, which rejects http://localhost:5174
+const PICKUP_POINTS_FUNCTION_PATH = '/api/pickup-points';
+const PICKUP_POINTS_PROXY_PATH = '/pickup-points-api';
+
+/**
+ * Load the pickup-points (agents) list.
+ *
+ * The escrow API only reflects CORS headers for `escrowcourier.com` and
+ * `localhost:5173`, so a direct browser fetch fails (without any error surfacing)
+ * on other origins - including this project's dev server on port 5174. We therefore
+ * try the same-origin options first and only then the API itself, so the agent
+ * address/phone lookup works in development, on Netlify and on the k8s deploy.
+ */
+async function fetchPickupPoints(): Promise<any[]> {
+  const sources = import.meta.env.DEV
+    ? [PICKUP_POINTS_PROXY_PATH, PICKUP_POINTS_FUNCTION_PATH, PICKUP_POINTS_API]
+    : [PICKUP_POINTS_FUNCTION_PATH, PICKUP_POINTS_API, PICKUP_POINTS_PROXY_PATH];
+
+  for (const source of sources) {
+    try {
+      // No Content-Type header: keeps this a simple GET request (no CORS preflight).
+      const res = await fetch(source, { headers: { Accept: 'application/json' } });
+      if (!res.ok) continue;
+
+      // Read as text first: an SPA host answers unknown paths with index.html,
+      // which must not be treated as a successful API response.
+      const text = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        continue;
+      }
+
+      const arr = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data?.agents)
+        ? data.agents
+        : [];
+      if (arr.length) return arr;
+    } catch {
+      // Network/CORS failure - try the next source.
+    }
+  }
+
+  throw new Error('Unable to load pickup station details.');
+}
 
 async function fetchTracking(trackingNo: string): Promise<TrackingData> {
   const value = trackingNo.trim();
@@ -602,10 +703,12 @@ const TrackingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<TrackingData | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const copied = copiedKey === 'tracking';
   const [showDetails, setShowDetails] = useState(false);
   const [agentsList, setAgentsList] = useState<any[] | null>(null); // null = not loaded yet
   const [agentLoading, setAgentLoading] = useState(false);
+  const [agentError, setAgentError] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -646,28 +749,21 @@ const TrackingPage: React.FC = () => {
     stageIdx >= 0 ? Math.round(((stageIdx + 1) / displayStages.length) * 100) : 0;
 
   // Preload the pickup-agents list as soon as a parcel result arrives, so the
-  // agent's full detailed address is already available when "View Details" opens.
+  // agent's full detailed address and phone are already available when "View Details" opens.
   useEffect(() => {
     if (!result || agentsList !== null) return;
     let cancelled = false;
     setAgentLoading(true);
+    setAgentError(false);
     (async () => {
       try {
-        const res = await fetch(PICKUP_POINTS_API, {
-          headers: { 'Content-Type': 'application/json' },
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data: any = await res.json();
-        const arr = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.data)
-          ? data.data
-          : Array.isArray(data?.agents)
-          ? data.agents
-          : [];
+        const arr = await fetchPickupPoints();
         if (!cancelled) setAgentsList(arr);
       } catch {
-        if (!cancelled) setAgentsList([]);
+        if (!cancelled) {
+          setAgentsList([]);
+          setAgentError(true);
+        }
       } finally {
         if (!cancelled) setAgentLoading(false);
       }
@@ -676,6 +772,12 @@ const TrackingPage: React.FC = () => {
       cancelled = true;
     };
   }, [result, agentsList]);
+
+  /** Re-run the pickup-agent lookup after a failed attempt. */
+  const retryAgents = () => {
+    setAgentError(false);
+    setAgentsList(null);
+  };
 
   const destAgent = useMemo(
     () => matchDestinationAgent(agentsList || [], result?.destination),
@@ -686,22 +788,34 @@ const TrackingPage: React.FC = () => {
     [agentsList, result]
   );
 
-  const handleCopy = async () => {
-    if (!result) return;
-    const text = result.trackingNumber;
+  /** Copy any text to the clipboard, showing a temporary "Copied" state for `key`. */
+  const copyToClipboard = async (text: string, key: string) => {
+    const value = (text || '').trim();
+    if (!value) return;
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(value);
     } catch {
       const ta = document.createElement('textarea');
-      ta.value = text;
+      ta.value = value;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
       document.body.appendChild(ta);
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
     }
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    setCopiedKey(key);
+    window.setTimeout(() => setCopiedKey((prev) => (prev === key ? null : prev)), 2000);
   };
+
+  const handleCopy = () => {
+    if (!result) return;
+    void copyToClipboard(result.trackingNumber, 'tracking');
+  };
+
+  const destAgentPhone = agentDisplayPhone(destAgent);
+  const originAgentPhone = agentDisplayPhone(originAgent);
 
   const handleToggleDetails = () => {
     setShowDetails((prev) => !prev);
@@ -939,11 +1053,26 @@ const TrackingPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Full detailed addresses of the pickup agents (no phone numbers shown) */}
+                      {/* Full detailed addresses + copyable phone numbers of the pickup agents */}
                       {agentLoading && (
                         <div className="mt-5 flex items-center gap-2 rounded-xl border border-[#00473E]/10 bg-[#00473E]/5 px-4 py-3 text-sm text-gray-500">
                           <Loader2 className="w-4 h-4 animate-spin text-[#00473E]" />
-                          Resolving agent address…
+                          Resolving pickup station details…
+                        </div>
+                      )}
+                      {!agentLoading && agentError && (
+                        <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                          <AlertCircle className="w-4 h-4 shrink-0" />
+                          <span className="flex-1">
+                            Pickup station address and phone number could not be loaded right now.
+                          </span>
+                          <button
+                            type="button"
+                            onClick={retryAgents}
+                            className="rounded-full border border-amber-400 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-900 transition-colors hover:bg-amber-400 hover:text-white"
+                          >
+                            Retry
+                          </button>
                         </div>
                       )}
                       {!agentLoading && destAgent && (
@@ -958,6 +1087,13 @@ const TrackingPage: React.FC = () => {
                           {agentDisplayMeta(destAgent) && (
                             <p className="mt-2 text-xs text-gray-500">{agentDisplayMeta(destAgent)}</p>
                           )}
+                          {destAgentPhone && (
+                            <AgentPhoneLine
+                              phone={destAgentPhone}
+                              copied={copiedKey === 'dest-agent-phone'}
+                              onCopy={() => copyToClipboard(destAgentPhone, 'dest-agent-phone')}
+                            />
+                          )}
                         </div>
                       )}
                       {!agentLoading && originAgent && (!destAgent || originAgent !== destAgent) && (
@@ -971,6 +1107,13 @@ const TrackingPage: React.FC = () => {
                           </p>
                           {agentDisplayMeta(originAgent) && (
                             <p className="mt-2 text-xs text-gray-500">{agentDisplayMeta(originAgent)}</p>
+                          )}
+                          {originAgentPhone && (
+                            <AgentPhoneLine
+                              phone={originAgentPhone}
+                              copied={copiedKey === 'origin-agent-phone'}
+                              onCopy={() => copyToClipboard(originAgentPhone, 'origin-agent-phone')}
+                            />
                           )}
                         </div>
                       )}
