@@ -1015,7 +1015,7 @@ const TrackingPage: React.FC = () => {
                     ) : (
                       <>
                         <Eye className="w-4 h-4" />
-                        View Details
+                        See Where To Collect
                       </>
                     )}
                   </button>
