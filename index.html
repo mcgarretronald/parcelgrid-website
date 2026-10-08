@@ -1,52 +1,85 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-KE">
   <head>
     <meta charset="UTF-8" />
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/src/assets/Escrow Icon 1.png" />
-    
-    <!-- Viewport for responsive design -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-    
-    <!-- Default Meta Tags (will be overridden by Helmet in components) -->
-    <title>ParcelGrid - Kenya's Leading COD Delivery Service for Online Vendors</title>
-    <meta name="description" content="Expand your online business across Kenya with ParcelGrid. Cash on Delivery (COD) with instant settlements, several pickup points nationwide. Trusted by thousands of online sellers." />
-    <meta name="keywords" content="COD delivery Kenya, cash on delivery, online vendor delivery, parcel delivery Kenya, instant settlements" />
-    
-    <!-- Theme Color -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#00473E" />
-    
-    <!-- Preconnect to external domains for performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="preconnect" href="https://maps.googleapis.com" />
-    <link rel="preconnect" href="https://play.google.com" />
-    
-    <!-- DNS Prefetch for faster resource loading -->
-    <link rel="dns-prefetch" href="https://drive.google.com" />
-    
-    <!-- Open Graph Tags -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="ParcelGrid - Kenya's Leading COD Delivery Service" />
-    <meta property="og:description" content="Join thousands of online vendors using ParcelGrid. Several pickup points, instant COD settlements." />
-    <meta property="og:site_name" content="ParcelGrid" />
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ParcelGrid - Kenya's Leading COD Delivery Service" />
-    <meta name="twitter:description" content="Instant COD settlements, several pickup points nationwide for online vendors." />
-    
-    <!-- Robots -->
-    <meta name="robots" content="index, follow" />
-    <meta name="googlebot" content="index, follow" />
-    
-    <!-- Language -->
-    <meta http-equiv="content-language" content="en-KE" />
+    <meta data-static-seo name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="author" content="ParcelGrid by Escrow Courier Networks Ltd" />
+    <meta name="geo.region" content="KE-110" />
+    <meta name="geo.placename" content="Nairobi" />
+
+    <!-- Icons (served from /public, never from /src) -->
+    <link rel="icon" type="image/png" href="/brand/parcelgrid-mark.png" />
+    <link rel="apple-touch-icon" href="/brand/parcelgrid-mark.png" />
+
+    <!--
+      Tags marked data-static-seo are rewritten per page at build time (scripts/prerender-routes.mjs) so that
+      crawlers that do not run JavaScript still see page-specific metadata. When the app mounts, React adds the
+      page's own tags and src/main.tsx removes these static ones, so there are never duplicates.
+    -->
+    <title>Courier Service for Online Sellers in Kenya | ParcelGrid</title>
+    <meta data-static-seo name="description" content="Expand your business with ParcelGrid. Cash on Delivery (COD) with instant settlements, nationwide pickup points, and smart notifications. Get started today!" />
+    <link data-static-seo rel="canonical" href="https://escrowcourier.com/" />
+    <meta data-static-seo property="og:type" content="website" />
+    <meta data-static-seo property="og:site_name" content="ParcelGrid" />
+    <meta data-static-seo property="og:locale" content="en_KE" />
+    <meta data-static-seo property="og:url" content="https://escrowcourier.com/" />
+    <meta data-static-seo property="og:title" content="Courier Service for Online Sellers in Kenya | ParcelGrid" />
+    <meta data-static-seo property="og:description" content="Expand your business with ParcelGrid. Cash on Delivery (COD) with instant settlements, nationwide pickup points, and smart notifications. Get started today!" />
+    <meta data-static-seo property="og:image" content="https://escrowcourier.com/og-image.jpg" />
+    <meta data-static-seo property="og:image:width" content="1200" />
+    <meta data-static-seo property="og:image:height" content="630" />
+    <meta data-static-seo property="og:image:alt" content="ParcelGrid: next-day upcountry delivery and instant Pay on Delivery in Kenya" />
+    <meta data-static-seo name="twitter:card" content="summary_large_image" />
+    <meta data-static-seo name="twitter:title" content="Courier Service for Online Sellers in Kenya | ParcelGrid" />
+    <meta data-static-seo name="twitter:description" content="Expand your business with ParcelGrid. Cash on Delivery (COD) with instant settlements, nationwide pickup points, and smart notifications. Get started today!" />
+    <meta data-static-seo name="twitter:image" content="https://escrowcourier.com/og-image.jpg" />
+
+    <!-- Connect early to the API host used by tracking and station search -->
+    <link rel="dns-prefetch" href="https://app.escrowcourier.com" />
+
+    <!-- Organization data on every page, including for crawlers that skip JavaScript -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://escrowcourier.com/#organization",
+        "name": "ParcelGrid",
+        "legalName": "Escrow Courier Networks Ltd",
+        "url": "https://escrowcourier.com/",
+        "logo": "https://escrowcourier.com/brand/parcelgrid-mark.png",
+        "image": "https://escrowcourier.com/og-image.jpg",
+        "email": "info@escrowcourier.com",
+        "telephone": "+254745111555",
+        "areaServed": { "@type": "Country", "name": "Kenya" },
+        "sameAs": [
+          "https://www.facebook.com/p/ParcelGrid-61582861464189/",
+          "https://www.instagram.com/parcelgrid/",
+          "https://www.tiktok.com/@parcelgrid"
+        ],
+        "contactPoint": [
+          { "@type": "ContactPoint", "telephone": "+254745111555", "contactType": "customer service", "areaServed": "KE", "availableLanguage": ["en", "sw"] },
+          { "@type": "ContactPoint", "telephone": "+254794333888", "contactType": "customer service", "areaServed": "KE", "availableLanguage": ["en", "sw"] }
+        ]
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": "https://escrowcourier.com/#website",
+        "url": "https://escrowcourier.com/",
+        "name": "ParcelGrid",
+        "inLanguage": "en-KE",
+        "publisher": { "@id": "https://escrowcourier.com/#organization" }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <!-- Replaced per page at build time -->
+    <!--seo-fallback-->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -1,22 +1,23 @@
+import { lazy } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import RootLayout from "./root";
 import LandingPage from "../pages/LandingPage";
-import PickupPointsPage from "../pages/PickupPointsPage";
-import PrepaidCODPage from "../pages/PrepaidCODPage";
-import InstantSettlementsPage from "../pages/InstantSettlementsPage";
-import SmartNotificationsPage from "../pages/SmartNotificationsPage";
-import FAQ from "../pages/FAQ";
-import AboutPage from "../pages/AboutPage";
-import ContactPage from "../pages/ContactPage";
-import CareersPage from "../pages/CareersPage";
-import OpportunitiesPage from "../pages/OpportunitiesPage";
-import VendorGrowthJobPage from "../pages/VendorGrowthJobPage";
-import PickupAgentPage from "../pages/PickupAgentPage";
-import BookingAgentPage from "../pages/BookingAgentPage";
-import HowToUseAppPage from "../pages/HowToUseAppPage";
-import BookingPage from "../pages/BookingPage";
-import PaymentPage from "../pages/PaymentPage";
-import TrackingPage from "../pages/TrackingPage";
+
+const PickupPointsPage = lazy(() => import("../pages/PickupPointsPage"));
+const PrepaidCODPage = lazy(() => import("../pages/PrepaidCODPage"));
+const FAQ = lazy(() => import("../pages/FAQ"));
+const AboutPage = lazy(() => import("../pages/AboutPage"));
+const ContactPage = lazy(() => import("../pages/ContactPage"));
+const CareersPage = lazy(() => import("../pages/CareersPage"));
+const OpportunitiesPage = lazy(() => import("../pages/OpportunitiesPage"));
+const VendorGrowthJobPage = lazy(() => import("../pages/VendorGrowthJobPage"));
+const HowToUseAppPage = lazy(() => import("../pages/HowToUseAppPage"));
+const BookingPage = lazy(() => import("../pages/BookingPage"));
+const PaymentPage = lazy(() => import("../pages/PaymentPage"));
+const TrackingPage = lazy(() => import("../pages/TrackingPage"));
+const UpcountryDeliveryPage = lazy(() => import("../pages/UpcountryDeliveryPage"));
+const PricingPage = lazy(() => import("../pages/PricingPage"));
+const NotFoundPage = lazy(() => import("../pages/NotFoundPage"));
 
 const router = createBrowserRouter([
   {
@@ -32,16 +33,20 @@ const router = createBrowserRouter([
         element: <PickupPointsPage />,
       },
       {
-        path: "/prepaid-cod",
+        path: "/services/upcountry-parcel-delivery",
+        element: <UpcountryDeliveryPage />,
+      },
+      {
+        path: "/services/pay-on-delivery-courier-kenya",
         element: <PrepaidCODPage />,
       },
       {
-        path: "/instant-settlements",
-        element: <InstantSettlementsPage />,
+        path: "/pricing",
+        element: <PricingPage />,
       },
       {
-        path: "/notifications",
-        element: <SmartNotificationsPage />,
+        path: "/services/courier-pricing-kenya",
+        element: <Navigate to="/pricing" replace />,
       },
       {
         path: "/faq",
@@ -58,14 +63,6 @@ const router = createBrowserRouter([
       {
         path: "/opportunities",
         element: <OpportunitiesPage />,
-      },
-      {
-        path: "/pickup-agent",
-        element: <PickupAgentPage />,
-      },
-      {
-        path: "/booking-agent",
-        element: <BookingAgentPage />,
       },
       {
         path: "/how-to-use-app",
@@ -96,16 +93,36 @@ const router = createBrowserRouter([
         element: <VendorGrowthJobPage />,
       },
       {
+        path: "/prepaid-cod",
+        element: <Navigate to="/services/pay-on-delivery-courier-kenya" replace />,
+      },
+      {
+        path: "/instant-settlements",
+        element: <Navigate to="/services/pay-on-delivery-courier-kenya" replace />,
+      },
+      {
+        path: "/notifications",
+        element: <Navigate to="/services/pay-on-delivery-courier-kenya" replace />,
+      },
+      {
+        path: "/pickup-agent",
+        element: <Navigate to="/opportunities?role=pickup" replace />,
+      },
+      {
+        path: "/booking-agent",
+        element: <Navigate to="/opportunities?role=booking" replace />,
+      },
+      {
         path: "/apply-pickup-agent",
-        element: <Navigate to="/pickup-agent" replace />,
+        element: <Navigate to="/opportunities?role=pickup" replace />,
       },
       {
         path: "/apply-booking-agent",
-        element: <Navigate to="/booking-agent" replace />,
+        element: <Navigate to="/opportunities?role=booking" replace />,
       },
       {
         path: "*",
-        element: <Navigate to="/" replace />,
+        element: <NotFoundPage />,
       },
     ],
   },

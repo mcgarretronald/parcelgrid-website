@@ -307,7 +307,7 @@ const Receipt: React.FC<ReceiptProps> = ({ orderData, onClose }) => {
           {/* Company Info with Logo - Centered */}
           <div className="flex flex-col items-center justify-center mb-4">
             <div className="flex items-center gap-3 mb-3">
-              <img src="/logo2.png" alt="ParcelGrid Courier Service Logo" width="48" height="48" className="w-12 h-12 object-contain" />
+              <img decoding="async" src="/logo2.png" alt="ParcelGrid Courier Service Logo" width="48" height="48" className="w-12 h-12 object-contain" />
               <div className="text-left">
                 <h1 className="text-xl font-bold leading-tight whitespace-nowrap" style={{ color: '#000000' }}>ESCROW COURIER</h1>
                 <p className="text-sm" style={{ color: '#000000' }}>www.escrowcourier.com</p>

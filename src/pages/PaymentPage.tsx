@@ -1,564 +1,639 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { CheckCircle, Loader2, AlertCircle, Smartphone } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+  AlertCircle,
+  ArrowLeft,
+  Check,
+  CheckCircle,
+  Copy,
+  Loader2,
+  RefreshCw,
+  Smartphone,
+} from 'lucide-react';
 import Receipt from '../components/Receipt';
+import { BRANCHES } from '../lib/branches';
+import { isValidKenyaMobile, kenyaMobileError, normalizeKenyaMobile } from '../lib/phone';
+import {
+  checkPaymentStatus,
+  extractTrackingFromOrder,
+  isTerminalFailure,
+  MPESA_PAYBILL,
+  MPESA_PAYBILL_NAME,
+  sendCourierFeePrompt,
+} from '../lib/payments';
 
-interface LocationState {
-  bookingData: any;
+type LocationState = {
+  bookingData?: any;
   orderId?: string;
   trackingNo?: string;
   orderData?: any;
+};
+
+type PayMethod = 'prompt' | 'paybill';
+type Phase = 'ready' | 'awaiting_prompt' | 'awaiting_paybill' | 'success' | 'failed';
+
+const inputClass =
+  'h-12 w-full rounded-full border border-black/10 bg-white px-5 text-sm text-[#111] outline-none transition-colors placeholder:text-[#9aa3a0] focus:border-[#00473E]/40 focus:ring-2 focus:ring-[#00473E]/15';
+
+function readCachedOrder() {
+  const storedOrder = localStorage.getItem('currentOrder');
+  const storedTimestamp = localStorage.getItem('currentOrderTimestamp');
+  if (!storedOrder || !storedTimestamp) return null;
+  try {
+    const timestamp = parseInt(storedTimestamp, 10);
+    if (Date.now() - timestamp > 60 * 60 * 1000) {
+      localStorage.removeItem('currentOrder');
+      localStorage.removeItem('currentOrderTimestamp');
+      localStorage.removeItem('currentBookingForm');
+      return null;
+    }
+    return JSON.parse(storedOrder);
+  } catch {
+    return null;
+  }
 }
 
-const PaymentPage: React.FC = () => {
+function CopyRow({
+  label,
+  value,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-black/[0.06] py-3 last:border-b-0">
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold tracking-[0.14em] text-[#5c6562] uppercase">
+          {label}
+        </p>
+        <p
+          className={`mt-1 break-all text-base font-semibold text-[#111] ${
+            mono ? 'font-mono tracking-tight' : 'font-[Sora]'
+          }`}
+        >
+          {value}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(value);
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1500);
+          } catch {
+            /* ignore */
+          }
+        }}
+        className="inline-flex size-10 shrink-0 items-center justify-center rounded-full border border-black/10 text-[#00473E] transition-colors hover:bg-[#00473E]/5"
+        aria-label={`Copy ${label}`}
+      >
+        {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+      </button>
+    </div>
+  );
+}
+
+export default function PaymentPage() {
   const location = useLocation();
   const navigate = useNavigate();
-  const state = location.state as LocationState;
+  const state = (location.state || {}) as LocationState;
 
-  // Try to get order data from localStorage if not in state
-  const getOrderData = () => {
-    if (state?.orderData) {
-      return state.orderData;
+  const orderBundle = useMemo(
+    () => state.orderData || readCachedOrder(),
+    [state.orderData],
+  );
+
+  const trackingNo = useMemo(
+    () => extractTrackingFromOrder(orderBundle, state.trackingNo || state.orderId || ''),
+    [orderBundle, state.trackingNo, state.orderId],
+  );
+
+  const amount = Number(state.bookingData?.deliveryFee || 0);
+
+  const [phoneNumber, setPhoneNumber] = useState(
+    () => state.bookingData?.vendorPhone || '',
+  );
+  const [method, setMethod] = useState<PayMethod>('prompt');
+  const [phase, setPhase] = useState<Phase>('ready');
+  const [error, setError] = useState<string | null>(null);
+  const [statusHint, setStatusHint] = useState<string | null>(null);
+  const [merchantRequestId, setMerchantRequestId] = useState('');
+  const [checkoutRequestId, setCheckoutRequestId] = useState('');
+  const [transactionCode, setTransactionCode] = useState<string | null>(null);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollStartedAt = useRef<number>(0);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
     }
-    
-    const storedOrder = localStorage.getItem('currentOrder');
-    const storedTimestamp = localStorage.getItem('currentOrderTimestamp');
-    
-    if (storedOrder && storedTimestamp) {
-      try {
-        const timestamp = parseInt(storedTimestamp, 10);
-        const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
-        const now = Date.now();
-        
-        // Clear stale data (older than 1 hour)
-        if (now - timestamp > oneHour) {
-          console.log('Clearing stale order data');
-          localStorage.removeItem('currentOrder');
-          localStorage.removeItem('currentOrderTimestamp');
-          localStorage.removeItem('currentBookingForm');
-          return null;
-        }
-        
-        return JSON.parse(storedOrder);
-      } catch (error) {
-        console.error('Error parsing stored order:', error);
-        return null;
-      }
+  }, []);
+
+  useEffect(() => () => stopPolling(), [stopPolling]);
+
+  useEffect(() => {
+    if (!state.bookingData && !trackingNo) {
+      navigate('/book-parcel', { replace: true });
     }
-    return null;
+  }, [state.bookingData, trackingNo, navigate]);
+
+  const clearBookingCache = () => {
+    localStorage.removeItem('currentOrder');
+    localStorage.removeItem('currentOrderTimestamp');
+    localStorage.removeItem('currentBookingForm');
   };
 
+  const markSuccess = (code?: string | null, message?: string | null) => {
+    stopPolling();
+    setTransactionCode(code || null);
+    setStatusHint(message || 'Payment completed successfully');
+    setPhase('success');
+    setSending(false);
+    setConfirming(false);
+    setError(null);
+    clearBookingCache();
+  };
 
-  const [phoneNumber, setPhoneNumber] = useState('+254');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentInitiated, setPaymentInitiated] = useState(false);
-  const [orderId, setOrderId] = useState<string>(state?.orderId || '');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [statusTimeoutId, setStatusTimeoutId] = useState<ReturnType<typeof setTimeout> | null>(null);
-  const [checkingStatus, setCheckingStatus] = useState(false);
-  const [, setMerchantRequestId] = useState<string>('');
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<string>('');
-  const [isStatusSuccess, setIsStatusSuccess] = useState<boolean>(false);
-  const [showReceipt, setShowReceipt] = useState(false);
+  const markFailed = (message: string) => {
+    stopPolling();
+    setPhase('failed');
+    setError(message);
+    setSending(false);
+    setConfirming(false);
+  };
+
+  const pollOnce = useCallback(
+    async (opts: {
+      merchantRequestId?: string;
+      checkoutRequestId?: string;
+      trackingNo?: string;
+    }) => {
+      const result = await checkPaymentStatus(opts);
+      if (result.isPaid || String(result.status).toUpperCase() === 'SUCCESS') {
+        markSuccess(result.transactionCode, result.message);
+        return 'paid';
+      }
+      if (isTerminalFailure(result.status)) {
+        markFailed(
+          result.resultDesc ||
+            result.message ||
+            'Payment was not completed. You can retry the prompt.',
+        );
+        return 'failed';
+      }
+      if (result.status === 'NOT_FOUND') {
+        setStatusHint('Waiting for M-Pesa… payment not received yet.');
+        return 'pending';
+      }
+      setStatusHint(result.message || result.resultDesc || 'Waiting for M-Pesa confirmation…');
+      return 'pending';
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
+  const startPolling = useCallback(
+    (opts: {
+      merchantRequestId?: string;
+      checkoutRequestId?: string;
+      trackingNo?: string;
+    }) => {
+      stopPolling();
+      pollStartedAt.current = Date.now();
+      const tick = async () => {
+        try {
+          const outcome = await pollOnce(opts);
+          if (outcome !== 'pending') return;
+          if (Date.now() - pollStartedAt.current > 90_000) {
+            markFailed(
+              'No confirmation yet. If you paid by Paybill, tap Confirm payment. Or retry the prompt.',
+            );
+          }
+        } catch (err: any) {
+          setStatusHint(err?.message || 'Still checking…');
+        }
+      };
+      void tick();
+      pollRef.current = setInterval(tick, 4000);
+    },
+    [pollOnce, stopPolling],
+  );
+
+  const handleSendPrompt = async () => {
+    if (!trackingNo) {
+      setError('Missing tracking number. Go back and confirm the booking again.');
+      return;
+    }
+    if (!amount || amount <= 0) {
+      setError('Missing delivery fee. Go back to the booking summary.');
+      return;
+    }
+    if (!isValidKenyaMobile(phoneNumber)) {
+      setError(kenyaMobileError(phoneNumber) || 'Enter a valid Kenyan mobile (07… / 01…)');
+      return;
+    }
+    const phone = normalizeKenyaMobile(phoneNumber);
+    if (!phone) {
+      setError('Enter a valid Kenyan mobile (07… / 01…)');
+      return;
+    }
+
+    setSending(true);
+    setError(null);
+    setStatusHint('Sending M-Pesa prompt…');
+    try {
+      const prompt = await sendCourierFeePrompt({
+        phoneNumber: phone,
+        amount,
+        trackingNo,
+      });
+      setMerchantRequestId(prompt.merchantRequestId || '');
+      setCheckoutRequestId(prompt.checkoutRequestId || '');
+      setPhase('awaiting_prompt');
+      setStatusHint('Check your phone and enter your M-Pesa PIN.');
+      startPolling({
+        merchantRequestId: prompt.merchantRequestId,
+        checkoutRequestId: prompt.checkoutRequestId,
+        trackingNo,
+      });
+    } catch (err: any) {
+      setError(err?.message || 'Could not send M-Pesa prompt. Try again.');
+      setPhase('failed');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleConfirmPaybill = async () => {
+    if (!trackingNo) {
+      setError('Missing tracking number.');
+      return;
+    }
+    setConfirming(true);
+    setError(null);
+    setPhase('awaiting_paybill');
+    setStatusHint('Checking Paybill payment…');
+    try {
+      const outcome = await pollOnce({ trackingNo });
+      if (outcome === 'pending') {
+        setStatusHint(
+          'Payment not seen yet. Finish the Paybill payment, wait a few seconds, then confirm again.',
+        );
+        startPolling({ trackingNo });
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Could not confirm payment. Try again shortly.');
+    } finally {
+      setConfirming(false);
+    }
+  };
+
+  const handleRetryPrompt = () => {
+    stopPolling();
+    setPhase('ready');
+    setMethod('prompt');
+    setError(null);
+    setStatusHint(null);
+    setMerchantRequestId('');
+    setCheckoutRequestId('');
+  };
+
   const handleBackToSummary = () => {
+    stopPolling();
     navigate('/book-parcel', {
       state: {
         showSummary: true,
-        existingData: state?.bookingData || getOrderData()?.data?.order?.[0] || {},
+        existingData: state.bookingData || orderBundle?.data?.order?.[0] || {},
       },
     });
   };
 
-  // Redirect if no booking data
-  useEffect(() => {
-    console.log('Payment page state:', state);
-    console.log('Tracking number from state:', state?.trackingNo);
-    console.log('Order ID from state:', state?.orderId);
-    console.log('Full order data:', state?.orderData);
-    
-    if (!state?.bookingData && !orderId) {
-      navigate('/book-parcel');
-    }
-  }, [state, orderId, navigate]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (statusTimeoutId) {
-        clearTimeout(statusTimeoutId);
-      }
-    };
-  }, [statusTimeoutId]);
-
-  const validatePhone = (phone: string): boolean => {
-    // Must start with +254 and have 12 digits total
-    const phoneRegex = /^\+254\d{9}$/;
-    return phoneRegex.test(phone);
-  };
-
-  const handleCreateOrder = async () => {
-    if (!validatePhone(phoneNumber)) {
-      setError('Please enter a valid phone number (+254XXXXXXXXX)');
-      return;
-    }
-
-    setIsProcessing(true);
-    setError(null);
-
-    try {
-      // Get order data from localStorage or state
-      const cachedOrderData = getOrderData();
-      
-      console.log('=== PAYMENT PAGE - TRACKING NUMBER SEARCH ===');
-      console.log('Cached order data:', cachedOrderData);
-      console.log('Cached order data type:', typeof cachedOrderData);
-      
-      if (cachedOrderData) {
-        console.log('Cached order data keys:', Object.keys(cachedOrderData));
-        console.log('All values in cached order:', JSON.stringify(cachedOrderData, null, 2));
-      }
-      
-      // Get the tracking number from cached order data - try multiple sources
-      const trackingNumber = cachedOrderData?.trackingNo 
-        || cachedOrderData?.trackingNumber 
-        || cachedOrderData?.tracking_no 
-        || cachedOrderData?.data?.trackingNo
-        || cachedOrderData?.data?.trackingNumber 
-        || cachedOrderData?.data?.tracking_no
-        || cachedOrderData?.data?.order?.[0]?.trackingNo
-        || cachedOrderData?.data?.order?.[0]?.trackingNumber
-        || cachedOrderData?.order?.trackingNo
-        || cachedOrderData?.order?.trackingNumber
-        || state?.trackingNo 
-        || state?.orderId 
-        || orderId;
-      
-      console.log('Final tracking number:', trackingNumber);
-      console.log('state?.bookingData?.deliveryFee:', state?.bookingData?.deliveryFee);
-      console.log('============================================');
-      
-      if (!trackingNumber) {
-        throw new Error('No tracking number found. Please create an order first.');
-      }
-
-      // Remove '+' from phone number for the API
-      const cleanPhoneNumber = phoneNumber.replace('+', '');
-
-      // Prepare payment payload
-      const paymentPayload = {
-        phoneNumber: cleanPhoneNumber,
-        amount: state?.bookingData?.deliveryFee || 0,
-        trackingNo: trackingNumber,
-        paymentDesc: "courierFee"
-      };
-
-      console.log('Initiating payment with payload:', paymentPayload);
-
-      // Get auth token from backend server
-      let authToken = '';
-      try {
-        const tokenResponse = await fetch('https://app.escrowcourier.com/website-backend-services/api/auth/token');
-        if (tokenResponse.ok) {
-          const tokenData = await tokenResponse.json();
-          authToken = tokenData.token || tokenData.access_token || tokenData.bearer_token;
-          console.log('Auth token fetched from backend');
-        }
-      } catch (error) {
-        console.warn('Could not fetch auth token:', error);
-      }
-
-      // Send payment prompt
-      const response = await fetch('https://app.escrowcourier.com/payment-services/api/payments/prompts/courier-fee', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
-        },
-        body: JSON.stringify(paymentPayload),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `Payment initiation failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Payment prompt sent successfully:', data);
-      
-      // Extract merchantRequestId from response
-      const merchantReqId = data.merchantRequestId 
-        || data.MerchantRequestID 
-        || data.merchant_request_id 
-        || data.data?.merchantRequestId 
-        || data.data?.MerchantRequestID;
-      
-      console.log('Extracted merchantRequestId:', merchantReqId);
-      
-      if (!merchantReqId) {
-        console.warn('No merchantRequestId found in payment prompt response');
-      }
-      
-      setMerchantRequestId(merchantReqId);
-      setOrderId(trackingNumber);
-      setPaymentInitiated(true);
-
-      // Schedule single payment status confirmation after 15 seconds
-      schedulePaymentStatusCheck(merchantReqId, authToken);
-    } catch (err: any) {
-      console.error('Payment initiation error:', err);
-      setError(err.message || 'Failed to initiate payment. Please try again.');
-      setIsProcessing(false);
-    }
-  };
-
-  const schedulePaymentStatusCheck = (merchantReqId: string, authToken: string) => {
-    if (statusTimeoutId) {
-      clearTimeout(statusTimeoutId);
-    }
-    const timeout = setTimeout(async () => {
-      setCheckingStatus(true);
-      try {
-        console.log('Checking payment status for merchantRequestId:', merchantReqId);
-        const statusResp = await fetch('https://app.escrowcourier.com/payment-services/api/payments/status', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
-          },
-          body: JSON.stringify({ merchantRequestId: merchantReqId }),
-        });
-        const rawText = await statusResp.text();
-        let statusData: any = null;
-        try { statusData = rawText ? JSON.parse(rawText) : {}; } catch { statusData = { raw: rawText }; }
-        console.log('Payment status response raw:', rawText);
-        console.log('Parsed status data:', statusData);
-
-        if (!statusResp.ok) {
-          throw new Error(`Status check failed: ${statusResp.status}`);
-        }
-
-        // Extract status message from various possible locations
-        const statusMsg = statusData.message 
-          || statusData.statusMessage 
-          || statusData.data?.message 
-          || statusData.data?.statusMessage
-          || statusData.ResultDesc
-          || statusData.resultDesc
-          || '';
-
-        // Attempt to determine paid state
-        const paidFlag = statusData.paid
-          || statusData.success && /paid|success|complete/i.test(String(statusData.message || ''))
-          || /paid|success|complete/i.test(String(statusData.status || ''))
-          || /paid|success|complete/i.test(String(statusData.data?.status || ''))
-          || /paid|success|complete/i.test(String(statusData.data?.paymentStatus || ''))
-          || /paid|success|complete/i.test(String(statusData.data?.state || ''))
-          || statusData.ResultCode === '0'
-          || statusData.resultCode === '0';
-
-        if (paidFlag) {
-          setSuccess(true);
-          setIsProcessing(false);
-          setError(null);
-          setIsStatusSuccess(true);
-          setStatusMessage(statusMsg || 'Payment completed successfully!');
-          setShowReceipt(true);
-          // Clear all cached booking and order data
-          localStorage.removeItem('currentOrder');
-          localStorage.removeItem('currentOrderTimestamp');
-          localStorage.removeItem('currentBookingForm');
-        } else {
-          setIsProcessing(false);
-          setIsStatusSuccess(false);
-          setStatusMessage(statusMsg || 'Payment was not completed. Please try again.');
-          setShowStatusModal(true);
-        }
-      } catch (err: any) {
-        console.error('Payment status check error:', err);
-        setIsProcessing(false);
-        setIsStatusSuccess(false);
-        setStatusMessage('Unable to confirm payment status. Please try again.');
-        setShowStatusModal(true);
-      } finally {
-        setCheckingStatus(false);
-        setStatusTimeoutId(null);
-      }
-    }, 15000); // 15 seconds
-    setStatusTimeoutId(timeout);
-  };
-
-  const handleTryAgain = () => {
-    setError(null);
-    setPaymentInitiated(false);
-    setIsProcessing(false);
-  };
-
-  if (success) {
+  if (phase === 'success') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#f7f8f6] text-[#222]">
         <Helmet>
-          <title>Complete Courier Shipment Payment | ParcelGrid</title>
-          <meta name="title" content="Complete Courier Shipment Payment | ParcelGrid" />
-          <meta name="description" content="Securely complete payment for your booked parcel delivery. Pay via M-Pesa push checkout to generate your shipping receipt and proceed to drop-off." />
-          <meta name="keywords" content="complete payment, mpesa checkout, parcel payment, escrow payment, parcelgrid payment" />
-          <meta property="og:type" content="website" />
-          <meta property="og:title" content="Complete Shipment Payment" />
-          <meta property="og:description" content="Securely complete payment for your booked parcel delivery. Pay via M-Pesa push checkout." />
-          <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/payment` : ''} />
+          <title>Payment successful | ParcelGrid</title>
+          <meta name="robots" content="noindex, nofollow" />
         </Helmet>
-        <div className="max-w-2xl mx-auto mt-20">
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
-            <div className="mb-6">
-              <div className="mx-auto w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-                <CheckCircle className="w-12 h-12 text-green-600" />
-              </div>
-            </div>
-            <h1 className="text-3xl font-bold text-[#00473E] mb-4">Payment Successful!</h1>
-            <p className="text-lg text-gray-600 mb-2">Your order has been confirmed</p>
-            <p className="text-sm text-gray-500 mb-6">Order ID: {orderId}</p>
-            <div className="bg-[#E9FF15]/20 border border-[#E9FF15] rounded-lg p-4 mb-6">
-              <p className="text-sm text-gray-700">
-                You have successfully booked your parcel. Kindly drop it to 
+        <section className="relative -mt-24 overflow-hidden bg-[#071410]">
+          <div className="relative mx-auto max-w-2xl px-5 pb-12 pt-28 text-center sm:px-8 sm:pt-32">
+            <CheckCircle className="mx-auto size-12 text-[#E9FF15]" aria-hidden />
+            <h1 className="mt-4 font-[Sora] text-3xl font-semibold tracking-[-0.03em] text-white">
+              Payment successful
+            </h1>
+            <p className="mt-3 text-sm text-white/70">
+              Tracking {trackingNo}
+              {transactionCode ? ` · M-Pesa ${transactionCode}` : ''}
+            </p>
+          </div>
+        </section>
 
-Jitihada Shopping Complex, Ground Floor, Shop F7 – Taveta Road (Next to Taveta Mall, Opposite Samagat Building)
-
-Or 
-
-Iconic Business Plaza, Ground Floor, Shop G13 – Moi Avenue (Between Sasa Mall and Sawa Mall)
-              </p>
-            </div>
-            <Button
-              onClick={() => navigate('/')}
-              className="bg-[#00473E] hover:bg-[#006644] text-white"
+        <div className="mx-auto max-w-2xl px-5 py-10 sm:px-8">
+          <p className="text-sm leading-relaxed text-[#5c6562]">
+            Drop your parcel at any Nairobi CBD branch when ready:
+          </p>
+          <ul className="mt-4 space-y-3">
+            {BRANCHES.map((b) => (
+              <li key={b.id} className="border-b border-black/[0.06] pb-3 last:border-0">
+                <p className="font-[Sora] text-sm font-semibold text-[#111]">{b.name}</p>
+                <p className="mt-1 text-sm text-[#5c6562]">{b.address}</p>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => setShowReceipt(true)}
+              className="inline-flex h-12 items-center justify-center rounded-full bg-[#00473E] px-6 text-sm font-semibold text-white"
             >
-              Back to Home
-            </Button>
+              View receipt
+            </button>
+            <Link
+              to="/"
+              className="inline-flex h-12 items-center justify-center rounded-full border border-black/10 bg-white px-6 text-sm font-semibold text-[#00473E]"
+            >
+              Back to home
+            </Link>
           </div>
         </div>
+
+        {showReceipt && (
+          <Receipt
+            orderData={{
+              ...(state.bookingData || orderBundle || {}),
+              trackingNo,
+              paymentReference: transactionCode,
+            }}
+            onClose={() => setShowReceipt(false)}
+          />
+        )}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f7f8f6] text-[#222]">
       <Helmet>
-        <title>Complete Courier Shipment Payment | ParcelGrid</title>
-        <meta name="title" content="Complete Courier Shipment Payment | ParcelGrid" />
-        <meta name="description" content="Securely complete payment for your booked parcel delivery. Pay via M-Pesa push checkout to generate your shipping receipt and proceed to drop-off." />
-        <meta name="keywords" content="complete payment, mpesa checkout, parcel payment, escrow payment, parcelgrid payment" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Complete Shipment Payment" />
-        <meta property="og:description" content="Securely complete payment for your booked parcel delivery. Pay via M-Pesa push checkout." />
-        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/payment` : ''} />
+        <title>Pay courier fee | ParcelGrid</title>
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      <div className="max-w-2xl mx-auto mt-20">
-        <div className="mb-4">
-          <Button variant="outline" onClick={handleBackToSummary} className="flex items-center gap-2">
-            Back to Summary
-          </Button>
+
+      <section className="relative -mt-24 overflow-hidden bg-[#071410]">
+        <div
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
+          aria-hidden
+        />
+        <div className="relative mx-auto max-w-2xl px-5 pb-10 pt-28 sm:px-8 sm:pb-12 sm:pt-32">
+          <button
+            type="button"
+            onClick={handleBackToSummary}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-white/80 hover:text-white"
+          >
+            <ArrowLeft className="size-4" aria-hidden />
+            Back to summary
+          </button>
+          <h1 className="mt-6 font-[Sora] text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
+            Pay courier fee
+          </h1>
+          <p className="mt-3 text-sm text-white/70 sm:text-base">
+            Pay by M-Pesa prompt or Paybill, then we confirm automatically.
+          </p>
         </div>
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-8">
-            <div className="mx-auto w-16 h-16 bg-[#E9FF15] rounded-full flex items-center justify-center mb-4">
-              <Smartphone className="w-8 h-8 text-[#00473E]" />
+      </section>
+
+      <div className="mx-auto max-w-2xl px-5 py-10 sm:px-8">
+        {/* Tracking + amount — flat, no card */}
+        <div className="border-b border-black/[0.08] pb-6">
+          <p className="text-[11px] font-semibold tracking-[0.16em] text-[#00473E] uppercase">
+            Your booking
+          </p>
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-xs text-[#5c6562]">Tracking number</p>
+              <p className="mt-1 font-mono text-xl font-semibold tracking-tight text-[#111]">
+                {trackingNo || '—'}
+              </p>
             </div>
-            <h1 className="text-3xl font-bold text-[#00473E] mb-2">Complete Your Payment</h1>
-            <p className="text-gray-600">Enter your M-Pesa number to pay for delivery</p>
+            <div className="text-right">
+              <p className="text-xs text-[#5c6562]">Amount due</p>
+              <p className="mt-1 font-[Sora] text-3xl font-bold tracking-tight text-[#00473E]">
+                KES {amount > 0 ? amount.toLocaleString() : '—'}
+              </p>
+            </div>
           </div>
-
-          {!paymentInitiated ? (
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  M-Pesa Phone Number <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+254712345678"
-                  className="w-full text-lg"
-                  disabled={isProcessing}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Enter the phone number registered with M-Pesa
-                </p>
-              </div>
-
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              )}
-
-              <Button
-                onClick={handleCreateOrder}
-                disabled={isProcessing || !validatePhone(phoneNumber)}
-                className="w-full bg-[#E9FF15] hover:bg-[#d4e614] text-[#00473E] font-bold text-lg py-6"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  'Proceed to Payment'
-                )}
-              </Button>
-
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-xs text-gray-600 text-center">
-                  You will receive an M-Pesa prompt on your phone. Enter your PIN to complete the payment.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="text-center">
-                <div className="mb-6">
-                  <Loader2 className="w-16 h-16 mx-auto text-[#00473E] animate-spin" />
-                </div>
-                <h2 className="text-2xl font-bold text-[#00473E] mb-3">
-                  Waiting for Payment Confirmation
-                </h2>
-                <p className="text-gray-600 mb-2">
-                  Please check your phone for the M-Pesa payment prompt
-                </p>
-                <p className="text-sm text-gray-500">
-                  Phone: {phoneNumber}
-                </p>
-                {checkingStatus && (
-                  <p className="text-xs text-gray-500 mt-2">Checking payment status...</p>
-                )}
-                {!checkingStatus && paymentInitiated && (
-                  <p className="text-xs text-gray-500 mt-2">We will auto-check status after 15 seconds.</p>
-                )}
-              </div>
-
-              <div className="bg-[#E9FF15]/20 border border-[#E9FF15] rounded-lg p-4">
-                <ul className="space-y-2 text-sm text-gray-700">
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#00473E] font-bold">1.</span>
-                    <span>Check your phone for the M-Pesa payment request</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#00473E] font-bold">2.</span>
-                    <span>Enter your M-Pesa PIN to confirm payment</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#00473E] font-bold">3.</span>
-                    <span>Wait for confirmation (this may take a few moments)</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* Status Modal Popup */}
-        {showStatusModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-            <div className={`bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full transform transition-all animate-in zoom-in duration-300 ${
-              isStatusSuccess ? 'border-4 border-green-500' : 'border-4 border-red-500'
-            }`}>
-              <div className="text-center">
-                {/* Animated Icon */}
-                <div className={`mx-auto w-24 h-24 rounded-full flex items-center justify-center mb-6 animate-in zoom-in duration-500 ${
-                  isStatusSuccess ? 'bg-green-100' : 'bg-red-100'
-                }`}>
-                  {isStatusSuccess ? (
-                    <CheckCircle className="w-16 h-16 text-green-600 animate-in zoom-in duration-700" />
-                  ) : (
-                    <AlertCircle className="w-16 h-16 text-red-600 animate-in zoom-in duration-700" />
-                  )}
-                </div>
+        {/* Paybill details — like the app */}
+        <div className="border-b border-black/[0.08] py-6">
+          <p className="text-[11px] font-semibold tracking-[0.16em] text-[#00473E] uppercase">
+            M-Pesa Paybill
+          </p>
+          <p className="mt-2 text-sm text-[#5c6562]">
+            Use your tracking number as the Account Number when paying.
+          </p>
+          <div className="mt-2">
+            <CopyRow label="Paybill" value={MPESA_PAYBILL} mono />
+            <CopyRow label="Account Number" value={trackingNo || '—'} mono />
+            <CopyRow
+              label="Amount"
+              value={amount > 0 ? String(amount) : '—'}
+              mono
+            />
+            <CopyRow label="Business" value={MPESA_PAYBILL_NAME} />
+          </div>
+        </div>
 
-                {/* Status Title */}
-                <h2 className={`text-2xl font-bold mb-4 ${
-                  isStatusSuccess ? 'text-green-700' : 'text-red-700'
-                }`}>
-                  {isStatusSuccess ? 'Payment Successful!' : 'Payment Failed'}
-                </h2>
+        {/* Method toggle */}
+        <div className="py-6">
+          <p className="text-[11px] font-semibold tracking-[0.16em] text-[#00473E] uppercase">
+            How do you want to pay?
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setMethod('prompt');
+                if (phase === 'awaiting_paybill') setPhase('ready');
+              }}
+              className={`inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-colors ${
+                method === 'prompt'
+                  ? 'bg-[#00473E] text-white'
+                  : 'border border-black/10 bg-white text-[#00473E]'
+              }`}
+            >
+              <Smartphone className="size-4" aria-hidden />
+              M-Pesa prompt
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMethod('paybill');
+                stopPolling();
+                if (phase === 'awaiting_prompt') setPhase('ready');
+              }}
+              className={`inline-flex h-11 flex-1 items-center justify-center rounded-full text-sm font-semibold transition-colors ${
+                method === 'paybill'
+                  ? 'bg-[#00473E] text-white'
+                  : 'border border-black/10 bg-white text-[#00473E]'
+              }`}
+            >
+              Paybill
+            </button>
+          </div>
+        </div>
 
-                {/* Status Message */}
-                <p className="text-gray-700 mb-6 text-lg">
-                  {statusMessage}
+        {error && (
+          <div className="mb-6 flex items-start gap-3 border-y border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <p>{error}</p>
+          </div>
+        )}
+
+        {method === 'prompt' && (phase === 'ready' || phase === 'failed') && (
+          <div className="space-y-5">
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-[#222]">
+                M-Pesa phone number <span className="text-[#00473E]">*</span>
+              </label>
+              <input
+                type="tel"
+                inputMode="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="0712 345 678"
+                className={inputClass}
+                disabled={sending}
+              />
+              <p className="mt-1.5 text-xs text-[#5c6562]">
+                Number that will receive the STK prompt (07… or 01…).
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleSendPrompt}
+              disabled={sending || !isValidKenyaMobile(phoneNumber)}
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#E9FF15] text-sm font-bold text-[#111] transition hover:bg-[#f3ff6a] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {sending ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                  Sending prompt…
+                </>
+              ) : phase === 'failed' ? (
+                <>
+                  <RefreshCw className="size-4" aria-hidden />
+                  Retry M-Pesa prompt
+                </>
+              ) : (
+                'Send M-Pesa prompt'
+              )}
+            </button>
+          </div>
+        )}
+
+        {method === 'prompt' && phase === 'awaiting_prompt' && (
+          <div className="space-y-5">
+            <div className="flex items-start gap-3">
+              <Loader2 className="mt-1 size-5 shrink-0 animate-spin text-[#00473E]" aria-hidden />
+              <div>
+                <p className="font-[Sora] text-lg font-semibold text-[#111]">
+                  Waiting for your PIN
                 </p>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col gap-3">
-                  {isStatusSuccess ? (
-                    <>
-                      <Button
-                        onClick={() => setShowReceipt(true)}
-                        className="w-full bg-[#00473E] hover:bg-[#00473E]/90 text-white py-3 text-lg"
-                      >
-                        Download/Share Receipt
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setShowStatusModal(false);
-                          navigate('/');
-                        }}
-                        variant="outline"
-                        className="w-full py-3 text-lg"
-                      >
-                        Go to Home
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button
-                        onClick={() => {
-                          setShowStatusModal(false);
-                          handleTryAgain();
-                        }}
-                        className="w-full bg-red-600 hover:bg-red-700 text-white py-3 text-lg"
-                      >
-                        Try Again
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setShowStatusModal(false);
-                          navigate('/book-parcel', { state: { showSummary: true } });
-                        }}
-                        variant="outline"
-                        className="w-full py-3 text-lg"
-                      >
-                        Back to Summary
-                      </Button>
-                    </>
-                  )}
-                </div>
+                <p className="mt-1 text-sm text-[#5c6562]">
+                  Prompt sent to {phoneNumber}. Enter your M-Pesa PIN on your phone.
+                </p>
+                {statusHint && (
+                  <p className="mt-2 text-xs text-[#5c6562]">{statusHint}</p>
+                )}
               </div>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  startPolling({
+                    merchantRequestId: merchantRequestId || undefined,
+                    checkoutRequestId: checkoutRequestId || undefined,
+                    trackingNo,
+                  })
+                }
+                className="inline-flex h-11 items-center gap-2 rounded-full border border-black/10 bg-white px-5 text-sm font-semibold text-[#00473E]"
+              >
+                <RefreshCw className="size-4" aria-hidden />
+                Check again
+              </button>
+              <button
+                type="button"
+                onClick={handleRetryPrompt}
+                className="inline-flex h-11 items-center gap-2 rounded-full bg-[#00473E] px-5 text-sm font-semibold text-white"
+              >
+                Cancel &amp; retry prompt
+              </button>
             </div>
           </div>
         )}
 
-        {/* Receipt Modal */}
-        {showReceipt && (
-          <Receipt
-            orderData={{
-              ...(state?.bookingData || getOrderData() || state?.orderData || {}),
-              trackingNo: state?.trackingNo || (state?.bookingData || getOrderData() || state?.orderData)?.trackingNo
-            }}
-            onClose={() => {
-              setShowReceipt(false);
-              if (success) {
-                navigate('/');
-              }
-            }}
-          />
+        {method === 'paybill' && (
+          <div className="space-y-5">
+            <ol className="list-decimal space-y-2 pl-5 text-sm leading-relaxed text-[#5c6562]">
+              <li>Open M-Pesa → Lipa na M-Pesa → Paybill</li>
+              <li>
+                Enter Paybill <strong className="text-[#111]">{MPESA_PAYBILL}</strong>
+              </li>
+              <li>
+                Account Number = tracking{' '}
+                <strong className="font-mono text-[#111]">{trackingNo || '—'}</strong>
+              </li>
+              <li>
+                Amount{' '}
+                <strong className="text-[#111]">
+                  KES {amount > 0 ? amount.toLocaleString() : '—'}
+                </strong>
+                , then enter your PIN
+              </li>
+              <li>Return here and confirm payment</li>
+            </ol>
+            <button
+              type="button"
+              onClick={handleConfirmPaybill}
+              disabled={confirming || !trackingNo}
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#E9FF15] text-sm font-bold text-[#111] transition hover:bg-[#f3ff6a] disabled:opacity-60"
+            >
+              {confirming || phase === 'awaiting_paybill' ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                  Confirming payment…
+                </>
+              ) : (
+                "I've paid — confirm payment"
+              )}
+            </button>
+            {statusHint && phase === 'awaiting_paybill' && (
+              <p className="text-sm text-[#5c6562]">{statusHint}</p>
+            )}
+          </div>
+        )}
+
+        {phase === 'failed' && method === 'paybill' && (
+          <button
+            type="button"
+            onClick={handleConfirmPaybill}
+            className="mt-4 inline-flex h-11 items-center gap-2 rounded-full border border-black/10 bg-white px-5 text-sm font-semibold text-[#00473E]"
+          >
+            <RefreshCw className="size-4" aria-hidden />
+            Check Paybill again
+          </button>
         )}
       </div>
     </div>
   );
-};
-
-export default PaymentPage;
+}

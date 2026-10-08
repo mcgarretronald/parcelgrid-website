@@ -1,0 +1,89 @@
+{
+  "site": "https://escrowcourier.com",
+  "routes": {
+    "/": {
+      "title": "Courier Service for Online Sellers in Kenya | ParcelGrid",
+      "description": "Expand your business with ParcelGrid. Cash on Delivery (COD) with instant settlements, nationwide pickup points, and smart notifications. Get started today!",
+      "h1": "Fast Upcountry Delivery. Instant Pay on Delivery.",
+      "priority": "1.0", "changefreq": "weekly"
+    },
+    "/services/upcountry-parcel-delivery": {
+      "title": "Upcountry Parcel Delivery Kenya | Next-Day Courier Outside Nairobi | ParcelGrid",
+      "description": "Reliable next-day upcountry parcel delivery to 300+ towns across Kenya. Drop off at our Nairobi CBD branches (9 AM–7 PM, Mon–Sat). COD & prepaid supported.",
+      "h1": "Next-Day Upcountry Parcel Delivery in Kenya",
+      "priority": "0.9", "changefreq": "monthly"
+    },
+    "/services/pay-on-delivery-courier-kenya": {
+      "title": "Pay on Delivery Courier Kenya | Instant M-Pesa COD | ParcelGrid",
+      "description": "Stop losing upcountry sales. Use ParcelGrid's Pay on Delivery (COD) courier services in Kenya. Buyers pay via M-Pesa at pickup, and you get paid instantly.",
+      "h1": "Sell Upcountry Safely with Instant Pay on Delivery",
+      "priority": "0.9", "changefreq": "monthly"
+    },
+    "/pricing": {
+      "title": "Courier Prices Kenya | Affordable Parcel Delivery Rates & Calculator | ParcelGrid",
+      "description": "Check affordable courier services Kenya rates instantly. Live ParcelGrid fee calculator for drop-off, pickup town, weight bands and special items — transparent next-day upcountry pricing without WhatsApp quote spam.",
+      "h1": "Affordable Courier Rates for Upcountry Delivery",
+      "priority": "0.9", "changefreq": "weekly"
+    },
+    "/pickup-points": {
+      "title": "ParcelGrid Pickup & Drop-Off Stations Kenya | 300+ Towns Covered",
+      "description": "Find ParcelGrid parcel pickup points and drop-off stations across Kenya. Send or collect parcels in Nairobi CBD, Mombasa, Nakuru, Eldoret, Kisumu, and 300+ towns.",
+      "h1": "ParcelGrid Stations: Drop Off & Pick Up Across Kenya",
+      "priority": "0.9", "changefreq": "weekly"
+    },
+    "/track": {
+      "title": "Track Your Parcel | Live Upcountry Delivery Tracking | ParcelGrid",
+      "description": "Track your ParcelGrid shipment across 300+ towns in Kenya. Real-time updates for prepaid and Pay on Delivery (COD) parcels with Communications Authority licensed security.",
+      "h1": "Track Your Parcel",
+      "priority": "0.8", "changefreq": "monthly"
+    },
+    "/book-parcel": {
+      "title": "Book a Parcel Delivery Online in Kenya | ParcelGrid",
+      "description": "Ship packages in under 60 seconds. Fill in customer details, select pickup points, choose COD or prepaid options, and book your delivery with ParcelGrid.",
+      "h1": "Book a parcel in under 60 seconds",
+      "priority": "0.8", "changefreq": "monthly"
+    },
+    "/contact": {
+      "title": "Contact ParcelGrid | Nairobi CBD Branches & Customer Support",
+      "description": "Visit ParcelGrid at our Nairobi CBD branches: City Centre Mall (Ronald Ngala), Iconic Business Plaza (Moi Ave), and Jithada Complex (Taveta Rd). Call 0745 111 555.",
+      "h1": "Contact ParcelGrid & Find Our Nairobi CBD Branches",
+      "priority": "0.7", "changefreq": "monthly"
+    },
+    "/about": {
+      "title": "About ParcelGrid | Licensed Courier & Pay on Delivery Partner Kenya",
+      "description": "Learn about ParcelGrid by Escrow Courier Networks Ltd. CA-licensed courier connecting online sellers to 300+ towns with next-day delivery and instant COD settlements.",
+      "h1": "Connecting Kenyan Online Sellers to 300+ Towns with Trust and Speed",
+      "priority": "0.7", "changefreq": "monthly"
+    },
+    "/faq": {
+      "title": "Courier Service FAQs & Answers | ParcelGrid",
+      "description": "Answers on Pay on Delivery, next-day upcountry delivery, Nairobi CBD drop-off branches, M-Pesa withdrawals and pickup stations with ParcelGrid Kenya.",
+      "h1": "Frequently Asked Questions",
+      "priority": "0.7", "changefreq": "monthly"
+    },
+    "/how-to-use-app": {
+      "title": "How to Use the ParcelGrid App | Vendor Guide",
+      "description": "A simple guide for online sellers: sign up, send parcels, track them, collect COD and withdraw your money to M-Pesa with the ParcelGrid app.",
+      "h1": "How to Use the ParcelGrid App",
+      "priority": "0.6", "changefreq": "monthly"
+    },
+    "/opportunities": {
+      "title": "Become a ParcelGrid Agent in Kenya | Pickup & Booking Agent Opportunities",
+      "description": "Earn 20% commission as a ParcelGrid pickup or booking agent. Turn your shop into a trusted collection or drop-off point on a licensed national courier network.",
+      "h1": "Become a ParcelGrid Agent",
+      "priority": "0.6", "changefreq": "monthly"
+    },
+    "/careers": {
+      "title": "Careers at ParcelGrid | Courier Jobs in Nairobi, Kenya",
+      "description": "Build the future of logistics in Kenya. Explore open roles at ParcelGrid, a licensed courier network growing fast across 300+ towns.",
+      "h1": "Be part of our mission",
+      "priority": "0.5", "changefreq": "monthly"
+    },
+    "/careers/vendor-growth-officer": {
+      "title": "Vendor Growth and Customer Relations Officer Job in Nairobi | ParcelGrid Careers",
+      "description": "Join ParcelGrid as a Vendor Growth and Customer Relations Officer in Nairobi. Help onboard online merchants and scale our delivery network. Start with a 2-minute video.",
+      "h1": "Vendor Growth and Customer Relations Officer",
+      "priority": "0.5", "changefreq": "monthly"
+    }
+  }
+}

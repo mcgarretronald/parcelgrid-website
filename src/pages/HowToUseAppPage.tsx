@@ -1,339 +1,592 @@
 import React from 'react';
+import { JsonLd } from '../components/JsonLd';
 import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
+import { ArrowUpRight, Lightbulb, Phone, Mail } from 'lucide-react';
 import Footer from '../components/Footer';
-import DownloadCTA from '../components/DownloadCTA';
+import { FaqAccordionItem } from '../components/FaqAccordion';
 import { useScrollToTop } from '../hooks/useScrollToTop';
-import { 
-  Download, 
-  Package, 
-  MapPin, 
-  Camera, 
-  Search, 
-  CreditCard, 
-  BarChart3, 
-  HelpCircle,
-  DollarSign
-} from 'lucide-react';
+import { APP_STORE_URL, PLAY_STORE_URL } from '../lib/storeLinks';
+import type { FaqItem } from '../lib/faqData';
+
+type Shot = { file: string; caption: string };
+type Step = {
+  id: string;
+  title: string;
+  intro?: string;
+  steps: string[];
+  ordered?: boolean;
+  tip?: string;
+  shots?: Shot[];
+};
+
+const shot = (file: string, caption: string): Shot => ({ file: `/app-screens/${file}.webp`, caption });
+
+const STEPS: Step[] = [
+  {
+    id: 'download',
+    title: 'Download and create your account',
+    steps: [
+      'Download ParcelGrid from Google Play or the App Store.',
+      'Tap Sign up and register with your business phone number.',
+      'Enter the OTP sent to your phone.',
+      'Complete your business profile so you can start booking.',
+      'If a booking agent referred you, enter their referral code during registration.',
+    ],
+    ordered: true,
+    tip: 'Keep the same phone number you use for M-Pesa. You will need it for withdrawals.',
+  },
+  {
+    id: 'send',
+    title: 'Send a parcel',
+    steps: [
+      'On Home, tap Send Parcel.',
+      "Enter the customer's name and phone number.",
+      'Choose the destination town or pickup station where the customer will collect.',
+      'Add the parcel value, weight and a short description (or pick a special item if it is listed).',
+      'Choose the payment type. Prepaid: the customer already paid you, they only collect. COD: enter the exact amount to collect from the customer.',
+      'Choose where you will drop the parcel off in Nairobi.',
+      'Add photos of the packed parcel if you like. Photos are optional.',
+      'Review the details, tap Submit and get your tracking number.',
+      'Pay the shipping fee by M-Pesa, then share the receipt with your customer on WhatsApp.',
+    ],
+    ordered: true,
+    shots: [
+      shot('02-send-customer', 'Customer details'),
+      shot('03-send-parcel-details', 'Parcel details and payment type'),
+      shot('04-send-photos-description', 'Photos, condition and description'),
+      shot('05-confirm-details', 'Review before submitting'),
+      shot('06-confirm-payment', 'COD amount and contents'),
+      shot('07-booking-created', 'Booking created with tracking number'),
+    ],
+  },
+  {
+    id: 'drop-off',
+    title: 'Drop off your parcel',
+    steps: [
+      'Pack the item securely and label it clearly.',
+      'Take it to the drop-off point you selected, for example Iconic Business Plaza on Moi Avenue, Jithada Shopping Complex on Taveta Road, or City Centre Mall on Ronald Ngala Street.',
+      'Hand it to ParcelGrid so the status moves to Received by ParcelGrid.',
+      "From there, we move it to your customer's pickup station.",
+    ],
+    ordered: true,
+  },
+  {
+    id: 'track',
+    title: 'Track every parcel',
+    intro:
+      'Open My Parcels to see all your bookings. Use the filter chips (Pending, Returns, In Transit, Ready for Collection, Delivered and more), then tap a parcel to open its Details and Timeline. You will get notifications as the status changes, and customers also get SMS and app alerts with collection details. A normal parcel moves through these statuses (see the full guide below):',
+    steps: [
+      'Pending',
+      'Awaiting Handover',
+      'Received by ParcelGrid',
+      'In-Transit',
+      'Ready for Collection',
+      'Delivered',
+    ],
+    ordered: true,
+    shots: [
+      shot('08-my-parcels', 'Search and filter your parcels'),
+      shot('09-parcel-details', 'Parcel details'),
+      shot('10-parcel-timeline', 'Parcel timeline'),
+    ],
+  },
+  {
+    id: 'cod',
+    title: 'How COD works',
+    steps: [
+      'You book the parcel as COD and enter the amount to collect.',
+      "We deliver it to the customer's nearest pickup point.",
+      'At collection, our station agent sends an M-Pesa prompt to the customer for that amount.',
+      'After payment succeeds, the parcel is released.',
+      'Your money (minus the 1.8% COD handling fee) lands in your ParcelGrid wallet.',
+      'Withdraw to M-Pesa anytime from the Wallet tab.',
+    ],
+    ordered: true,
+  },
+  {
+    id: 'prepaid',
+    title: 'How prepaid works',
+    steps: [
+      'Book as Prepaid after the customer has already paid you.',
+      'We deliver to their pickup point.',
+      'The customer shows their release code to the agent and collects.',
+      'There is no extra payment step at the station.',
+    ],
+    ordered: true,
+  },
+  {
+    id: 'wallet',
+    title: 'Wallet and withdrawals',
+    steps: [
+      'Open the Wallet tab to see your balance, COD settlements and transaction history.',
+      'Tap Withdraw and enter your 4-digit security PIN.',
+      'Enter the M-Pesa number to send to and the amount, then tap Continue.',
+      'Your funds are sent to M-Pesa.',
+    ],
+    ordered: true,
+    tip: "Check Wallet regularly so you always know what's settled and what's still in transit.",
+    shots: [
+      shot('11-wallet', 'Balance and transactions'),
+      shot('12-withdraw-pin', 'Confirm with your security PIN'),
+    ],
+  },
+  {
+    id: 'home',
+    title: 'Home overview',
+    intro: 'Your Home screen is your daily dashboard. It shows:',
+    steps: [
+      'A quick search for pickup stations',
+      'Promo updates',
+      'A status chart of your parcels (double-tap a status to see those parcels)',
+      'The Send Parcel button',
+    ],
+    shots: [shot('01-home', 'Home dashboard')],
+  },
+  {
+    id: 'settings',
+    title: 'Settings and support',
+    intro: 'From Settings you can:',
+    steps: [
+      'Manage your profile and businesses',
+      'View the pickup station list',
+      'Save favourite customers',
+      'Switch theme',
+      'Open the Help Center and rate the app on the Play Store',
+    ],
+    shots: [shot('13-settings', 'Settings')],
+  },
+];
+
+type StatusItem = { name: string; meaning: string; action?: string };
+type StatusGroup = { title: string; intro?: string; items: StatusItem[] };
+
+const STATUS_GUIDE: StatusGroup[] = [
+  {
+    title: 'The normal delivery journey',
+    items: [
+      {
+        name: 'Pending',
+        meaning:
+          'The parcel has been booked but is not fully ready to move yet. This usually means payment for shipping is still outstanding, or the booking is waiting to be confirmed. Until it leaves Pending, it has not entered the ParcelGrid network.',
+        action: 'Complete any open payment (M-Pesa prompt) so the parcel can proceed.',
+      },
+      {
+        name: 'Awaiting Handover',
+        meaning: 'The booking is confirmed. ParcelGrid is waiting for you to drop the parcel at your chosen drop-off point.',
+        action: 'Take the packed parcel to the selected Nairobi drop-off station and hand it in.',
+      },
+      {
+        name: 'Received by ParcelGrid',
+        meaning:
+          "The parcel has been received at our drop-off or origin point and is now in ParcelGrid's care. Sorting and onward movement to the destination town can begin.",
+      },
+      {
+        name: 'In-Transit',
+        meaning:
+          "The parcel is on the way to the customer's destination pickup station. No action needed. Track progress in the app and you'll get updates as it moves.",
+      },
+      {
+        name: 'Ready for Collection',
+        meaning:
+          "The parcel has arrived at the customer's pickup station and is waiting for them to collect it. Your customer should go to that station with their release code. For COD, they pay via M-Pesa at the station before the parcel is released.",
+      },
+      {
+        name: 'Delivered',
+        meaning:
+          'The customer has successfully collected the parcel and the order is complete. For COD, settlement should reflect in your ParcelGrid wallet (minus the COD handling fee).',
+      },
+    ],
+  },
+  {
+    title: 'Return-related statuses',
+    intro:
+      'Sometimes a parcel cannot be delivered as planned (the customer does not collect, wrong details, a return is requested and so on). These statuses cover that path.',
+    items: [
+      {
+        name: 'Returns',
+        meaning:
+          'A filter in the app that groups parcels in any return-related stage. Use it to see everything that is returning or has been returned, not just one status.',
+      },
+      {
+        name: 'To Be Returned',
+        meaning:
+          'The parcel has been marked for return and is waiting to move back through the ParcelGrid network. Collection did not complete as expected, and the return process has started.',
+      },
+      {
+        name: 'Return Initiated',
+        meaning:
+          'A return has been formally started for this parcel. It is entering the return flow and will be routed back according to ParcelGrid return rules.',
+      },
+      { name: 'In-Transit to HQ', meaning: "The returned parcel is travelling back toward ParcelGrid's head office or main return point." },
+      { name: 'Returned to HQ', meaning: 'The returned parcel has arrived at ParcelGrid head office.' },
+      {
+        name: 'Returned',
+        meaning:
+          'The return is complete. The parcel has been returned through the ParcelGrid process. Check the parcel details in the app for next steps or any related settlement notes.',
+      },
+    ],
+  },
+  {
+    title: 'Other statuses you may see',
+    items: [
+      {
+        name: 'Cancelled',
+        meaning:
+          'The parcel booking was cancelled and will not be delivered. There is no further movement. If you still need to send the item, create a new booking.',
+      },
+      {
+        name: 'Received at Origin',
+        meaning:
+          'The parcel has been logged at the origin station, at the start of the network. In most vendor views, the main label you will follow after drop-off is Received by ParcelGrid.',
+      },
+    ],
+  },
+];
+
+const TIPS = [
+  'Pending for too long usually means the shipping payment was not completed.',
+  'After booking, drop off promptly so the parcel leaves Awaiting Handover.',
+  'Tell customers when a parcel is Ready for Collection so it does not sit uncollected.',
+  'For COD, payment happens at the station when the customer collects, then the funds settle to your wallet.',
+  'Use the Returns filter to review all return cases in one place.',
+  "Enter the correct customer phone number. It's used for alerts and COD prompts.",
+  'For COD, put the exact amount the customer should pay.',
+  'Photos are optional, but add clear ones when you can.',
+  'Drop off parcels promptly so they leave Nairobi on time.',
+  'Share the tracking number or receipt with the customer right after booking.',
+  'Check fragile or spill-prone items with the station when you drop them off.',
+];
+
+const FAQS: FaqItem[] = [
+  {
+    id: 'free',
+    question: 'Is ParcelGrid free to join?',
+    answer: {
+      text: 'Yes. Download the app, register, and start sending. You pay shipping when you book. COD has a 1.8% handling fee on collected amounts.',
+    },
+  },
+  {
+    id: 'both',
+    question: 'Do you do both prepaid and COD?',
+    answer: { text: 'Yes. Choose per parcel when booking.' },
+  },
+  {
+    id: 'money',
+    question: 'When do I get COD money?',
+    answer: {
+      text: 'After the customer pays and collects, the amount (minus the handling fee) is credited to your ParcelGrid wallet.',
+    },
+  },
+  {
+    id: 'withdraw',
+    question: 'How do I withdraw?',
+    answer: { text: 'Open Wallet, tap Withdraw, enter your security PIN, then enter your M-Pesa number and the amount.' },
+  },
+  {
+    id: 'collect',
+    question: 'Where do customers collect?',
+    answer: {
+      text: 'At ParcelGrid pickup points in towns across Kenya. You pick the destination station when booking.',
+    },
+  },
+];
+
+const PAGE_TITLE = 'How to Use the ParcelGrid App | Vendor Guide';
+const PAGE_DESCRIPTION =
+  'A simple guide for online sellers: sign up, send parcels, track them, collect COD and withdraw your money to M-Pesa with the ParcelGrid app.';
+
+const PhoneShot: React.FC<{ item: Shot }> = ({ item }) => (
+  <figure className="mx-auto w-full max-w-[220px]">
+    <div className="overflow-hidden rounded-[1.6rem] border-[5px] border-[#0b1d18] bg-[#0b1d18] shadow-[0_18px_40px_-18px_rgba(0,0,0,0.5)]">
+      <img decoding="async"
+        src={item.file}
+        alt={`ParcelGrid app: ${item.caption}`}
+        width={540}
+        height={1212}
+        loading="lazy"
+        className="block h-auto w-full"
+      />
+    </div>
+    <figcaption className="mt-3 text-center text-xs font-medium text-[#5c6562]">{item.caption}</figcaption>
+  </figure>
+);
 
 const HowToUseAppPage: React.FC = () => {
   useScrollToTop();
 
-  // Structured Data for How To Guide
-  const howToStructuredData = {
+  const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
-    name: 'How to Use ParcelGrid App for COD Delivery',
-    description: 'Complete guide to using ParcelGrid mobile app for sending parcels with Cash on Delivery (COD) across Kenya',
-    step: [
-      {
-        '@type': 'HowToStep',
-        name: 'Download and Log In',
-        text: 'Download ParcelGrid from Google Play Store or App Store, sign up using your business phone number, and complete your business profile',
-        position: 1
-      },
-      {
-        '@type': 'HowToStep',
-        name: 'Create a New Booking',
-        text: 'Tap Send Parcel, enter receiver details, destination town, parcel description and choose between Prepaid or COD',
-        position: 2
-      },
-      {
-        '@type': 'HowToStep',
-        name: 'Select Drop-off Point',
-        text: 'Choose your preferred drop-off location in Nairobi - Moi Avenue or Taveta Road',
-        position: 3
-      },
-      {
-        '@type': 'HowToStep',
-        name: 'Attach Parcel Photos',
-        text: 'Take a clear photo of the parcel, upload it, and submit booking to receive tracking code',
-        position: 4
-      },
-      {
-        '@type': 'HowToStep',
-        name: 'Track Your Parcel',
-        text: 'Monitor your parcel status in real-time from Received to Delivered with instant notifications',
-        position: 5
-      },
-      {
-        '@type': 'HowToStep',
-        name: 'Receive Payment',
-        text: 'For COD parcels, get instant settlement to your ParcelGrid wallet minus 1.8% fee, withdraw to M-Pesa anytime',
-        position: 6
-      }
-    ]
+    name: 'How to use the ParcelGrid app',
+    description: PAGE_DESCRIPTION,
+    step: STEPS.map((s, i) => ({
+      '@type': 'HowToSection',
+      name: s.title,
+      position: i + 1,
+      itemListElement: s.steps.map((text, j) => ({ '@type': 'HowToStep', position: j + 1, text })),
+    })),
   };
 
-  const steps = [
-    {
-      id: 1,
-      title: "Download and Log In",
-      icon: Download,
-      color: "from-blue-500 to-blue-600",
-      items: [
-        "Download ParcelGrid from Google Play Store or App Store",
-        "Sign up using your business phone number",
-        "Allow location access for accurate pickup and delivery mapping",
-        "Complete your business profile to access the app dashboard"
-      ]
-    },
-    {
-      id: 2,
-      title: "Create a New Booking",
-      icon: Package,
-      color: "from-green-500 to-green-600",
-      items: [
-        "Tap 'Send Parcel' on your home screen",
-        "Enter receiver's name and phone number",
-        "Add destination town, parcel description and weight",
-        "Choose between Prepaid Delivery or Cash on Delivery (COD)"
-      ]
-    },
-    {
-      id: 3,
-      title: "Select Drop-off Point",
-      icon: MapPin,
-      color: "from-purple-500 to-purple-600",
-      items: [
-        "Choose your preferred drop-off location in Nairobi",
-        "Iconic Business Plaza, Moi Avenue",
-        "Jitihada Shopping Complex, Taveta Road",
-        "Drop off your parcel at the selected point after confirming"
-      ]
-    },
-    {
-      id: 4,
-      title: "Attach Parcel Photos",
-      icon: Camera,
-      color: "from-orange-500 to-orange-600",
-      items: [
-        "Take a clear live photo of the parcel before submission",
-        "Upload photo and tap Submit Booking",
-        "Receive Parcel ID and tracking code instantly",
-        "Share receipt with customer via WhatsApp"
-      ]
-    },
-    {
-      id: 5,
-      title: "Track Your Parcel",
-      icon: Search,
-      color: "from-indigo-500 to-indigo-600",
-      items: [
-        "Go to 'My Parcels' to monitor live updates",
-        "Received → In Transit → Ready for Pickup → Delivered",
-        "COD parcels: Payment Pending → Paid → Settled",
-        "Receive notifications at every stage"
-      ]
-    },
-    {
-      id: 6,
-      title: "Cash on Delivery (COD)",
-      icon: DollarSign,
-      color: "from-yellow-500 to-yellow-600",
-      items: [
-        "Customer receives automatic M-Pesa payment prompt on collection",
-        "Status changes to COD Paid after payment",
-        "Your amount (minus 1.8% fee) credited to ParcelGrid Wallet",
-        "Withdraw directly to your M-Pesa anytime"
-      ]
-    },
-    {
-      id: 7,
-      title: "Prepaid Parcels",
-      icon: CreditCard,
-      color: "from-teal-500 to-teal-600",
-      items: [
-        "Customer simply picks up parcel - no payment required",
-        "Customer shows release code sent to their phone",
-        "Track collection status in real time",
-        "No additional steps needed for prepaid deliveries"
-      ]
-    },
-    {
-      id: 8,
-      title: "Wallet and Reports",
-      icon: BarChart3,
-      color: "from-pink-500 to-pink-600",
-      items: [
-        "Tap Wallet to view COD settlements and referral bonuses",
-        "Weekly summaries available in PDF format",
-        "Real-time earnings tracking",
-        "Instant M-Pesa withdrawals"
-      ]
-    },
-    {
-      id: 9,
-      title: "Support and Help",
-      icon: HelpCircle,
-      color: "from-red-500 to-red-600",
-      items: [
-        "Tap Help/Support from app menu for questions",
-        "Chat directly with our support team",
-        "24/7 assistance for delivery delays",
-        "Comprehensive FAQ section available"
-      ]
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="min-h-screen bg-white text-[#222222]">
       <Helmet>
-        {/* Primary Meta Tags */}
-        <title>How to Use Our E-Commerce Courier App | ParcelGrid</title>
-        <meta name="title" content="How to Use Our E-Commerce Courier App | ParcelGrid" />
-        <meta name="description" content="Master the ParcelGrid mobile app in minutes. Learn how to book shipments, manage COD payouts, track items, and set up your vendor wallet profile." />
-        <meta name="keywords" content="ParcelGrid app guide, how to use ParcelGrid, COD delivery tutorial, parcel booking guide, track delivery Kenya, instant settlement guide, online vendor app Kenya, ParcelGrid tutorial" />
-        <meta name="robots" content="index, follow" />
-        
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="article" />
-        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
-        <meta property="og:title" content="How to Use ParcelGrid App - Complete Vendor Guide" />
-        <meta property="og:description" content="Master ParcelGrid in minutes. Book parcels, track deliveries, manage COD payments, and get instant settlements." />
-        <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
-        
-        {/* Twitter */}
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
-        <meta property="twitter:title" content="How to Use ParcelGrid App - Complete Vendor Guide" />
-        <meta property="twitter:description" content="Master ParcelGrid in minutes. Book parcels, track deliveries, and get instant COD settlements." />
-        <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
-        
-        {/* Canonical URL */}
+        <title>{PAGE_TITLE}</title>
+        <meta name="title" content={PAGE_TITLE} />
+        <meta name="description" content={PAGE_DESCRIPTION} />
+        <meta name="keywords" content="how to use ParcelGrid app, send parcel Kenya app, COD courier app, vendor guide, withdraw to M-Pesa" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={PAGE_TITLE} />
+        <meta property="og:description" content={PAGE_DESCRIPTION} />
+        <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/app-screens/01-home.webp` : ''} />
         <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/how-to-use-app` : ''} />
-        
-        {/* Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify(howToStructuredData)}
-        </script>
       </Helmet>
+      <JsonLd data={structuredData} />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden min-h-[48vh] sm:min-h-[56vh] lg:min-h-[64vh]">
+      {/* Hero */}
+      <section className="relative -mt-24 overflow-hidden bg-[#071410]">
         <div
-          className="absolute inset-0 bg-cover bg-no-repeat"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=2070)',
-            backgroundPosition: 'center center',
-            backgroundSize: 'cover',
-          }}
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
+          aria-hidden
         />
-
-        <div className="absolute inset-0 bg-black/40"></div>
-
-        <div className="relative z-10 text-[#E9FF15] pt-20 pb-12 sm:pt-24 sm:pb-16 md:pt-28 md:pb-20 lg:pt-32 lg:pb-28 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
+        <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-28 text-center sm:px-8 sm:pb-16 sm:pt-32">
+          <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">Vendor Guide</p>
+          <h1 className="mt-4 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">
             How to Use the ParcelGrid App
           </h1>
-          <p className="text-lg sm:text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto leading-relaxed px-2 sm:px-0">
-            Complete guide for vendors to master ParcelGrid — from booking to delivery tracking
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
+            A simple guide for online sellers, from signing up to sending parcels, collecting COD, and withdrawing your money.
           </p>
+          <div className="mt-7 flex flex-wrap justify-center gap-2">
+            <a
+              href={PLAY_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#E9FF15] px-5 text-sm font-semibold text-[#00473E] hover:bg-[#d4e614]"
+            >
+              Get it on Google Play <ArrowUpRight className="size-4" aria-hidden />
+            </a>
+            <a
+              href={APP_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 px-5 text-sm font-semibold text-white hover:bg-white/10"
+            >
+              Download on the App Store <ArrowUpRight className="size-4" aria-hidden />
+            </a>
+          </div>
         </div>
       </section>
 
-
-      {/* Main Content */}
-      <section id="steps-section" className="py-16 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Section Header */}
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Master ParcelGrid in 9 Simple Steps
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From downloading the app to managing your earnings - everything you need to know
+      {/* Intro + contents */}
+      <section className="border-b border-black/[0.06] bg-[#f7f8f6] py-10 sm:py-14">
+        <div className="mx-auto grid max-w-6xl gap-8 px-5 sm:px-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+          <div>
+            <p className="text-base leading-relaxed text-[#3d4542] sm:text-lg">
+              ParcelGrid helps you deliver prepaid and Cash on Delivery (COD) orders to pickup points across Kenya. Use the app to book parcels, track them live, get paid into your wallet, and withdraw to M-Pesa.
+            </p>
+            <p className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-[#3d4542]">
+              <a href="tel:+254745111555" className="inline-flex items-center gap-1.5 font-semibold text-[#00473E] hover:underline">
+                <Phone className="size-4" aria-hidden /> 0745 111 555
+              </a>
+              <a href="tel:+254794333888" className="inline-flex items-center gap-1.5 font-semibold text-[#00473E] hover:underline">
+                <Phone className="size-4" aria-hidden /> 0794 333 888
+              </a>
+              <a href="mailto:info@escrowcourier.com" className="inline-flex items-center gap-1.5 font-semibold text-[#00473E] hover:underline">
+                <Mail className="size-4" aria-hidden /> info@escrowcourier.com
+              </a>
             </p>
           </div>
+          <nav aria-label="Guide contents" className="rounded-2xl border border-black/10 bg-white p-5">
+            <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">In this guide</p>
+            <ol className="mt-3 grid gap-1.5 text-sm sm:grid-cols-2">
+              {STEPS.map((s, i) => (
+                <li key={s.id}>
+                  <a href={`#${s.id}`} className="inline-flex min-h-11 items-center text-[#3d4542] hover:text-[#00473E] hover:underline">
+                    {i + 1}. {s.title}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </div>
+      </section>
 
-          {/* Video Tutorial Section */}
-          <div className="mb-16">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-[#00473E] to-[#006644] px-8 py-6 text-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z"/>
-                    </svg>
+      {/* Steps */}
+      <div>
+        {STEPS.map((s, i) => {
+          const shots = s.shots ?? [];
+          const wide = shots.length > 2;
+          const ListTag = s.ordered ? 'ol' : 'ul';
+          return (
+            <section
+              key={s.id}
+              id={s.id}
+              aria-labelledby={`${s.id}-title`}
+              className={`scroll-mt-24 py-12 sm:py-16 ${i % 2 === 0 ? 'bg-white' : 'bg-[#f7f8f6]'}`}
+            >
+              <div className="mx-auto max-w-6xl px-5 sm:px-8">
+                <div
+                  className={`grid gap-10 ${
+                    !wide && shots.length > 0 ? 'lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-center lg:gap-14' : ''
+                  }`}
+                >
+                  <div className="max-w-2xl">
+                    <span className="inline-flex size-9 items-center justify-center rounded-full bg-[#E9FF15] font-[Sora] text-sm font-semibold text-[#00473E]">
+                      {i + 1}
+                    </span>
+                    <h2
+                      id={`${s.id}-title`}
+                      className="mt-3 font-[Sora] text-2xl font-semibold tracking-[-0.03em] text-[#111] sm:text-3xl"
+                    >
+                      {s.title}
+                    </h2>
+                    {s.intro && <p className="mt-3 text-base leading-relaxed text-[#5c6562]">{s.intro}</p>}
+                    <ListTag
+                      className={`mt-4 space-y-2.5 pl-5 text-[15px] leading-relaxed text-[#3d4542] marker:font-semibold marker:text-[#00473E] ${
+                        s.ordered ? 'list-decimal' : 'list-disc'
+                      }`}
+                    >
+                      {s.steps.map((line) => (
+                        <li key={line} className="pl-1">
+                          {line}
+                        </li>
+                      ))}
+                    </ListTag>
+                    {s.tip && (
+                      <p className="mt-5 flex items-start gap-2.5 rounded-xl border border-[#00473E]/15 bg-[#00473E]/[0.05] px-4 py-3 text-sm text-[#3d4542]">
+                        <Lightbulb className="mt-0.5 size-4 shrink-0 text-[#00473E]" aria-hidden />
+                        <span>
+                          <span className="font-semibold text-[#00473E]">Tip: </span>
+                          {s.tip}
+                        </span>
+                      </p>
+                    )}
                   </div>
-                  <div>
-                    <h3 className="text-2xl font-bold">Video Tutorial</h3>
-                    <p className="text-green-200">Watch how to use ParcelGrid step by step</p>
-                  </div>
+
+                  {shots.length > 0 && (
+                    <div
+                      className={`grid gap-6 ${
+                        wide ? 'grid-cols-2 sm:grid-cols-3' : shots.length === 2 ? 'grid-cols-2' : 'grid-cols-1'
+                      }`}
+                    >
+                      {shots.map((item) => (
+                        <PhoneShot key={item.file} item={item} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-              
-              <div className="p-8">
-                <div className="aspect-video bg-gray-100 rounded-xl overflow-hidden">
-                  <iframe
-                    src="https://drive.google.com/file/d/1-L50wpyK2mI9Gxe6q23CWUGkFx_4L2OS/preview?t=29"
-                    className="w-full h-full"
-                    allowFullScreen
-                    title="ParcelGrid App Tutorial"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+            </section>
+          );
+        })}
+      </div>
 
-          {/* Steps Grid */}
-          <div className="grid gap-8 md:gap-12">
-            {steps.map((step, index) => (
-              <div key={step.id} className="relative">
-                
-                {/* Connector Line */}
-                {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute left-8 top-20 w-0.5 h-16 bg-gradient-to-b from-[#00473E] to-gray-300 z-0"></div>
-                )}
-
-                <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative z-10">
-                  <div className="md:flex">
-                    
-                    {/* Left side - Step Info */}
-                    <div className="md:w-1/3 bg-gradient-to-br from-[#00473E] to-[#006644] p-8 text-white">
-                      <div className="flex items-start gap-4">
-                        <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
-                          <step.icon className="w-8 h-8" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-sm text-green-200 mb-1">Step {step.id}</div>
-                          <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                          <div className="w-12 h-1 bg-[#E9FF15] rounded-full"></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right side - Step Details */}
-                    <div className="md:w-2/3 p-8">
-                      <div className="space-y-4">
-                        {step.items.map((item, itemIndex) => (
-                          <div key={itemIndex} className="group flex items-start gap-4">
-                            <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-[#00473E] flex items-center justify-center flex-shrink-0 transition-colors duration-200">
-                              <span className="text-sm font-semibold text-gray-600 group-hover:text-white transition-colors duration-200">
-                                {itemIndex + 1}
-                              </span>
-                            </div>
-                            <div className="flex-1 pt-1">
-                              <p className="text-gray-700 group-hover:text-gray-900 transition-colors duration-200 leading-relaxed">
-                                {item}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
+      {/* Status guide */}
+      <section id="statuses" className="scroll-mt-24 bg-white py-14 sm:py-20" aria-labelledby="status-guide-title">
+        <div className="mx-auto max-w-6xl px-5 sm:px-8">
+          <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">What each status means</p>
+          <h2
+            id="status-guide-title"
+            className="mt-3 font-[Sora] text-2xl font-semibold tracking-[-0.03em] text-[#111] sm:text-3xl"
+          >
+            Parcel status guide
+          </h2>
+          <div className="mt-10 space-y-12">
+            {STATUS_GUIDE.map((group) => (
+              <div key={group.title}>
+                <h3 className="font-[Sora] text-lg font-semibold text-[#111]">{group.title}</h3>
+                {group.intro && <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#5c6562]">{group.intro}</p>}
+                <ul className="mt-5 grid gap-4 md:grid-cols-2">
+                  {group.items.map((item) => (
+                    <li key={item.name} className="rounded-2xl border border-black/10 bg-[#f7f8f6] p-5">
+                      <span className="inline-flex rounded-full bg-[#E9FF15] px-3 py-1 text-xs font-semibold text-[#00473E]">
+                        {item.name}
+                      </span>
+                      <p className="mt-3 text-sm leading-relaxed text-[#3d4542]">{item.meaning}</p>
+                      {item.action && (
+                        <p className="mt-2 text-sm leading-relaxed text-[#3d4542]">
+                          <span className="font-semibold text-[#00473E]">What to do: </span>
+                          {item.action}
+                        </p>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
-
         </div>
       </section>
 
-      <DownloadCTA />
+      {/* Tips */}
+      <section className="bg-[#071410] py-14 text-white sm:py-20">
+        <div className="mx-auto max-w-6xl px-5 sm:px-8">
+          <p className="text-xs font-semibold tracking-[0.16em] text-[#E9FF15]">Smoother deliveries</p>
+          <h2 className="mt-3 font-[Sora] text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">Quick tips</h2>
+          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {TIPS.map((tip) => (
+              <li key={tip} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm leading-relaxed text-white/85">
+                {tip}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="bg-[#f7f8f6] py-14 sm:py-20" aria-labelledby="howto-faq-title">
+        <div className="mx-auto grid max-w-6xl gap-10 px-5 sm:px-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-16">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">Quick answers</p>
+            <h2 id="howto-faq-title" className="mt-3 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-[#111] sm:text-4xl">
+              Common questions
+            </h2>
+            <Link
+              to="/faq"
+              className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-[#00473E] px-5 text-sm font-semibold text-white hover:bg-[#005d4f]"
+            >
+              View all FAQs <ArrowUpRight className="size-4" aria-hidden />
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {FAQS.map((item, i) => (
+              <FaqAccordionItem key={item.id} item={item} defaultOpen={i === 0} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section className="bg-white py-14 text-center sm:py-20">
+        <div className="mx-auto max-w-3xl px-5 sm:px-8">
+          <h2 className="font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-[#111] sm:text-4xl">
+            Ready to deliver beyond Nairobi?
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-[#5c6562]">
+            Download ParcelGrid, book your first parcel, and grow with prepaid and COD deliveries across Kenya.
+          </p>
+          <div className="mt-7 flex flex-wrap justify-center gap-2">
+            <a
+              href={PLAY_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#00473E] px-6 text-sm font-semibold text-white hover:bg-[#005d4f]"
+            >
+              Get it on Google Play <ArrowUpRight className="size-4" aria-hidden />
+            </a>
+            <a
+              href={APP_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#00473E]/25 px-6 text-sm font-semibold text-[#00473E] hover:bg-[#00473E]/5"
+            >
+              Download on the App Store <ArrowUpRight className="size-4" aria-hidden />
+            </a>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

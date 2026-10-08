@@ -49,7 +49,7 @@ const slides: FeatureSlide[] = [
 
 // Visual components for each slide
 const KenyaMapVisual = () => (
-  <img
+  <img decoding="async" loading="lazy"
     src="/map.png"
     alt="ParcelGrid coverage map showing pickup points and delivery routes across Kenya"
     width="600"
@@ -59,7 +59,7 @@ const KenyaMapVisual = () => (
 )
 
 const LicenseVisual = () => (
-  <img
+  <img decoding="async" loading="lazy"
     src="/Certificate.jpeg"
     alt="Official courier licensing certificate from the Communications Authority of Kenya (CA) for Escrow Courier Services"
     width="600"
@@ -69,7 +69,7 @@ const LicenseVisual = () => (
 )
 
 const WalletVisual = () => (
-    <img
+    <img decoding="async" loading="lazy"
       src="/withdrawal.png"
       alt="ParcelGrid vendor digital wallet interface displaying instant COD payment withdrawals"
       width="600"
@@ -79,7 +79,7 @@ const WalletVisual = () => (
 )
 
 const GrowthChartVisual = () => (
-    <img
+    <img decoding="async" loading="lazy"
       src="/Realgrowth.jpeg"
       alt="Infographic showing business sales growth of online vendors using ParcelGrid courier service in Kenya"
       width="600"
@@ -89,7 +89,7 @@ const GrowthChartVisual = () => (
 )
 
 const VendorShopVisual = () => (
-    <img
+    <img decoding="async" loading="lazy"
       src="/Onlinevendor.jpeg"
       alt="An online business owner in Kenya managing order shipments using the ParcelGrid app"
       width="600"
@@ -99,7 +99,7 @@ const VendorShopVisual = () => (
 )
 
 const NotificationsVisual = () => (
-  <img
+  <img decoding="async" loading="lazy"
     src="/Notification.png"
     alt="Smart notifications showing delivery tracking updates on a mobile phone"
     width="600"

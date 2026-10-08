@@ -1,126 +1,154 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import Footer from '../components/Footer';
-import DownloadCTA from '../components/DownloadCTA';
-import { useScrollToTop } from '../hooks/useScrollToTop';
 import { Link } from 'react-router-dom';
+import { ArrowRight, Clock, MapPin, MessageCircle, Phone } from 'lucide-react';
+import Footer from '../components/Footer';
+import { useScrollToTop } from '../hooks/useScrollToTop';
+import { CAREER_VALUES, JOBS } from '../lib/careers';
+
+const PAGE_TITLE = 'Careers at ParcelGrid | Courier Jobs in Nairobi, Kenya';
+const PAGE_DESCRIPTION =
+  'Build the future of logistics in Kenya. Explore open roles at ParcelGrid, a licensed courier network growing fast across 300+ towns.';
 
 const CareersPage: React.FC = () => {
   useScrollToTop();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-[#222222]">
       <Helmet>
-        <title>Join Our Courier Service Team in Kenya | ParcelGrid</title>
-        <meta name="title" content="Join Our Courier Service Team in Kenya | ParcelGrid" />
-        <meta name="description" content="Build the future of logistics. Explore open job opportunities, internships, and career roles at ParcelGrid. Join a fast-growing Kenyan e-commerce partner." />
-        <meta name="keywords" content="logistics careers, parcelgrid jobs, escrow courier hiring, logistics officer, customer relations job Nairobi, courier jobs Kenya" />
+        <title>{PAGE_TITLE}</title>
+        <meta name="title" content={PAGE_TITLE} />
+        <meta name="description" content={PAGE_DESCRIPTION} />
+        <meta name="keywords" content="ParcelGrid careers, courier jobs Nairobi, logistics jobs Kenya, vendor growth officer, customer relations job" />
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Careers at ParcelGrid - Build the Future of Logistics" />
-        <meta property="og:description" content="Build the future of logistics. Explore open job opportunities, internships, and career roles at ParcelGrid. Join a fast-growing team." />
+        <meta property="og:title" content={PAGE_TITLE} />
+        <meta property="og:description" content={PAGE_DESCRIPTION} />
         <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/careers` : ''} />
       </Helmet>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden" style={{ backgroundColor: '#f0e6e0' }}>
-        {/* Background image — right half, fading into the cream bg */}
+      {/* Hero */}
+      <section className="relative -mt-24 overflow-hidden bg-[#071410]">
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=80)',
-            backgroundPosition: 'center right',
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            maskImage: 'linear-gradient(to right, transparent 25%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.85) 100%)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent 25%, rgba(0,0,0,0.55) 50%, rgba(0,0,0,0.85) 100%)',
-          }}
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
+          aria-hidden
         />
-        {/* Colour tint over the image to keep the warm cream tone */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'linear-gradient(to right, #f0e6e0 25%, rgba(240,190,170,0.30) 55%, rgba(210,140,120,0.15) 100%)',
-          }}
-        />
-
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16 sm:pt-36 sm:pb-20">
-          <span className="inline-block border border-gray-800 text-gray-800 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-            We're hiring!
+        <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-28 text-center sm:px-8 sm:pb-16 sm:pt-32">
+          <span className="inline-flex rounded-full border border-[#E9FF15]/40 px-4 py-1.5 text-xs font-semibold tracking-[0.14em] text-[#E9FF15]">
+            We&apos;re hiring
           </span>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-5 leading-tight">
+          <h1 className="mt-5 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">
             Be part of our mission
           </h1>
-          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl leading-relaxed">
-            We're looking for passionate people to join us on our mission. We value
-            flat hierarchies, clear communication, and full ownership and responsibility.
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
+            We&apos;re looking for passionate people to join us on our mission. We value flat hierarchies, clear communication, and full ownership and responsibility.
           </p>
-        </div>
-      </section>
-
-      {/* Job Listings */}
-      <section className="py-12 sm:py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h4 className="text-xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-8 sm:mb-10">
-            All Open Positions
-          </h4>
-
-          <div className="divide-y divide-gray-200">
-            {/* Vendor Growth Officer */}
-            <div className="py-8 border-t border-b border-gray-200 flex flex-col gap-4">
-              <div className="flex-1">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
-                  <Link
-                    to="/careers/vendor-growth-officer"
-                    className="hover:text-[#00473E] transition-colors duration-150"
-                  >
-                    Vendor Growth and Customer Relations Officer
-                  </Link>
-                </h3>
-                <p className="text-gray-500 mb-4 leading-relaxed max-w-2xl">
-                  Help ParcelGrid grow its vendor base across Kenya. You will cold-call prospects, visit shops,
-                  onboard new vendors, train them on our services, and create social media content to drive sign-ups.
-                </p>
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                  <div className="flex flex-wrap gap-2">
-                    <span className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm px-3 py-1 rounded-full">
-                      <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      Nairobi
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-600 text-sm px-3 py-1 rounded-full">
-                      <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Full-time
-                    </span>
-                  </div>
-                  <div className="flex sm:items-center gap-3 pt-1 sm:pt-0 flex-col sm:flex-row justify-center sm:justify-end">
-                    <Link
-                      to="/careers/vendor-growth-officer"
-                      className="sm:hidden flex justify-center items-center gap-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors duration-150"
-                    >
-                      More Details
-                    </Link>
-                    <Link
-                      to="/careers/vendor-growth-officer"
-                      className="hidden sm:inline-flex items-center gap-1 text-gray-900 font-semibold text-lg hover:text-[#00473E] transition-colors duration-150 shrink-0"
-                    >
-                      Apply
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="mt-7 flex justify-center">
+            <a
+              href="#open-roles"
+              className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#E9FF15] px-6 text-sm font-semibold text-[#00473E] transition-colors hover:bg-[#d4e614]"
+            >
+              See open roles <ArrowRight className="size-4" aria-hidden />
+            </a>
           </div>
         </div>
       </section>
 
-      <DownloadCTA />
+      {/* Values */}
+      <section className="border-b border-black/[0.06] bg-[#f7f8f6] py-12 sm:py-16" aria-labelledby="values-title">
+        <div className="mx-auto max-w-6xl px-5 sm:px-8">
+          <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">How we work</p>
+          <h2 id="values-title" className="mt-3 font-[Sora] text-2xl font-semibold tracking-[-0.03em] text-[#111] sm:text-3xl">
+            What we value
+          </h2>
+          <ul className="mt-8 grid gap-4 md:grid-cols-3">
+            {CAREER_VALUES.map((v, i) => (
+              <li key={v.title} className="rounded-2xl border border-black/10 bg-white p-5 sm:p-6">
+                <span className="flex size-9 items-center justify-center rounded-full bg-[#E9FF15] font-[Sora] text-sm font-semibold text-[#00473E]">
+                  {i + 1}
+                </span>
+                <p className="mt-4 font-[Sora] text-lg font-semibold text-[#111]">{v.title}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-[#5c6562]">{v.body}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Open roles */}
+      <section id="open-roles" className="scroll-mt-24 py-14 sm:py-20" aria-labelledby="roles-title">
+        <div className="mx-auto max-w-6xl px-5 sm:px-8">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">Join the team</p>
+              <h2 id="roles-title" className="mt-3 font-[Sora] text-2xl font-semibold tracking-[-0.03em] text-[#111] sm:text-3xl">
+                All open positions
+              </h2>
+            </div>
+            <p className="text-sm text-[#5c6562]">
+              {JOBS.length} open {JOBS.length === 1 ? 'role' : 'roles'}
+            </p>
+          </div>
+
+          <ul className="mt-8 space-y-4">
+            {JOBS.map((job) => (
+              <li key={job.slug}>
+                <Link
+                  to={`/careers/${job.slug}`}
+                  className="group block rounded-2xl border border-black/10 bg-white p-5 transition-colors hover:border-[#00473E]/40 sm:p-7"
+                >
+                  <div className="flex flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E9FF15] px-3 py-1 text-xs font-semibold text-[#00473E]">
+                      <MapPin className="size-3.5" aria-hidden /> {job.location}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E9FF15] px-3 py-1 text-xs font-semibold text-[#00473E]">
+                      <Clock className="size-3.5" aria-hidden /> {job.type}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 font-[Sora] text-xl font-semibold tracking-[-0.02em] text-[#111] group-hover:text-[#00473E] sm:text-2xl">
+                    {job.title}
+                  </h3>
+                  <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#5c6562] sm:text-base">{job.summary}</p>
+                  <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-[#00473E]">{job.salary}</p>
+                    <span className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#00473E] px-5 text-sm font-semibold text-white transition-colors group-hover:bg-[#005d4f]">
+                      View role and apply <ArrowRight className="size-4" aria-hidden />
+                    </span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section className="bg-[#071410] py-14 text-white sm:py-20">
+        <div className="mx-auto max-w-3xl px-5 text-center sm:px-8">
+          <h2 className="font-[Sora] text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">
+            Questions about working at ParcelGrid?
+          </h2>
+          <p className="mt-3 text-base leading-relaxed text-white/70">
+            Talk to our team and we will point you in the right direction.
+          </p>
+          <div className="mt-7 flex flex-wrap justify-center gap-2">
+            <a
+              href="https://wa.me/254745111555"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#E9FF15] px-6 text-sm font-semibold text-[#00473E] hover:bg-[#d4e614]"
+            >
+              <MessageCircle className="size-4" aria-hidden /> WhatsApp 0745 111 555
+            </a>
+            <a
+              href="tel:+254794333888"
+              className="inline-flex min-h-12 items-center gap-2 rounded-full border border-white/25 px-6 text-sm font-semibold text-white hover:bg-white/10"
+            >
+              <Phone className="size-4" aria-hidden /> Call 0794 333 888
+            </a>
+          </div>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

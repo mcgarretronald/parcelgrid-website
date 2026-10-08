@@ -1,84 +1,73 @@
-export default async function handler(req, res) {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
-  
-  console.log('Booking agent orders handler called with method:', req.method);
-  console.log('Request URL:', req.url);
-  
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return res.status(200).json({});
-  }
+/**
+ * Proxy website prepaid bookings to website-backend (avoids browser CORS).
+ * Upstream: POST /website-backend-services/api/booking-agent-orders
+ */
+const AUTH_URL = 'https://app.escrowcourier.com/website-backend-services/api/auth/token';
+const ORDERS_URL =
+  'https://app.escrowcourier.com/website-backend-services/api/booking-agent-orders';
 
-  // Only allow POST requests
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Authorization, Content-Type, X-Booking-Source',
+  );
+
+  if (req.method === 'OPTIONS') return res.status(200).json({});
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ success: false, error: 'METHOD_NOT_ALLOWED' });
   }
 
   try {
-    // Fetch the auth token from the backend server
-    let authToken = '';
-    
-    try {
-      console.log('Fetching auth token from backend server...');
-      const authResponse = await fetch('https://app.escrowcourier.com/website-backend-services/api/auth/token', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (authResponse.ok) {
-        const authData = await authResponse.json();
-        authToken = authData.token || authData.access_token || authData.bearer_token || authData.data?.token;
-        console.log('Auth token fetched successfully from backend');
-      } else {
-        console.error('Failed to fetch auth token from backend:', authResponse.status);
-      }
-    } catch (authError) {
-      console.error('Error fetching auth token from backend:', authError.message);
+    const tokenRes = await fetch(AUTH_URL, { headers: { Accept: 'application/json' } });
+    if (!tokenRes.ok) {
+      return res.status(502).json({ success: false, error: 'AUTH_FAILED' });
     }
-    
-    const apiUrl = 'https://app.escrowcourier.com/website-backend-services/api/bookingAgentOrders';
-    console.log('Making request to:', apiUrl);
-    console.log('Request body:', JSON.stringify(req.body, null, 2));
-    
-    const headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'Authorization': authToken ? `Bearer ${authToken}` : '',
-    };
-    
-    const response = await fetch(apiUrl, {
+    const tokenData = await tokenRes.json();
+    const token =
+      tokenData.token ||
+      tokenData.access_token ||
+      tokenData.bearer_token ||
+      tokenData.data?.token;
+    if (!token) {
+      return res.status(502).json({ success: false, error: 'AUTH_FAILED' });
+    }
+
+    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
+
+    const upstream = await fetch(ORDERS_URL, {
       method: 'POST',
-      headers,
-      body: JSON.stringify(req.body),
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+        'X-Booking-Source': 'website',
+      },
+      body: JSON.stringify({
+        ...body,
+        bookingSource: 'website',
+        fromWebsite: true,
+      }),
     });
-    
-    console.log('Response status:', response.status);
-    
-    if (!response.ok) {
-      console.error('API Error:', response.status, response.statusText);
-      const errorText = await response.text();
-      console.error('Error response:', errorText);
-      return res.status(response.status).json({ 
-        error: 'Failed to create booking agent order',
-        status: response.status,
-        details: errorText
+
+    const text = await upstream.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      return res.status(502).json({
+        success: false,
+        error: 'BAD_UPSTREAM',
+        details: text?.slice?.(0, 500) || text,
       });
     }
-    
-    const data = await response.json();
-    console.log('Successfully created order:', data);
-    return res.status(200).json(data);
-    
+    return res.status(upstream.status).json(data);
   } catch (error) {
-    console.error('Handler error:', error);
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message 
+    return res.status(500).json({
+      success: false,
+      error: 'PROXY_ERROR',
+      message: error?.message || 'Failed to create booking',
     });
   }
 }

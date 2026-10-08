@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './HeroCarousel.css';
-import parcelsImage from '../assets/Parcels.png';
+import parcelsImage from '../assets/parcels.webp';
 
 interface HeroSlide {
   id: number;

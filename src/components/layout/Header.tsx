@@ -1,397 +1,311 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '../ui/button';
-import {
-  Menu,
-  X,
-} from "lucide-react";
-import { APP_STORE_URL } from '../../lib/storeLinks';
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { ArrowUpRight, ChevronDown, Menu, Truck, Wallet, X } from "lucide-react";
 
-interface SidebarItem {
-  name: string;
-  href: string;
-  hasDropdown?: boolean;
-  subItems?: { name: string; href: string }[];
+type ServiceLink = { name: string; href: string; description: string; icon: typeof Truck };
+type NavLink = { name: string; href: string; children?: ServiceLink[] };
+
+const services: ServiceLink[] = [
+  {
+    name: "Upcountry Delivery",
+    href: "/services/upcountry-parcel-delivery",
+    description: "Next-day parcels from Nairobi to 300+ towns",
+    icon: Truck,
+  },
+  {
+    name: "Pay on Delivery (COD)",
+    href: "/services/pay-on-delivery-courier-kenya",
+    description: "Buyers pay by M-Pesa, you get paid instantly",
+    icon: Wallet,
+  },
+];
+
+const links: NavLink[] = [
+  { name: "Home", href: "/" },
+  { name: "Services", href: "/services", children: services },
+  { name: "Stations", href: "/pickup-points" },
+  { name: "Pricing", href: "/pricing" },
+  { name: "Track Parcel", href: "/track" },
+  { name: "About", href: "/about" },
+  { name: "Contact", href: "/contact" },
+];
+
+const LEFT_NAMES = ["Home", "Services", "Stations", "Pricing"];
+const LEFT_LINKS = links.filter((l) => LEFT_NAMES.includes(l.name));
+const RIGHT_LINKS = links.filter((l) => !LEFT_NAMES.includes(l.name));
+
+const supportLinks = [
+  { name: "FAQ", href: "/faq" },
+  { name: "How to use the app", href: "/how-to-use-app" },
+];
+
+function isCurrent(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  if (href === "/services") return pathname.startsWith("/services/");
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-const Header: React.FC<{ transparent?: boolean }> = ({ transparent = false }) => {
-  // theme removed - site uses a single appearance
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const Header = ({ transparent = false }: { transparent?: boolean }) => {
+  const { pathname } = useLocation();
+  const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [opportunitiesOpen, setOpportunitiesOpen] = useState(false);
-  const navigate = useNavigate();
+  const [servicesOpen, setServicesOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => {
-      const scrollY = window.scrollY;
-      setScrolled(scrollY > 40);
-    };
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // theme toggle removed
+  useEffect(() => {
+    setMenuOpen(false);
+    setServicesOpen(false);
+  }, [pathname]);
 
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        setServicesOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
-  // Original main navigation items
-  const mainNavItems = [
-    { name: 'Home', href: '/' },
-    { name: 'Track Parcel', href: '/track' },
-    { name: 'FAQ', href: '/faq' },
-    { name: 'About', href: '/about' },
-    { name: 'Careers', href: '/careers' },
-    { name: 'Contact Us', href: '/contact' },
-  ];
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
 
-  // New items to be moved to sidebar
-  const sidebarItems: SidebarItem[] = [
-    { name: 'Track Your Parcel', href: '/track' },
-    { name: 'How to Use the App', href: '/how-to-use-app' },
-    { 
-      name: 'Opportunities', 
-      href: '/opportunities',
-      hasDropdown: true,
-      subItems: [
-        { name: 'Apply to Become a Pickup Agent', href: '/pickup-agent' },
-        { name: 'Apply to Become a Booking Agent', href: '/booking-agent' },
-      ]
-    },
-    { name: 'Our Pickup Points List', href: '/#pickup-points' },
-  ];
+  const renderDesktopItem = (item: NavLink) => {
+          const current = isCurrent(pathname, item.href);
+          if (item.children) {
+            return (
+              <div
+                key={item.href}
+                className="relative"
+                onMouseEnter={() => setServicesOpen(true)}
+                onMouseLeave={() => setServicesOpen(false)}
+                onBlur={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setServicesOpen(false);
+                }}
+              >
+                <button
+                  type="button"
+                  aria-haspopup="menu"
+                  aria-expanded={servicesOpen}
+                  onClick={() => setServicesOpen((open) => !open)}
+                  className={`relative inline-flex items-center gap-1 py-1 text-sm font-medium transition-colors ${
+                    current || servicesOpen ? "text-white" : "text-white/65 hover:text-white"
+                  }`}
+                >
+                  {item.name}
+                  <ChevronDown className={`h-3.5 w-3.5 transition-transform ${servicesOpen ? "rotate-180" : ""}`} aria-hidden />
+                  <span
+                    className={`absolute -bottom-1 left-0 h-px bg-white transition-all duration-300 ${
+                      current ? "w-full" : "w-0"
+                    }`}
+                  />
+                </button>
+                {servicesOpen && (
+                  <div className="absolute -left-4 top-full z-10 w-[22rem] pt-4">
+                    <div className="absolute left-10 top-2.5 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-white/15 bg-[#0b1d18]" aria-hidden />
+                    <ul
+                      role="menu"
+                      className="relative overflow-hidden rounded-2xl border border-white/15 bg-[#0b1d18] p-2 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)]"
+                    >
+                      {item.children.map((child) => {
+                        const Icon = child.icon;
+                        const active = pathname === child.href;
+                        return (
+                          <li key={child.href} role="none">
+                            <Link
+                              role="menuitem"
+                              to={child.href}
+                              onClick={() => setServicesOpen(false)}
+                              className={`group flex items-center gap-3.5 rounded-xl px-3 py-3 transition-colors hover:bg-white/[0.07] focus-visible:bg-white/[0.07] focus-visible:outline-none ${
+                                active ? "bg-white/[0.06]" : ""
+                              }`}
+                            >
+                              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E9FF15] text-[#00473E]">
+                                <Icon className="h-5 w-5" aria-hidden />
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="block text-sm font-semibold text-white group-hover:text-[#E9FF15]">
+                                  {child.name}
+                                </span>
+                                <span className="mt-0.5 block text-xs leading-snug text-white/60">
+                                  {child.description}
+                                </span>
+                              </span>
+                              <ArrowUpRight className="h-4 w-4 shrink-0 text-white/30 transition-colors group-hover:text-[#E9FF15]" aria-hidden />
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            );
+          }
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              aria-current={current ? "page" : undefined}
+              className={`relative py-1 text-sm font-medium transition-colors ${
+                current ? "text-white" : "text-white/65 hover:text-white"
+              }`}
+            >
+              {item.name}
+              <span
+                className={`absolute -bottom-1 left-0 h-px bg-white transition-all duration-300 ${
+                  current ? "w-full" : "w-0"
+                }`}
+              />
+            </Link>
+          );
+  };
+
+  const solid = !transparent || scrolled || menuOpen;
 
   return (
-    <>
-      <style>{`
-        @keyframes slideInLeft {
-          from {
-            opacity: 0;
-            transform: translateX(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .animate-slide-down {
-          animation: slideDown 0.3s ease-out;
-        }
-      `}</style>
-      
-      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
-        transparent && !scrolled
-          ? 'bg-transparent shadow-none'
-          : 'bg-[#00473E] shadow-lg'
-      }`}>
-      <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className={`flex items-center justify-between gap-3 sm:gap-4 w-full transition-all duration-500 ease-out ${
-          scrolled ? 'h-16' : 'h-20'
-        }`}>
-          {/* Logo with text */}
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-all duration-500 ease-out flex-shrink-0">
-            <img
-              src="/logo1.png"
-              alt="ParcelGrid Courier Service Logo"
-              width="48"
-              height="48"
-              className={`object-contain transition-all duration-500 ease-out ${
-                scrolled ? 'h-8 w-8' : 'h-10 sm:h-12 w-10 sm:w-12'
-              }`}
-            />
-            <span 
-              className={`font-bold text-[#E9FF15] transition-all duration-500 ease-out ${
-                scrolled ? 'text-base sm:text-lg' : 'text-xl sm:text-2xl'
-              }`} 
-              style={{ fontFamily: 'Georgia, "Times New Roman", Times, serif' }}
-            >
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-50 px-3 sm:px-5">
+      <div
+        className={`pointer-events-auto mx-auto max-w-6xl transition-all duration-300 ${
+          solid ? "pt-2 sm:pt-3" : "pt-4 sm:pt-5"
+        }`}
+      >
+        <div
+          className={`grid h-14 grid-cols-[2.75rem_1fr_2.75rem] items-center rounded-full border px-2 transition-all duration-300 sm:h-16 sm:px-3 lg:grid-cols-[1fr_auto_1fr] lg:px-5 ${
+            solid
+              ? "border-white/10 bg-[#071410]/92 shadow-none backdrop-blur-xl"
+              : "border-white/10 bg-[#071410]/80 shadow-none backdrop-blur-xl"
+          }`}
+        >
+          <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Primary">
+            {LEFT_LINKS.map((item) => renderDesktopItem(item))}
+          </nav>
+
+          <button
+            type="button"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-white lg:hidden"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+
+          <Link to="/" className="flex min-h-11 items-center justify-center gap-2" aria-label="ParcelGrid home">
+            <img decoding="async" src="/brand/parcelgrid-mark.png" alt="" width="32" height="32" className="h-8 w-8 object-contain" />
+            <span className="font-[Sora] text-base font-semibold tracking-tight text-[#E9FF15] sm:text-lg">
               ParcelGrid
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden xl:flex items-center space-x-8 flex-1 justify-center">
-            {mainNavItems.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                className="text-sm font-medium text-white/90 hover:text-[#E9FF15] transition-colors duration-200 whitespace-nowrap"
-              >
-                {item.name}
-              </Link>
-            ))}
-            
-            {/* Book a Parcel Button - part of main nav */}
-            <Button
-              className="bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold px-6 py-2.5 rounded-full transition-all duration-200 hover:scale-105 ml-4"
-              onClick={() => navigate('/book-parcel')}
+          <div className="flex items-center justify-end gap-5 xl:gap-7">
+            <nav className="hidden items-center gap-5 lg:flex xl:gap-7" aria-label="Secondary">
+              {RIGHT_LINKS.map((item) => renderDesktopItem(item))}
+            </nav>
+            <Link
+              to="/book-parcel"
+              className="hidden h-11 shrink-0 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#041612] transition-colors hover:bg-[#E9FF15] lg:inline-flex xl:px-5"
             >
-              Book a Parcel
-            </Button>
-          </nav>
-
-          {/* Right side buttons */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 ml-auto">
-            {/* Desktop Sidebar Toggle */}
-            <div className="hidden xl:block">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/10 hover:text-[#E9FF15] transition-all duration-200"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </div>            {/* Mobile/Tablet menu and CTA */}
-            <div className="flex items-center gap-2 sm:gap-3 xl:hidden">
-              {/* Mobile CTA - visible on small to large screens */}
-              <Button
-                className="bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold px-3 py-1.5 sm:px-4 sm:py-2 md:px-6 md:py-2.5 rounded-full text-xs sm:text-sm transition-all duration-200 whitespace-nowrap"
-                onClick={() => navigate('/book-parcel')}
-              >
-                Book a Parcel
-              </Button>
-              
-              {/* Mobile menu button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className={`text-white hover:bg-white/10 transition-all duration-200 flex-shrink-0 ${
-                  isMenuOpen ? 'bg-[#E9FF15]/20' : ''
-                }`}
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                {isMenuOpen ? (
-                  <X className="h-5 w-5 sm:h-6 sm:w-6" />
-                ) : (
-                  <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
-                )}
-              </Button>
-            </div>
+              Book a parcel
+            </Link>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        <div className={`xl:hidden bg-black/20 backdrop-blur-xl border-t border-white/10 rounded-b-2xl overflow-hidden transition-all duration-200 ease-out ${
-          isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
-        }`}>
-          <nav className="px-4 py-4">
-            <div className="space-y-1">
-                {/* Main navigation items for mobile */}
-                {mainNavItems.map((item) => (
+        {menuOpen && (
+        <div id="mobile-nav" className="pointer-events-auto mt-2 lg:hidden">
+          <nav
+            aria-label="Mobile"
+            className="rounded-3xl border border-white/10 bg-[#071410]/95 p-3 shadow-none backdrop-blur-xl"
+          >
+            <ul className="flex flex-col">
+              {links.map((item) => {
+                const current = isCurrent(pathname, item.href);
+                if (item.children) {
+                  return (
+                    <li key={item.href}>
+                      <p className="flex min-h-12 items-center px-3 text-base font-medium text-white">{item.name}</p>
+                      <ul className="mb-1 ml-3 border-l border-white/10">
+                        {item.children.map((child) => (
+                          <li key={child.href}>
+                            <Link
+                              to={child.href}
+                              className="flex min-h-11 items-center px-4 text-sm text-white/80 hover:text-[#E9FF15]"
+                              onClick={() => setMenuOpen(false)}
+                            >
+                              {child.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  );
+                }
+                return (
+                  <li key={item.href}>
+                    <Link
+                      to={item.href}
+                      aria-current={current ? "page" : undefined}
+                      className="flex min-h-12 items-center justify-between px-3 text-base font-medium text-white"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      <span className="relative">
+                        {item.name}
+                        <span
+                          className={`absolute -bottom-1 left-0 h-px bg-white ${current ? "w-full" : "w-0"}`}
+                        />
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+            <div className="mx-3 my-2 h-px bg-white/10" />
+            <ul className="flex flex-col">
+              {supportLinks.map((item) => (
+                <li key={item.href}>
                   <Link
-                    key={item.name}
                     to={item.href}
-                    className="block px-4 py-3 text-sm font-medium text-white/90 hover:text-[#E9FF15] hover:bg-white/5 rounded-lg transition-all duration-200"
-                    onClick={() => setIsMenuOpen(false)}
+                    className="flex min-h-11 items-center px-3 text-sm text-white/70"
+                    onClick={() => setMenuOpen(false)}
                   >
                     {item.name}
                   </Link>
-                ))}
-                
-                {/* Sidebar items for mobile with dropdown support */}
-                {sidebarItems.map((item) => (
-                  <div key={item.name}>
-                    {item.hasDropdown ? (
-                      <div>
-                        <button
-                          onClick={() => setOpportunitiesOpen(!opportunitiesOpen)}
-                          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white/90 hover:text-[#E9FF15] hover:bg-white/5 rounded-lg transition-all duration-200"
-                        >
-                          <span>{item.name}</span>
-                          <svg
-                            className={`w-4 h-4 transition-transform duration-200 ${opportunitiesOpen ? 'rotate-180' : ''}`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                        {opportunitiesOpen && (
-                          <div className="ml-4 mt-1 space-y-1">
-                            {item.subItems?.map((subItem) => (
-                              <Link
-                                key={subItem.name}
-                                to={subItem.href}
-                                className="block px-4 py-2 text-sm text-white/80 hover:text-[#E9FF15] hover:bg-white/5 rounded-lg transition-all duration-200"
-                                onClick={() => setIsMenuOpen(false)}
-                              >
-                                {subItem.name}
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <Link
-                        to={item.href}
-                        className="block px-4 py-3 text-sm font-medium text-white/90 hover:text-[#E9FF15] hover:bg-white/5 rounded-lg transition-all duration-200"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        {item.name}
-                      </Link>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </nav>
-        </div>
-      </div>
-
-      {/* Desktop Sidebar */}
-      <div className={`hidden xl:block fixed top-0 right-0 h-full w-96 bg-gradient-to-b from-[#00473E] to-[#003832] shadow-2xl transform transition-transform duration-300 ease-in-out z-40 border-l border-[#E9FF15]/20 ${
-        isMenuOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}>
-        <div className="flex flex-col h-full">
-          {/* Sidebar Header */}
-          <div className="p-6 border-b border-[#E9FF15]/20 bg-[#00473E]/50 backdrop-blur-sm">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <h3 className="text-xl font-bold text-[#E9FF15]" style={{ fontFamily: 'Georgia, "Times New Roman", Times, serif' }}>
-                  Quick Actions
-                </h3>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-[#E9FF15]/10 hover:text-[#E9FF15] rounded-full transition-all duration-200"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Sidebar Navigation - simplified and non-scrolling */}
-          <nav className="flex-1 p-6 space-y-3">
-            {sidebarItems.map((item) => (
-              <div key={item.name}>
-                {item.hasDropdown ? (
-                  <div>
-                    <button
-                      onClick={() => setOpportunitiesOpen(!opportunitiesOpen)}
-                      className="w-full group flex items-center justify-between px-4 py-3 text-sm font-medium text-white/90 hover:text-white hover:bg-[#E9FF15]/10 rounded-lg transition-all duration-200"
-                    >
-                      <span className="group-hover:text-[#E9FF15] transition-colors duration-200">
-                        {item.name}
-                      </span>
-                      <svg
-                        className={`w-4 h-4 text-white/40 group-hover:text-[#E9FF15] transition-all duration-200 ${opportunitiesOpen ? 'rotate-180' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-                    {opportunitiesOpen && (
-                      <div className="ml-4 mt-2 space-y-2 animate-slide-down">
-                        {item.subItems?.map((subItem) => (
-                          <Link
-                            key={subItem.name}
-                            to={subItem.href}
-                            className="group flex items-center justify-between px-4 py-2 text-sm text-white/80 hover:text-white hover:bg-[#E9FF15]/10 rounded-lg transition-all duration-200"
-                            onClick={() => setIsMenuOpen(false)}
-                          >
-                            <span className="group-hover:text-[#E9FF15] transition-colors duration-200">
-                              {subItem.name}
-                            </span>
-                            <div className="text-white/40 group-hover:text-[#E9FF15] group-hover:translate-x-1 transition-all duration-200">
-                              →
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <Link
-                    to={item.href}
-                    className="group flex items-center justify-between px-4 py-3 text-sm font-medium text-white/90 hover:text-white hover:bg-[#E9FF15]/10 rounded-lg transition-all duration-200"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <span className="group-hover:text-[#E9FF15] transition-colors duration-200">
-                      {item.name}
-                    </span>
-                    <div className="text-white/40 group-hover:text-[#E9FF15] group-hover:translate-x-1 transition-all duration-200">
-                      →
-                    </div>
-                  </Link>
-                )}
-              </div>
-            ))}
+                </li>
+              ))}
+            </ul>
+            <Link
+              to="/book-parcel"
+              className="mt-2 flex min-h-12 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#041612]"
+              onClick={() => setMenuOpen(false)}
+            >
+              Book a parcel
+            </Link>
           </nav>
-
-          {/* Sidebar Footer */}
-          <div className="p-6 bg-[#00473E]/50 backdrop-blur-sm">
-            <div className="space-y-4">
-              <div className="text-center">
-                <h4 className="text-lg font-bold text-[#E9FF15] mb-2">Download Our App</h4>
-                <p className="text-sm text-white/70 mb-4">Available on all platforms</p>
-              </div>
-              
-              <div className="space-y-3">
-                <a
-                  href="https://play.google.com/store/apps/details?id=com.escrow.escrowApp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Download on Google Play"
-                  className="group w-full flex items-center justify-center gap-3 bg-gradient-to-r from-[#E9FF15] to-[#d4e614] text-[#00473E] hover:from-[#d4e614] hover:to-[#E9FF15] px-4 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#E9FF15]/20"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" className="h-5 w-5" viewBox="0 0 512 512">
-                    <path d="M99.617 8.057a50.191 50.191 0 00-38.815-6.713l230.932 230.933 74.846-74.846L99.617 8.057zM32.139 20.116c-6.441 8.563-10.148 19.077-10.148 30.199v411.358c0 11.123 3.708 21.636 10.148 30.199l235.877-235.877L32.139 20.116zM464.261 212.087l-67.266-37.637-81.544 81.544 81.548 81.548 67.273-37.64c16.117-9.03 25.738-25.442 25.738-43.908s-9.621-34.877-25.749-43.907zM291.733 279.711L60.815 510.629c3.786.891 7.639 1.371 11.492 1.371a50.275 50.275 0 0027.31-8.07l266.965-149.372-74.849-74.847z"></path>
-                  </svg>
-                  Google Play
-                </a>
-
-                <a
-                  href={APP_STORE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Download on the App Store"
-                  className="group w-full flex items-center justify-center gap-3 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-[#E9FF15]/50 text-white hover:text-[#E9FF15] px-4 py-3 rounded-full font-semibold transition-all duration-300 hover:scale-105"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <svg
-                    fill="currentColor"
-                    viewBox="-52.01 0 560.035 560.035"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                  >
-                    <path d="M380.844 297.529c.787 84.752 74.349 112.955 75.164 113.314-.622 1.988-11.754 40.191-38.756 79.652-23.343 34.117-47.568 68.107-85.731 68.811-37.499.691-49.557-22.236-92.429-22.236-42.859 0-56.256 21.533-91.753 22.928-36.837 1.395-64.889-36.891-88.424-70.883-48.093-69.53-84.846-196.475-35.496-282.165 24.516-42.554 68.328-69.501 115.882-70.192 36.173-.69 70.315 24.336 92.429 24.336 22.1 0 63.59-30.096 107.208-25.676 18.26.76 69.517 7.376 102.429 55.552-2.652 1.644-61.159 35.704-60.523 106.559M310.369 89.418C329.926 65.745 343.089 32.79 339.498 0 311.308 1.133 277.22 18.785 257 42.445c-18.121 20.952-33.991 54.487-29.709 86.628 31.421 2.431 63.52-15.967 83.078-39.655" />
-                  </svg>
-                  App Store
-                </a>
-              </div>
-
-              
-            </div>
-          </div>
         </div>
+        )}
       </div>
 
-      {/* Sidebar Overlay */}
-      {isMenuOpen && (
-        <div 
-          className="hidden xl:block fixed inset-0 bg-black/50 z-30 transition-opacity duration-300"
-          onClick={() => setIsMenuOpen(false)}
+      {menuOpen && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          className="pointer-events-auto fixed inset-0 -z-10 bg-black/40 lg:hidden"
+          onClick={() => setMenuOpen(false)}
         />
       )}
     </header>
-    </>
   );
 };
 

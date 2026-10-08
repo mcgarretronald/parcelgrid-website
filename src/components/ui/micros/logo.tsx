@@ -50,7 +50,7 @@ export function Logo({
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <img
+      <img decoding="async"
         src={logoSrc}
         alt="ParcelGrid Courier Service Admin Logo"
         width="32"

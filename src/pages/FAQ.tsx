@@ -1,323 +1,224 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { JsonLd } from '../components/JsonLd';
 import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
+import { MessageCircle, Search, SearchX } from 'lucide-react';
 import Footer from '../components/Footer';
+import { FaqAccordionItem } from '../components/FaqAccordion';
+import { FAQ_TOPICS, faqAnswerToText } from '../lib/faqData';
+import { useScrollToTop } from '../hooks/useScrollToTop';
+
+const ALL = 'all';
 
 const FAQ: React.FC = () => {
-  const [openItems, setOpenItems] = useState<string[]>([]);
+  useScrollToTop();
+  const [topic, setTopic] = useState<string>(ALL);
+  const [query, setQuery] = useState('');
 
-  // Structured Data for FAQ
-  const faqStructuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: [
-      {
+  const faqStructuredData = useMemo(
+    () => ({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: FAQ_TOPICS.flatMap((t) => t.items).map((item) => ({
         '@type': 'Question',
-        name: 'What is ParcelGrid?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'ParcelGrid® is a registered trademark of Escrow Courier Networks Limited, a licensed courier company regulated by the Communications Authority of Kenya (CA). We provide a delivery infrastructure with drop-off points in Nairobi and pickup points in all major towns across Kenya.'
-        }
-      },
-      {
-        '@type': 'Question',
-        name: 'How does COD work with ParcelGrid?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'When booking a parcel, vendors enter the exact COD amount. At pickup, the customer receives an M-Pesa STK prompt. Once payment is successful, the parcel is released. The money reflects instantly in your ParcelGrid wallet, minus a 1.8% handling fee.'
-        }
-      },
-      {
-        '@type': 'Question',
-        name: 'What does the 1.8% COD handling fee cover?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'The fee covers secure M-Pesa collection from customers, instant credit to your ParcelGrid wallet, direct transfer to your M-Pesa number, and safe, reliable COD systems with fraud prevention and support included.'
-        }
-      },
-      {
-        '@type': 'Question',
-        name: 'How long does delivery take?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: 'Delivery typically takes 1-3 business days depending on the destination. Parcels are dispatched daily, and you can track your delivery in real-time through the ParcelGrid app.'
-        }
-      }
-    ]
-  };
+        name: item.question,
+        acceptedAnswer: { '@type': 'Answer', text: faqAnswerToText(item.answer) },
+      })),
+    }),
+    [],
+  );
 
-  const toggleItem = (itemId: string) => {
-    setOpenItems(prev => 
-      prev.includes(itemId) 
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
+  const q = query.trim().toLowerCase();
+  const visibleTopics = useMemo(
+    () =>
+      FAQ_TOPICS.filter((t) => topic === ALL || t.id === topic)
+        .map((t) => ({
+          ...t,
+          items: q
+            ? t.items.filter(
+                (item) =>
+                  item.question.toLowerCase().includes(q) ||
+                  faqAnswerToText(item.answer).toLowerCase().includes(q),
+              )
+            : t.items,
+        }))
+        .filter((t) => t.items.length > 0),
+    [topic, q],
+  );
+  const total = FAQ_TOPICS.reduce((n, t) => n + t.items.length, 0);
+
+  const topicButton = (id: string, label: string, count: number) => {
+    const active = topic === id;
+    return (
+      <button
+        key={id}
+        type="button"
+        onClick={() => setTopic(id)}
+        aria-pressed={active}
+        className={`inline-flex min-h-11 shrink-0 items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors whitespace-nowrap lg:w-full lg:justify-between lg:whitespace-normal lg:rounded-none lg:border-l-2 lg:bg-transparent lg:px-4 lg:py-2.5 lg:font-medium ${
+          active
+            ? 'bg-[#00473E] text-white lg:border-[#00473E] lg:bg-transparent lg:text-[#111]'
+            : 'border border-black/10 bg-white text-[#00473E] hover:bg-[#00473E]/5 lg:border-0 lg:border-l-2 lg:border-transparent lg:text-[#5c6562] lg:hover:text-[#111]'
+        }`}
+      >
+        <span className="min-w-0">{label}</span>
+        <span className="ml-2 hidden shrink-0 text-xs text-[#9aa3a0] lg:inline">{count}</span>
+      </button>
     );
   };
 
-  const faqData = [
-    {
-      category: "About ParcelGrid",
-      items: [
-        {
-          id: "q1",
-          question: "What is ParcelGrid?",
-          answer: "ParcelGrid® is a registered trademark of Escrow Courier Networks Limited, a licensed courier company regulated by the Communications Authority of Kenya (CA). We provide a delivery infrastructure with drop-off points in Nairobi and pickup points in all major towns across Kenya."
-        },
-        {
-          id: "q2", 
-          question: "Where are you located?",
-          answer: (
-            <div>
-              <p>We currently serve vendors in Nairobi. Our drop-off branches are:</p>
-              <ul className="list-disc ml-6 mt-2">
-                <li>📍 Moi Avenue Branch – Iconic Business Plaza, Ground Floor</li>
-                <li>📍 Taveta Road Branch – Jitihada Shopping Complex, next to Taveta Shopping Mall, Ground Floor</li>
-              </ul>
-            </div>
-          )
-        }
-      ]
-    },
-    {
-      category: "Pickup & Drop-Off Points",
-      items: [
-        {
-          id: "q3",
-          question: "What is a pickup point?",
-          answer: "A pickup point is a local shop or business where customers go to collect their parcels at their convenience."
-        },
-        {
-          id: "q4",
-          question: "Where do I drop off my parcels as a vendor?",
-          answer: "Vendors can drop off parcels at our drop off points, Moi Avenue or Taveta Road branches in Nairobi."
-        },
-        {
-          id: "q5",
-          question: "How many pickup points do you have?",
-          answer: "We currently have verified pickup points across Kenya, and the network is growing."
-        }
-      ]
-    },
-    {
-      category: "Deliveries & Payments",
-      items: [
-        {
-          id: "q6",
-          question: "Do you handle both prepaid and Cash on Delivery (COD)?",
-          answer: "Yes. When booking a parcel, the vendor chooses whether it's Prepaid or COD."
-        },
-        {
-          id: "q7",
-          question: "How does COD work with ParcelGrid?",
-          answer: (
-            <ol className="list-decimal ml-6">
-              <li>The app prompts you to enter the exact amount to collect.</li>
-              <li>At pickup, the customer receives an M-Pesa STK prompt for that amount.</li>
-              <li>Once payment is successful, the parcel is released.</li>
-              <li>The money reflects instantly in your ParcelGrid wallet, minus a 1.8% handling fee.</li>
-            </ol>
-          )
-        },
-        {
-          id: "q8",
-          question: "What does the 1.8% COD handling fee cover?",
-          answer: (
-            <ul className="list-disc ml-6">
-              <li>💳 Secure M-Pesa collection from the customer.</li>
-              <li>📲 Instant credit to your ParcelGrid wallet.</li>
-              <li>⚡ Direct transfer to your M-Pesa number.</li>
-              <li>🛡️ Safe, reliable COD systems, with fraud prevention and support included.</li>
-            </ul>
-          )
-        },
-        {
-          id: "q9",
-          question: "How do prepaid deliveries work?",
-          answer: "For prepaid parcels, the customer has already paid the vendor before shipping. ParcelGrid delivers the parcel to the pickup point and releases it when the customer shows their release code."
-        }
-      ]
-    },
-    {
-      category: "Settlements & Wallet",
-      items: [
-        {
-          id: "q10",
-          question: "When do I get my money after COD?",
-          answer: "Immediately. COD payments reflect instantly in your ParcelGrid wallet after the customer pays."
-        },
-        {
-          id: "q11",
-          question: "How do I withdraw my money?",
-          answer: "You can withdraw directly from your ParcelGrid wallet to your M-Pesa number anytime, instantly."
-        },
-        {
-          id: "q12",
-          question: "Can I link my bank account?",
-          answer: "No. For now, withdrawals are only supported to M-Pesa."
-        }
-      ]
-    },
-    {
-      category: "Technology & Notifications",
-      items: [
-        {
-          id: "q13",
-          question: "How will I and my customers know the status of parcels?",
-          answer: (
-            <ul className="list-disc ml-6">
-              <li>The vendor is notified when the parcel is dropped off.</li>
-              <li>The customer is notified when the parcel arrives at the pickup point.</li>
-              <li>Reminders are sent when the parcel is ready for collection.</li>
-              <li>The vendor is notified once the parcel is collected (with COD payment confirmation if applicable).</li>
-            </ul>
-          )
-        },
-        {
-          id: "q14",
-          question: "Is there a mobile app?",
-          answer: "Yes. The ParcelGrid app is available for Android and iOS. It allows vendors to book parcels, choose Prepaid or COD, track deliveries, and withdraw money instantly."
-        }
-      ]
-    },
-    {
-      category: "Licensing & Trust",
-      items: [
-        {
-          id: "q15",
-          question: "Are you licensed?",
-          answer: "Yes. Escrow Courier Networks Limited (the company behind ParcelGrid) is licensed by the Communications Authority of Kenya (CA) under License No. PL-025-0658."
-        },
-        {
-          id: "q16",
-          question: "How is ParcelGrid different from other couriers?",
-          answer: (
-            <ul className="list-disc ml-6">
-              <li>Widest pickup network in Kenya (all major towns).</li>
-              <li>Instant COD settlements to M-Pesa.</li>
-              <li>Transparent 1.8% fee, no hidden charges.</li>
-              <li>Smart notifications to keep vendors and customers informed.</li>
-              <li>Built for online vendors, not general courier services.</li>
-            </ul>
-          )
-        },
-      ]
-    },
-    {
-      category: "Getting Started",
-      items: [
-        {
-          id: "q17",
-          question: "How do I join ParcelGrid as a vendor?",
-          answer: (
-            <ol className="list-decimal ml-6">
-              <li>Download the ParcelGrid app.</li>
-              <li>Sign up as a vendor.</li>
-              <li>Start booking parcels and dropping them off at our Nairobi branches.</li>
-            </ol>
-          )
-        },
-        {
-          id: "q18",
-          question: "Is there a cost to join?",
-          answer: "No registration fees. You only pay delivery fees + the 1.8% handling fee on COD transactions."
-        },
-        {
-          id: "q19",
-          question: "How do I contact support?",
-          answer: (
-            <div>
-              <ul className="list-disc ml-6">
-                <li>📞 Customer Care Number: 0745 111 555/ 0794 333 888</li>
-                <li>WhatsApp: 0745 111 555/ 0794 333 888</li>
-                <li>📧 Email: info@escrowcourier.com</li>
-                <li>Or directly through the support section in the app.</li>
-              </ul>
-              <p className="mt-2 font-semibold text-[#00473E]">"Get the ParcelGrid App"</p>
-            </div>
-          )
-        }
-      ]
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white text-[#222222]">
       <Helmet>
-        {/* Primary Meta Tags */}
         <title>Courier Service FAQs & Answers | ParcelGrid</title>
         <meta name="title" content="Courier Service FAQs & Answers | ParcelGrid" />
-        <meta name="description" content="Get quick answers to questions about COD delivery, wallet withdrawals, pickup agent locations, shipping rates, and parcel booking with ParcelGrid Kenya." />
-        <meta name="keywords" content="ParcelGrid FAQ, COD delivery questions, pickup points Kenya, instant settlements, delivery times Kenya, parcel delivery help, vendor support Kenya, how COD works" />
+        <meta name="description" content="Answers on Pay on Delivery, next-day upcountry delivery, Nairobi CBD drop-off branches, M-Pesa withdrawals and pickup stations with ParcelGrid Kenya." />
+        <meta name="keywords" content="ParcelGrid FAQ, COD delivery questions, pickup stations Kenya, instant settlements, delivery times Kenya, parcel delivery help, vendor support Kenya, how COD works" />
         <meta name="robots" content="index, follow" />
-        
-        {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:title" content="Courier Service FAQs & Answers | ParcelGrid" />
-        <meta property="og:description" content="Get quick answers to questions about COD delivery, wallet withdrawals, pickup agent locations, shipping rates, and parcel booking." />
+        <meta property="og:description" content="Answers on Pay on Delivery, upcountry delivery times, drop-off branches and M-Pesa withdrawals." />
         <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
-        
-        {/* Twitter */}
         <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="twitter:title" content="Courier Service FAQs & Answers" />
-        <meta property="twitter:description" content="Get quick answers to questions about COD delivery, wallet withdrawals, and pickup agent locations." />
+        <meta property="twitter:description" content="Answers on Pay on Delivery, upcountry delivery times, drop-off branches and M-Pesa withdrawals." />
         <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
-        
-        {/* Canonical URL */}
         <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/faq` : ''} />
-        
-        {/* Structured Data */}
-        <script type="application/ld+json">
-          {JSON.stringify(faqStructuredData)}
-        </script>
       </Helmet>
+      <JsonLd data={faqStructuredData} />
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        {/* Title and Subheading */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#00473E] mb-4">Frequently Asked Questions</h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Find answers to common questions about ParcelGrid's delivery services, pickup points, and how we help vendors reach customers across Kenya.
+      {/* Hero — -mt-24 cancels root main padding so the dark band sits under the fixed header */}
+      <section className="relative -mt-24 overflow-hidden bg-[#071410]">
+        <div
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
+          aria-hidden
+        />
+        <div className="relative mx-auto max-w-6xl px-5 pb-12 pt-28 text-center sm:px-8 sm:pb-14 sm:pt-32">
+          <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">Help Centre</p>
+          <h1 className="mt-4 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">
+            Frequently Asked Questions
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
+            Everything about sending parcels, Pay on Delivery, pickup stations and getting paid with ParcelGrid.
           </p>
         </div>
+      </section>
 
-        {/* FAQ Categories */}
-        {faqData.map((category, categoryIndex) => (
-          <div key={categoryIndex} className="mb-8">
-            <h3 className="text-2xl font-bold text-[#00473E] mb-4">{category.category}</h3>
-            <div className="space-y-3">
-              {category.items.map((item) => (
-                <div key={item.id} className="bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
-                  <button
-                    onClick={() => toggleItem(item.id)}
-                    className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors rounded-lg"
-                  >
-                    <span className="font-semibold text-gray-900 pr-4">{item.question}</span>
-                    {openItems.includes(item.id) ? (
-                      <ChevronUp className="w-5 h-5 text-[#00473E] flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-[#00473E] flex-shrink-0" />
-                    )}
-                  </button>
-                  {openItems.includes(item.id) && (
-                    <div className="px-6 pb-4 text-gray-700 border-t border-gray-100">
-                      {typeof item.answer === 'string' ? (
-                        <p className="pt-3 leading-relaxed">{item.answer}</p>
-                      ) : (
-                        <div className="pt-3 leading-relaxed">{item.answer}</div>
-                      )}
-                    </div>
-                  )}
+      {/* Body */}
+      <section className="bg-[#f7f8f6] py-10 sm:py-14">
+        <div className="mx-auto grid max-w-6xl gap-8 px-5 sm:px-8 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[minmax(0,300px)_minmax(0,1fr)] xl:gap-14">
+          {/* Sidebar — min-w-0 so topic chips scroll instead of widening the page */}
+          <aside className="min-w-0 lg:sticky lg:top-28 lg:self-start">
+            <label className="flex min-w-0 items-center gap-3 rounded-full border border-black/10 bg-white px-4 py-2.5 shadow-sm focus-within:border-[#00473E] focus-within:ring-2 focus-within:ring-[#00473E]/15">
+              <Search className="size-5 shrink-0 text-[#5c6562]" aria-hidden />
+              <span className="sr-only">Search questions</span>
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search questions"
+                className="min-h-11 min-w-0 w-full bg-transparent text-sm text-[#111] outline-none placeholder:text-[#9aa3a0]"
+              />
+            </label>
+
+            <nav
+              aria-label="FAQ topics"
+              className="mt-4 flex w-full min-w-0 gap-2 overflow-x-auto overscroll-x-contain pb-1 [-ms-overflow-style:none] [scrollbar-width:none] lg:mt-6 lg:flex-col lg:gap-0 lg:overflow-visible lg:border-y lg:border-black/10 lg:py-3 [&::-webkit-scrollbar]:hidden"
+            >
+              {topicButton(ALL, 'All Topics', total)}
+              {FAQ_TOPICS.map((t) => topicButton(t.id, t.title, t.items.length))}
+            </nav>
+
+            <div className="mt-6 hidden rounded-2xl border border-black/10 bg-white p-5 lg:block">
+              <p className="font-[Sora] text-base font-semibold text-[#111]">Still have a question?</p>
+              <p className="mt-1 text-sm leading-relaxed text-[#5c6562]">
+                If you didn&apos;t find your answer, reach out and our team will help.
+              </p>
+              <Link
+                to="/contact"
+                className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#00473E] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#005d4f]"
+              >
+                Contact Support
+              </Link>
+              <a
+                href="https://wa.me/254745111555"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-[#00473E]/25 bg-white px-5 text-sm font-semibold text-[#00473E] hover:bg-[#00473E]/5"
+              >
+                <MessageCircle className="size-4" aria-hidden /> WhatsApp us
+              </a>
+            </div>
+          </aside>
+
+          {/* Questions */}
+          <div className="min-w-0 space-y-10">
+            {visibleTopics.length === 0 ? (
+              <div className="rounded-2xl border border-black/10 bg-white px-6 py-14 text-center">
+                <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-[#00473E] text-[#E9FF15]">
+                  <SearchX className="size-6" aria-hidden />
                 </div>
-              ))}
+                <p className="mt-4 font-[Sora] text-lg font-semibold text-[#111]">No matching questions</p>
+                <p className="mx-auto mt-2 max-w-sm text-sm text-[#5c6562]">
+                  Try a different word, or ask our team directly and we&apos;ll answer you.
+                </p>
+                <div className="mt-5 flex flex-wrap justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuery('');
+                      setTopic(ALL);
+                    }}
+                    className="inline-flex min-h-11 items-center rounded-full border border-[#00473E]/25 bg-white px-4 text-sm font-semibold text-[#00473E]"
+                  >
+                    Clear search
+                  </button>
+                  <Link
+                    to="/contact"
+                    className="inline-flex min-h-11 items-center rounded-full bg-[#00473E] px-4 text-sm font-semibold text-white"
+                  >
+                    Contact Support
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              visibleTopics.map((t, ti) => (
+                <section key={t.id} aria-labelledby={`topic-${t.id}`}>
+                  <h2
+                    id={`topic-${t.id}`}
+                    className="inline-flex rounded-full bg-[#E9FF15] px-3.5 py-1.5 text-xs font-semibold tracking-wide text-[#00473E]"
+                  >
+                    {t.title}
+                  </h2>
+                  <div className="mt-4 space-y-3">
+                    {t.items.map((item, i) => (
+                      <FaqAccordionItem
+                        key={`${topic}-${q}-${item.id}`}
+                        item={item}
+                        defaultOpen={ti === 0 && i === 0 && !q}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))
+            )}
+
+            {/* Mobile support card */}
+            <div className="rounded-2xl border border-black/10 bg-white p-5 lg:hidden">
+              <p className="font-[Sora] text-base font-semibold text-[#111]">Still have a question?</p>
+              <p className="mt-1 text-sm text-[#5c6562]">If you didn&apos;t find your answer, reach out.</p>
+              <Link
+                to="/contact"
+                className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#00473E] px-5 text-sm font-semibold text-white"
+              >
+                Contact Support
+              </Link>
             </div>
           </div>
-        ))}
-      </div>
-      
-      {/* Footer */}
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

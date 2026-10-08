@@ -1,22 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { ArrowLeft, ArrowRight, Package, User, MapPin, CheckCircle } from 'lucide-react';
-import { useAgentData } from '../components/Map/GoogleMap';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Package,
+  User,
+  MapPin,
+  CheckCircle,
+  Loader2,
+  Truck,
+} from 'lucide-react';
+import Footer from '../components/Footer';
+import { useScrollToTop } from '../hooks/useScrollToTop';
+import { kenyaMobileError, normalizeKenyaMobile } from '../lib/phone';
+import {
+  fetchDropOffStations,
+  fetchPickupStations,
+  findStationByAgentId,
+  stationOptionLabel,
+  type Station,
+} from '../lib/stations';
+import { fetchWeightBands, type WeightBandOption } from '../lib/weightBands';
+import {
+  detectSpecialItemFromDescription,
+  fetchSpecialCategories,
+  type DetectionResult,
+  type ParcelCategory,
+  type ParcelSubItem,
+} from '../lib/specialParcels';
+import { calculateDeliveryFee } from '../lib/pricing';
+import { StationPicker } from '../components/booking/StationPicker';
+import { SelectPicker } from '../components/ui/SelectPicker';
+
+const BOOKING_STEPS = [
+  { id: 1, label: 'You & stations' },
+  { id: 2, label: 'Parcel details' },
+  { id: 3, label: 'Review & pay' },
+] as const;
+
+const fieldLabelClass = 'mb-2 block text-sm font-semibold text-[#222]';
+const fieldHintClass = 'mt-1.5 text-xs text-[#5c6562]';
+const fieldErrorClass = 'mt-1.5 text-xs font-medium text-red-600';
+const inputClass =
+  'h-12 w-full rounded-full border border-black/10 bg-white px-5 text-sm text-[#111] shadow-none outline-none transition-colors placeholder:text-[#9aa3a0] focus-visible:border-[#00473E]/40 focus-visible:ring-2 focus-visible:ring-[#00473E]/15';
+const inputErrorClass =
+  'h-12 w-full rounded-full border border-red-400 bg-white px-5 text-sm text-[#111] shadow-none outline-none transition-colors placeholder:text-[#9aa3a0] focus-visible:border-red-500 focus-visible:ring-2 focus-visible:ring-red-200';
+const selectClass =
+  'h-12 w-full appearance-none rounded-full border border-black/10 bg-white px-5 text-sm text-[#111] outline-none transition-colors focus:border-[#00473E]/40 focus:ring-2 focus:ring-[#00473E]/15';
+const selectErrorClass =
+  'h-12 w-full appearance-none rounded-full border border-red-400 bg-white px-5 text-sm text-[#111] outline-none transition-colors focus:border-red-500 focus:ring-2 focus:ring-red-200';
+const textareaClass =
+  'w-full resize-none rounded-[1.5rem] border border-black/10 bg-white px-5 py-3.5 text-sm text-[#111] outline-none transition-colors placeholder:text-[#9aa3a0] focus:border-[#00473E]/40 focus:ring-2 focus:ring-[#00473E]/15';
+const sectionTitleClass =
+  'flex items-center gap-2 font-[Sora] text-lg font-semibold tracking-[-0.02em] text-[#111]';
 
 interface FormData {
-  // Vendor Info
+  // You (sender)
   vendorName: string;
   vendorPhone: string;
-  
-  // Customer Info
+
+  // Receiver
   customerName: string;
   customerPhone: string;
-  customerCounty: string;
+
+  /** Drop-off station Agents.id — where you hand in the parcel */
+  dropoffPoint: string;
+  /** Pickup station Agents.id — where they collect */
   pickupPoint: string;
-  
+  /** Derived from selected pickup town (for order payload) */
+  customerCounty: string;
+
   // Package Details
   packageType: string;
   packageTypeOther: string;
@@ -24,130 +79,105 @@ interface FormData {
   packageValue: string;
   isFragile: boolean;
   isSpillProne: boolean;
+  /** Free-text description — drives special-item detection like the vendor app */
   specialInstructions: string;
+  /** Selected special sub-item id when description matches a catalog item */
+  specialSubItemId: string;
 }
 
+type FieldErrors = Partial<Record<keyof FormData, string>>;
+
 const BookingPage: React.FC = () => {
+  useScrollToTop();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Add custom CSS animations
+  // Station picker dropdown styles (kept lean for the custom radio select)
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
-      @keyframes bounce-slow {
-        0%, 100% {
-          transform: translateY(0);
-        }
-        50% {
-          transform: translateY(-20px);
-        }
-      }
-      @keyframes float {
-        0%, 100% {
-          transform: translateY(0) translateX(0);
-        }
-        25% {
-          transform: translateY(-10px) translateX(5px);
-        }
-        50% {
-          transform: translateY(-15px) translateX(-5px);
-        }
-        75% {
-          transform: translateY(-10px) translateX(5px);
-        }
-      }
-      @keyframes motion {
-        0% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(3px);
-        }
-        100% {
-          transform: translateY(0px);
-        }
-      }
-      @keyframes roadAnimation {
-        0% {
-          transform: translateX(0px);
-        }
-        100% {
-          transform: translateX(-100%);
-        }
-      }
-      @keyframes lampPostAnimation {
-        0% {
-          transform: translateX(0px);
-        }
-        100% {
-          transform: translateX(calc(-100vw - 90px));
-        }
-      }
-      .animate-bounce-slow {
-        animation: bounce-slow 3s ease-in-out infinite;
-      }
-      .animate-float {
-        animation: float 4s ease-in-out infinite;
-      }
-      .delay-300 {
-        animation-delay: 0.3s;
-      }
-      .delay-500 {
-        animation-delay: 0.5s;
-      }
-      .delay-700 {
-        animation-delay: 0.7s;
-      }
-      .delay-1000 {
-        animation-delay: 1s;
-      }
-      
-      /* Enhanced Dropdown Styles */
-      .custom-select-wrapper {
+      .custom-radio-select {
         position: relative;
+        user-select: none;
       }
-      
-      .custom-select {
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2300473E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 12px center;
-        background-size: 20px;
-        padding-right: 44px;
+      .custom-radio-selected {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 48px;
+        padding: 12px 20px;
+        border-radius: 9999px;
+        border: 1px solid rgba(0,0,0,0.1);
+        background: white;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        background-color: white;
-        border: 2px solid #e5e7eb;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
       }
-      
-      .custom-select:hover {
-        border-color: #00473E;
-        box-shadow: 0 4px 6px -1px rgba(0, 71, 62, 0.1), 0 2px 4px -1px rgba(0, 71, 62, 0.06);
+      .custom-radio-selected:hover,
+      .custom-radio-select.open .custom-radio-selected,
+      .custom-radio-selected.active {
+        border-color: rgba(0, 71, 62, 0.35);
+        box-shadow: 0 0 0 3px rgba(0, 71, 62, 0.1);
       }
-      
-      .custom-select:focus {
-        outline: none;
-        border-color: #00473E;
-        box-shadow: 0 0 0 3px rgba(0, 71, 62, 0.1), 0 4px 6px -1px rgba(0, 71, 62, 0.15);
-        transform: translateY(-1px);
+      .custom-radio-select.has-error .custom-radio-selected {
+        border-color: #f87171;
+        box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
       }
-      
-      .custom-select option {
-        padding: 16px 20px;
-        font-size: 15px;
-        line-height: 1.6;
-        background-color: white;
-        color: #1f2937;
-        border-bottom: 1px solid #f3f4f6;
-        font-weight: 400;
-        letter-spacing: 0.01em;
+      .custom-radio-select.has-error .custom-radio-selected:hover,
+      .custom-radio-select.has-error.open .custom-radio-selected {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
       }
-      
-      .custom-select option:first-child {
-        color: #6b7280;
+      .custom-radio-arrow {
+        width: 14px;
+        height: 14px;
+        fill: #00473E;
+        flex-shrink: 0;
+        transition: transform 0.2s ease;
+      }
+      .custom-radio-select.open .custom-radio-arrow {
+        transform: rotate(180deg);
+      }
+      .custom-radio-options {
+        display: none;
+        position: absolute;
+        z-index: 30;
+        left: 0;
+        right: 0;
+        margin-top: 8px;
+        max-height: 260px;
+        overflow-y: auto;
+        border-radius: 1.5rem;
+        border: 1px solid rgba(0,0,0,0.08);
+        background: white;
+        box-shadow: 0 16px 40px rgba(0, 71, 62, 0.12);
+      }
+      .custom-radio-select.open .custom-radio-options {
+        display: block;
+      }
+      .custom-radio-option {
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #222;
+        cursor: pointer;
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+      }
+      .custom-radio-option:last-child {
+        border-bottom: none;
+      }
+      .custom-radio-option:hover,
+      .custom-radio-option.selected {
+        background: rgba(0, 71, 62, 0.06);
+        color: #00473E;
+        font-weight: 600;
+      }
+      .custom-radio-option.disabled {
+        color: #5c6562;
+        cursor: default;
         font-weight: 500;
+      }
+      .booking-select-unused {
+        /* placeholder to keep patch unique */
         background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
       }
       
@@ -204,18 +234,17 @@ const BookingPage: React.FC = () => {
       }
 
       .custom-radio-selected {
-        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-        padding: 14px 16px;
-        border-radius: 8px;
-        border: 2px solid #e5e7eb;
+        background: #ffffff;
+        padding: 12px 20px;
+        border-radius: 9999px;
+        border: 1px solid rgba(0,0,0,0.1);
         position: relative;
         z-index: 10;
-        font-size: 15px;
+        font-size: 14px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
       }
       
       .custom-radio-selected:hover {
@@ -647,11 +676,12 @@ const BookingPage: React.FC = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     vendorName: '',
-    vendorPhone: '+254',
+    vendorPhone: '',
     customerName: '',
-    customerPhone: '+254',
-    customerCounty: '',
+    customerPhone: '',
+    dropoffPoint: '',
     pickupPoint: '',
+    customerCounty: '',
     packageType: '',
     packageTypeOther: '',
     weightRange: '',
@@ -659,66 +689,154 @@ const BookingPage: React.FC = () => {
     isFragile: false,
     isSpillProne: false,
     specialInstructions: '',
+    specialSubItemId: '',
   });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof FormData, boolean>>>({});
 
-  const { points } = useAgentData();
-  const [filteredPickupPoints, setFilteredPickupPoints] = useState<any[]>([]);
+  const [pickupStations, setPickupStations] = useState<Station[]>([]);
+  const [dropoffStations, setDropoffStations] = useState<Station[]>([]);
+  const [stationsLoading, setStationsLoading] = useState(true);
+  const [stationsError, setStationsError] = useState<string | null>(null);
+
+  const [weightBands, setWeightBands] = useState<WeightBandOption[]>([]);
+  const [weightBandsLoading, setWeightBandsLoading] = useState(true);
+  const [weightBandsError, setWeightBandsError] = useState<string | null>(null);
+
+  const [specialCategories, setSpecialCategories] = useState<ParcelCategory[]>([]);
+  const [detectedSpecial, setDetectedSpecial] = useState<DetectionResult | null>(null);
+  const [selectedSpecialSubItem, setSelectedSpecialSubItem] = useState<ParcelSubItem | null>(null);
+
   const [deliveryFee, setDeliveryFee] = useState<number | null>(null);
   const [feeLoading, setFeeLoading] = useState(false);
   const [feeError, setFeeError] = useState<string | null>(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [selectedPointLabel, setSelectedPointLabel] = useState('Select a pickup point');
+  const [feeNote, setFeeNote] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Filter pickup points based on county - only show active agents
   useEffect(() => {
-    if (formData.customerCounty) {
-      const filtered = points.filter((point) => {
-        // Check if point matches the county/location
-        const matchesLocation = point.info?.toLowerCase().includes(formData.customerCounty.toLowerCase());
-        
-        // Check if agent is active (using rawData which contains original API response)
-        const status = point.rawData?.status ?? point.rawData?.accountStatus ?? point.rawData?.active ?? point.rawData?.isActive;
-        
-        let isActive = true;
-        if (typeof status === 'string') {
-          isActive = status.toLowerCase() === 'active';
-        } else if (typeof status === 'boolean') {
-          isActive = status === true;
+    let mounted = true;
+    const load = async () => {
+      setStationsLoading(true);
+      setStationsError(null);
+      try {
+        const [pickup, dropoff] = await Promise.all([
+          fetchPickupStations(),
+          fetchDropOffStations(),
+        ]);
+        if (!mounted) return;
+        setPickupStations(pickup);
+        setDropoffStations(dropoff.length ? dropoff : pickup.filter((s) => s.capability === 'send_collect'));
+      } catch (err) {
+        console.error('Failed to load stations', err);
+        if (mounted) setStationsError('Could not load stations. Refresh and try again.');
+      } finally {
+        if (mounted) setStationsLoading(false);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setWeightBandsLoading(true);
+      setWeightBandsError(null);
+      try {
+        const bands = await fetchWeightBands();
+        if (!mounted) return;
+        setWeightBands(bands);
+        if (!bands.length) {
+          setWeightBandsError('Could not load weight ranges. Refresh and try again.');
         }
-        // If no status field, include the agent (backward compatibility)
-        
-        return matchesLocation && isActive;
-      });
-      setFilteredPickupPoints(filtered);
-    } else {
-      // Show only active agents when no county filter
-      const activePoints = points.filter((point) => {
-        const status = point.rawData?.status ?? point.rawData?.accountStatus ?? point.rawData?.active ?? point.rawData?.isActive;
-        
-        if (typeof status === 'string') {
-          return status.toLowerCase() === 'active';
-        }
-        if (typeof status === 'boolean') {
-          return status === true;
-        }
-        // If no status field, include the agent (backward compatibility)
-        return true;
-      });
-      setFilteredPickupPoints(activePoints);
+      } catch (err) {
+        console.error('Failed to load weight bands', err);
+        if (mounted) setWeightBandsError('Could not load weight ranges. Refresh and try again.');
+      } finally {
+        if (mounted) setWeightBandsLoading(false);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchSpecialCategories()
+      .then((cats) => {
+        if (!mounted) return;
+        setSpecialCategories(cats);
+      })
+      .catch((err) => console.error('Failed to load special categories', err));
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Re-run detection once the catalog loads (e.g. user typed "COOKER" before fetch finished)
+  useEffect(() => {
+    if (!specialCategories.length || !formData.specialInstructions.trim()) return;
+    applyDescriptionDetection(formData.specialInstructions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when catalog arrives
+  }, [specialCategories]);
+
+  const applyDescriptionDetection = (text: string) => {
+    const result = detectSpecialItemFromDescription(text, specialCategories);
+    setDetectedSpecial(result);
+    if (!result) {
+      setSelectedSpecialSubItem(null);
+      setFormData((prev) =>
+        prev.specialSubItemId ? { ...prev, specialSubItemId: '' } : prev,
+      );
+      return;
     }
-  }, [formData.customerCounty, points]);
+    if (result.subItem) {
+      setSelectedSpecialSubItem(result.subItem);
+      setFormData((prev) => ({
+        ...prev,
+        specialSubItemId: String(result.subItem!.id),
+        // Special items are priced by size, not weight band
+        weightRange: '',
+      }));
+    } else {
+      // Category matched but size unclear — keep previous selection if still in this category
+      setSelectedSpecialSubItem((prev) => {
+        if (prev && result.category.subItems.some((s) => s.id === prev.id)) return prev;
+        return null;
+      });
+      setFormData((prev) => {
+        const stillValid =
+          prev.specialSubItemId &&
+          result.category.subItems.some((s) => String(s.id) === prev.specialSubItemId);
+        return stillValid ? prev : { ...prev, specialSubItemId: '' };
+      });
+    }
+  };
 
- 
+  const selectSpecialSubItem = (item: ParcelSubItem) => {
+    setSelectedSpecialSubItem(item);
+    setFormData((prev) => ({
+      ...prev,
+      specialSubItemId: String(item.id),
+      weightRange: '',
+    }));
+    setFieldError('weightRange', null);
+  };
 
-  const weightRanges = [
-    '0-4 KG',
-    '4-8 KG',
-    '8-12 KG',
-    '12-15 KG',
-    '15-20 KG',
-    '20-25 KG',
-    '25-30 KG',
-  ];
+  const selectedPickup = useMemo(
+    () => findStationByAgentId(pickupStations, formData.pickupPoint),
+    [pickupStations, formData.pickupPoint],
+  );
+  const selectedDropoff = useMemo(
+    () => findStationByAgentId(dropoffStations, formData.dropoffPoint),
+    [dropoffStations, formData.dropoffPoint],
+  );
+
 
   const packageTypes = [
     'Box',
@@ -729,17 +847,94 @@ const BookingPage: React.FC = () => {
     'Other',
   ];
 
-  const handleInputChange = (field: keyof FormData, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const validateField = (field: keyof FormData, data: FormData = formData): string | null => {
+    switch (field) {
+      case 'vendorName':
+        return data.vendorName.trim() ? null : 'Enter your full name';
+      case 'vendorPhone':
+        return kenyaMobileError(data.vendorPhone);
+      case 'customerName':
+        return data.customerName.trim() ? null : 'Enter the receiver name';
+      case 'customerPhone':
+        return kenyaMobileError(data.customerPhone);
+      case 'dropoffPoint':
+        return data.dropoffPoint ? null : 'Select where you will drop off the parcel';
+      case 'pickupPoint':
+        return data.pickupPoint ? null : 'Select where they will pick up the parcel';
+      case 'packageType':
+        return data.packageType ? null : 'Select a package type';
+      case 'packageTypeOther':
+        if (data.packageType !== 'Other') return null;
+        return data.packageTypeOther.trim() ? null : 'Specify the package type';
+      case 'weightRange':
+        if (data.specialSubItemId) return null;
+        return data.weightRange
+          ? null
+          : 'Select a weight range (or describe a special item below)';
+      case 'packageValue':
+        if (!data.packageValue || Number(data.packageValue) <= 0) {
+          return 'Enter a package value greater than 0';
+        }
+        return null;
+      case 'specialInstructions':
+        if (detectedSpecial && !data.specialSubItemId) {
+          return `Pick a ${detectedSpecial.category.name} size / type`;
+        }
+        return null;
+      default:
+        return null;
+    }
   };
 
-  // Calculate delivery fee when both pickupPoint and weightRange are set
+  const setFieldError = (field: keyof FormData, message: string | null) => {
+    setFieldErrors((prev) => {
+      if (!message) {
+        if (!(field in prev)) return prev;
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      }
+      return { ...prev, [field]: message };
+    });
+  };
+
+  const handleInputChange = (field: keyof FormData, value: any) => {
+    setFormData((prev) => {
+      const next = { ...prev, [field]: value };
+      // Live-clear / update error once the field has been blurred
+      if (touched[field]) {
+        const message = validateField(field, next);
+        queueMicrotask(() => setFieldError(field, message));
+      }
+      if (field === 'packageType' && value !== 'Other') {
+        queueMicrotask(() => setFieldError('packageTypeOther', null));
+      }
+      return next;
+    });
+  };
+
+  const handleBlur = (field: keyof FormData) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    setFieldError(field, validateField(field));
+  };
+
+  const fieldClass = (field: keyof FormData, kind: 'input' | 'select' = 'input') => {
+    const base = kind === 'select' ? selectClass : inputClass;
+    const errored = kind === 'select' ? selectErrorClass : inputErrorClass;
+    return fieldErrors[field] ? errored : base;
+  };
+
+  // Live fee — same rules as the vendor app (weight band OR special sub-item + route)
   useEffect(() => {
     let active = true;
-    // only calculate when both values exist
-    if (!formData.pickupPoint || !formData.weightRange) {
+    const hasSpecial = Boolean(formData.specialSubItemId);
+    const hasWeight = Boolean(formData.weightRange);
+    const hasPickup = Boolean(formData.pickupPoint);
+
+    if (!hasPickup || (!hasSpecial && !hasWeight)) {
       setDeliveryFee(null);
       setFeeError(null);
+      setFeeNote(null);
       setFeeLoading(false);
       return;
     }
@@ -749,131 +944,139 @@ const BookingPage: React.FC = () => {
     const calculate = async () => {
       setFeeLoading(true);
       setFeeError(null);
-      setDeliveryFee(null);
+      setFeeNote(null);
 
       try {
-        // Find the selected pickup point to get distanceFromHQ
-        // Look in all points, not just filtered, in case user went back and forward
-        const selectedPoint = points.find(
-          (point) => String(point.id) === String(formData.pickupPoint)
-        );
-
-        // Debug logging
-        console.log('Selected pickup point ID:', formData.pickupPoint);
-        console.log('Found point object:', selectedPoint);
-        console.log('Distance from HQ:', selectedPoint?.distanceFromHQ);
-        console.log('Raw data:', selectedPoint?.rawData);
-
-        if (!selectedPoint) {
+        const pickup = findStationByAgentId(pickupStations, formData.pickupPoint);
+        if (!pickup) {
           setFeeError('Selected pickup point not found');
           setFeeLoading(false);
           return;
         }
 
-        if (!selectedPoint.distanceFromHQ) {
-          setFeeError('Distance information not available for this pickup point');
-          setFeeLoading(false);
-          return;
-        }
-
-        // Build payload with weightRange and distance as required
-        // Remove " KG" from weight range (e.g., "0-4 KG" becomes "0-4")
-        const weightRangeValue = formData.weightRange.replace(/\s*KG$/i, '').trim();
-        
-        const payload = {
-          weightRange: weightRangeValue,
-          distance: selectedPoint.distanceFromHQ,
+        const dropoff = findStationByAgentId(dropoffStations, formData.dropoffPoint);
+        const payload: Parameters<typeof calculateDeliveryFee>[0] = {
+          destinationAgentId: Number(pickup.agentId) || pickup.agentId,
+          destinationTown: pickup.town,
         };
-
-        console.log('Sending payload to pricing API:', payload);
-
-        const resp = await fetch('https://app.escrowcourier.com/website-backend-services/api/calculate-delivery-fee', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          signal: controller.signal,
-        });
-
-        if (!resp.ok) {
-          const text = await resp.text();
-          throw new Error(text || `Status ${resp.status}`);
+        if (dropoff) {
+          payload.originAgentId = Number(dropoff.agentId) || dropoff.agentId;
+          payload.originTown = dropoff.town;
+        } else {
+          payload.originTown = 'Nairobi';
         }
 
-        const data = await resp.json();
-        
-        console.log('Pricing API response:', data);
+        if (hasSpecial) {
+          payload.subItemId = Number(formData.specialSubItemId);
+        } else {
+          payload.weightRange = formData.weightRange.replace(/\s*kg$/i, '').trim();
+          if (pickup.distanceFromHQ) payload.distance = pickup.distanceFromHQ;
+        }
 
-        // The pricing API returns totalFee. Also check other common field names as fallback.
-        const fee = data?.totalFee ?? data?.fee ?? data?.deliveryFee ?? data?.price ?? data?.amount ?? null;
+        const result = await calculateDeliveryFee(payload, controller.signal);
+        if (!active) return;
 
-        if (active) {
-          if (typeof fee === 'number') {
-            setDeliveryFee(fee);
-          } else if (typeof fee === 'string' && !isNaN(Number(fee))) {
-            setDeliveryFee(Number(fee));
-          } else {
-            // If API returned a complex object, try common places
-            if (data && typeof data === 'object') {
-              // try nested 'data' or 'result'
-              const nested = data.data ?? data.result ?? null;
-              const nestedFee = nested?.totalFee ?? nested?.fee ?? nested?.amount ?? nested?.price ?? null;
-              if (typeof nestedFee === 'number') setDeliveryFee(nestedFee);
-              else setFeeError('Unable to parse fee from pricing response');
-            } else {
-              setFeeError('Unable to parse fee from pricing response');
-            }
-          }
+        if (result.totalFee != null && result.totalFee > 0) {
+          setDeliveryFee(result.totalFee);
+          setFeeNote(
+            hasSpecial && selectedSpecialSubItem
+              ? `Special rate · ${selectedSpecialSubItem.label}`
+              : result.weightBandLabel
+                ? `Weight band · ${result.weightBandLabel}`
+                : null,
+          );
+        } else {
+          setDeliveryFee(null);
+          setFeeError(result.error || 'Unable to calculate delivery fee');
         }
       } catch (err: any) {
         if (err.name === 'AbortError') return;
         console.error('Delivery fee error', err);
-        if (active) setFeeError(err.message || 'Failed to calculate delivery fee');
+        if (active) {
+          setDeliveryFee(null);
+          setFeeError(err.message || 'Failed to calculate delivery fee');
+        }
       } finally {
         if (active) setFeeLoading(false);
       }
     };
 
-    // small debounce to avoid rapid calls when user is typing
-    const timer = setTimeout(calculate, 400);
+    const timer = setTimeout(calculate, 350);
 
     return () => {
       active = false;
       controller.abort();
       clearTimeout(timer);
     };
-  }, [formData.pickupPoint, formData.weightRange, points]);
+  }, [
+    formData.pickupPoint,
+    formData.dropoffPoint,
+    formData.weightRange,
+    formData.specialSubItemId,
+    pickupStations,
+    dropoffStations,
+    selectedSpecialSubItem,
+  ]);
 
-  const validateStep = (currentStep: number): boolean => {
+  const stepFields = (currentStep: number): (keyof FormData)[] => {
     if (currentStep === 1) {
-      // Validate both vendor and customer information on step 1
-      return !!(
-        formData.vendorName &&
-        formData.vendorPhone &&
-        formData.vendorPhone.length >= 12 &&
-        formData.customerName &&
-        formData.customerPhone &&
-        formData.customerPhone.length >= 12 &&
-        formData.customerCounty &&
-        formData.pickupPoint
-      );
+      return ['vendorName', 'vendorPhone', 'customerName', 'customerPhone', 'dropoffPoint', 'pickupPoint'];
     }
     if (currentStep === 2) {
-      // Validate package information on step 2
-      return !!(
-        formData.packageType &&
-        (formData.packageType !== 'Other' || formData.packageTypeOther) &&
-        formData.weightRange &&
-        formData.packageValue
-      );
+      const fields: (keyof FormData)[] = ['packageType', 'packageValue'];
+      if (formData.packageType === 'Other') fields.push('packageTypeOther');
+      if (formData.specialSubItemId) {
+        // special item selected — weight optional
+      } else if (detectedSpecial) {
+        fields.push('specialInstructions');
+      } else {
+        fields.push('weightRange');
+      }
+      return fields;
     }
-    return true;
+    return [];
+  };
+
+  const validateStep = (currentStep: number): string | null => {
+    const fields = stepFields(currentStep);
+    const nextErrors: FieldErrors = { ...fieldErrors };
+    let firstError: string | null = null;
+
+    for (const field of fields) {
+      const message = validateField(field);
+      if (message) {
+        nextErrors[field] = message;
+        if (!firstError) firstError = message;
+      } else {
+        delete nextErrors[field];
+      }
+    }
+
+    setFieldErrors(nextErrors);
+    setTouched((prev) => {
+      const next = { ...prev };
+      for (const field of fields) next[field] = true;
+      return next;
+    });
+
+    return firstError;
   };
 
   const handleNext = () => {
-    if (validateStep(step)) {
+    const error = validateStep(step);
+    if (!error) {
+      setFieldErrors({});
+      setTouched({});
       setStep((prev) => Math.min(prev + 1, 3));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      alert('Please fill in all required fields');
+      // Focus first invalid field in this step
+      const firstBad = stepFields(step).find((f) => validateField(f));
+      if (firstBad) {
+        const el = document.querySelector<HTMLElement>(`[data-field="${firstBad}"]`);
+        el?.focus();
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
   };
 
@@ -881,122 +1084,209 @@ const BookingPage: React.FC = () => {
     setStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const handleSubmit = async () => {
+  const extractTrackingNo = (orderData: any): string | undefined =>
+    orderData?.trackingNo ||
+    orderData?.trackingNumber ||
+    orderData?.tracking_no ||
+    orderData?.data?.trackingNo ||
+    orderData?.data?.trackingNumber ||
+    orderData?.data?.tracking_no ||
+    orderData?.data?.order?.[0]?.trackingNo ||
+    orderData?.data?.order?.[0]?.trackingNumber ||
+    orderData?.order?.trackingNo ||
+    orderData?.order?.trackingNumber ||
+    orderData?.error?.details?.existingOrderTrackingNo ||
+    orderData?.error?.existingOrderTrackingNo;
+
+  const extractOrderId = (orderData: any): string | number | undefined =>
+    orderData?.id ||
+    orderData?.orderId ||
+    orderData?._id ||
+    orderData?.data?.id ||
+    orderData?.data?.orderId ||
+    orderData?.data?.order?.[0]?.id;
+
+  const createBookingOrder = async (orderPayload: Record<string, unknown>) => {
+    const body = JSON.stringify({
+      ...orderPayload,
+      bookingSource: 'website',
+      fromWebsite: true,
+    });
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      'X-Booking-Source': 'website',
+    };
+
+    // Same-origin proxy (Vite middleware / Netlify) — avoids CORS on localhost
     try {
-      // Find the selected pickup point to get full details
-      const selectedPoint = points.find(
-        (point) => String(point.id) === String(formData.pickupPoint)
-      );
-
-      // Prepare order payload with correct field names for the API
-      const orderPayload = {
-        vendorName: formData.vendorName,
-        vendorPhone: formData.vendorPhone,
-        customerName: formData.customerName,
-        customerPhone: formData.customerPhone,
-        customerAddress: formData.customerCounty, // Required field - just the county/location string as entered
-        customerCounty: formData.customerCounty,
-        pickupPointId: formData.pickupPoint,
-        pickupPointName: selectedPoint?.name || '',
-        agentId: selectedPoint?.id || formData.pickupPoint, // Required field - using pickup point as agent
-        packagingType: formData.packageType === 'Other' ? formData.packageTypeOther : formData.packageType, // Required field (renamed from packageType)
-        weightRange: formData.weightRange,
-        distanceRange: selectedPoint?.distanceFromHQ || 0, // Required field - distance from HQ
-        parcelValue: parseFloat(formData.packageValue), // Required field (renamed from packageValue)
-        shippingCharges: deliveryFee || 0, // Required field (renamed from deliveryFee)
-        isFragile: formData.isFragile,
-        isSpillProne: formData.isSpillProne,
-        specialInstructions: formData.specialInstructions,
-      };
-
-      console.log('Creating order with payload:', orderPayload);
-      // Persist booking form for summary restoration
-      localStorage.setItem('currentBookingForm', JSON.stringify(formData));
-
-      // Get auth token from backend server
-      let authToken = '';
+      const viaProxy = await fetch('/api/booking-agent-orders', {
+        method: 'POST',
+        headers,
+        body,
+      });
+      const text = await viaProxy.text();
+      let data: any = null;
       try {
-        const tokenResponse = await fetch('https://app.escrowcourier.com/website-backend-services/api/auth/token');
-        if (tokenResponse.ok) {
-          const tokenData = await tokenResponse.json();
-          authToken = tokenData.token || tokenData.access_token || tokenData.bearer_token;
-          console.log('Auth token fetched from backend');
-        }
-      } catch (error) {
-        console.warn('Could not fetch auth token:', error);
+        data = JSON.parse(text);
+      } catch {
+        /* HTML SPA fallback — try direct */
       }
+      if (data && (viaProxy.ok || viaProxy.status === 409)) {
+        return { ok: viaProxy.ok, status: viaProxy.status, data };
+      }
+      if (viaProxy.ok === false && data?.error && viaProxy.status !== 404) {
+        return { ok: false, status: viaProxy.status, data };
+      }
+    } catch {
+      /* fall through to direct */
+    }
 
-      // Create order via API
-      const response = await fetch('https://app.escrowcourier.com/website-backend-services/api/booking-agent-orders', {
+    // Production domain: website-backend allows escrowcourier.com Origin
+    let authToken = '';
+    try {
+      const tokenResponse = await fetch(
+        'https://app.escrowcourier.com/website-backend-services/api/auth/token',
+        { headers: { Accept: 'application/json' } },
+      );
+      if (tokenResponse.ok) {
+        const tokenData = await tokenResponse.json();
+        authToken =
+          tokenData.token || tokenData.access_token || tokenData.bearer_token || '';
+      }
+    } catch {
+      /* continue without token */
+    }
+
+    const direct = await fetch(
+      'https://app.escrowcourier.com/website-backend-services/api/booking-agent-orders',
+      {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+          ...headers,
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         },
-        body: JSON.stringify(orderPayload),
-      });
+        body,
+      },
+    );
+    const directText = await direct.text();
+    let directData: any = {};
+    try {
+      directData = JSON.parse(directText);
+    } catch {
+      throw new Error(directText || `Booking failed (${direct.status})`);
+    }
+    return { ok: direct.ok, status: direct.status, data: directData };
+  };
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `Failed to create order: ${response.status}`);
+  const handleSubmit = async () => {
+    if (submitting) return;
+    setSubmitError(null);
+
+    const pickup = findStationByAgentId(pickupStations, formData.pickupPoint);
+    const dropoff = findStationByAgentId(dropoffStations, formData.dropoffPoint);
+
+    const vendorPhone = normalizeKenyaMobile(formData.vendorPhone);
+    const customerPhone = normalizeKenyaMobile(formData.customerPhone);
+    if (!vendorPhone || !customerPhone) {
+      setSubmitError('Enter valid Kenyan mobiles for you and the receiver (07… / 01…)');
+      return;
+    }
+    if (!pickup || !dropoff) {
+      setSubmitError('Select both a drop-off point and a pickup point');
+      return;
+    }
+    if (!deliveryFee || deliveryFee <= 0) {
+      setSubmitError('Delivery fee is missing — go back and confirm weight or special item.');
+      return;
+    }
+
+    const destinationTown = pickup.town || formData.customerCounty;
+    const dropoffLabel = stationOptionLabel(dropoff);
+    const parcelDescription =
+      formData.specialInstructions?.trim() ||
+      (formData.packageType === 'Other' ? formData.packageTypeOther : formData.packageType) ||
+      'Parcel';
+
+    const orderPayload = {
+      vendorName: formData.vendorName,
+      vendorPhone,
+      senderName: formData.vendorName,
+      senderPhone: vendorPhone,
+      customerName: formData.customerName,
+      customerPhone,
+      customerAddress: destinationTown,
+      customerCounty: destinationTown,
+      destinationTown,
+      pickupPointId: pickup.agentId,
+      pickupPointName: pickup.businessName,
+      agentId: Number(pickup.agentId) || pickup.agentId,
+      originAgentId: Number(dropoff.agentId) || dropoff.agentId,
+      dropoffPoint: dropoffLabel,
+      packagingType:
+        formData.packageType === 'Other' ? formData.packageTypeOther : formData.packageType,
+      parcelDescription,
+      weightRange: formData.specialSubItemId
+        ? selectedSpecialSubItem?.label || 'SPECIAL'
+        : formData.weightRange,
+      distanceRange: pickup.distanceFromHQ || 0,
+      parcelValue: parseFloat(formData.packageValue),
+      shippingCharges: deliveryFee,
+      isFragile: formData.isFragile,
+      isSpillProne: formData.isSpillProne,
+      specialInstructions: formData.specialInstructions,
+      ...(formData.specialSubItemId
+        ? {
+            subItemId: Number(formData.specialSubItemId),
+            specialItemId: Number(formData.specialSubItemId),
+          }
+        : {}),
+    };
+
+    setSubmitting(true);
+    localStorage.setItem('currentBookingForm', JSON.stringify(formData));
+
+    try {
+      const result = await createBookingOrder(orderPayload);
+      const orderData = result.data;
+
+      // Duplicate unpaid booking — continue to payment with existing tracking
+      const trackingNo = extractTrackingNo(orderData);
+      const orderId = extractOrderId(orderData);
+
+      if (!result.ok && result.status !== 409) {
+        const message =
+          orderData?.error?.message ||
+          orderData?.message ||
+          orderData?.error ||
+          `Failed to create order (${result.status})`;
+        throw new Error(typeof message === 'string' ? message : JSON.stringify(message));
       }
 
-      const orderData = await response.json();
-      console.log('=== ORDER CREATED SUCCESSFULLY ===');
-      console.log('Full order response:', orderData);
-      console.log('Order data type:', typeof orderData);
-      console.log('Order data keys:', Object.keys(orderData));
-      
-      // Log all possible tracking number fields
-      console.log('orderData.trackingNo:', orderData.trackingNo);
-      console.log('orderData.trackingNumber:', orderData.trackingNumber);
-      console.log('orderData.tracking_no:', orderData.tracking_no);
-      console.log('orderData.data:', orderData.data);
-      console.log('orderData.order:', orderData.order);
-      
-      if (orderData.data) {
-        console.log('orderData.data keys:', Object.keys(orderData.data));
+      if (!trackingNo) {
+        throw new Error('Order created but no tracking number was returned. Please try again.');
       }
 
-      // Store the complete order response in localStorage for later use
       localStorage.setItem('currentOrder', JSON.stringify(orderData));
       localStorage.setItem('currentOrderTimestamp', Date.now().toString());
 
-      // Extract tracking number from various possible locations in the response
-      const trackingNo = orderData.trackingNo 
-        || orderData.trackingNumber 
-        || orderData.tracking_no 
-        || orderData.data?.trackingNo 
-        || orderData.data?.trackingNumber 
-        || orderData.data?.tracking_no
-        || orderData.data?.order?.[0]?.trackingNo
-        || orderData.data?.order?.[0]?.trackingNumber
-        || orderData.order?.trackingNo
-        || orderData.order?.trackingNumber;
-      
-      const orderId = orderData.id || orderData.orderId || orderData._id || orderData.data?.id || orderData.data?.order?.[0]?.id;
-
-      console.log('Extracted tracking number:', trackingNo);
-      console.log('Extracted order ID:', orderId);
-      console.log('Order data stored in localStorage');
-      console.log('=================================');
-
-      // Navigate to payment page with booking data and order response
       navigate('/payment', {
         state: {
           bookingData: {
             ...formData,
             deliveryFee,
           },
-          trackingNo: trackingNo,
-          orderId: orderId,
-          orderData: orderData,
+          trackingNo,
+          orderId,
+          orderData,
           fromSummary: true,
         },
       });
     } catch (error: any) {
       console.error('Error creating order:', error);
-      alert(`Failed to create order: ${error.message || 'Please try again'}`);
+      setSubmitError(error?.message || 'Could not create your booking. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -1047,437 +1337,626 @@ const BookingPage: React.FC = () => {
   }, [location.state]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white text-[#222222]">
       <Helmet>
-        <title>Book a Parcel Delivery Online in Kenya | ParcelGrid</title>
-        <meta name="title" content="Book a Parcel Delivery Online in Kenya | ParcelGrid" />
-        <meta name="description" content="Ship packages in under 60 seconds. Fill in customer details, select pickup points, choose COD or prepaid options, and book your delivery with ParcelGrid." />
-        <meta name="keywords" content="book delivery online, parcel grid booking, escrow courier parcel, online shipment booking, send parcel Kenya, e-commerce shipping" />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Book a Parcel Delivery Online" />
-        <meta property="og:description" content="Ship packages in under 60 seconds. Fill in customer details, select pickup points, choose COD or prepaid options, and book your delivery." />
-        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/book-parcel` : ''} />
+        <title>Book a Parcel Online | ParcelGrid</title>
+        <meta
+          name="description"
+          content="Book a prepaid ParcelGrid delivery online — skip the station queue. Live pricing, M-Pesa payment, and instant tracking."
+        />
+        <link
+          rel="canonical"
+          href={typeof window !== 'undefined' ? `${window.location.origin}/book-parcel` : '/book-parcel'}
+        />
       </Helmet>
 
-      <div className="min-h-screen">
-        {/* Form Section */}
-        <div className="py-8 px-4 sm:px-6 lg:px-8 overflow-y-auto bg-white">
-          <div className="max-w-4xl mx-auto">
-            {/* Animated Header Banner */}
-            <div className="bg-gradient-to-br from-[#00473E] to-[#006644] rounded-2xl p-8 mb-4 relative overflow-hidden">
-              {/* Animated Background Elements */}
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-10 left-10 w-24 h-24 bg-[#E9FF15] rounded-full animate-pulse"></div>
-                <div className="absolute bottom-10 right-10 w-20 h-20 bg-[#E9FF15] rounded-full animate-pulse delay-1000"></div>
-                <div className="absolute top-1/2 right-20 w-12 h-12 bg-[#E9FF15] rounded-full animate-bounce"></div>
-              </div>
+      {/* Hero — matches Stations / Track */}
+      <section className="relative -mt-24 overflow-hidden bg-[#071410]">
+        <div
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
+          aria-hidden
+        />
+        <div className="relative mx-auto max-w-3xl px-5 pb-12 pt-28 text-center sm:px-8 sm:pb-14 sm:pt-32">
+          <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">Prepaid booking</p>
+          <h1 className="mt-4 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
+            Book a parcel online
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-white/75">
+            Choose where you drop off and where they pick up, pay by M-Pesa, then hand in your parcel.
+          </p>
+        </div>
+      </section>
 
-              {/* Typing Animation Content */}
-              <div className="relative z-10 text-center">
-                <div className="typing-container">
-                  <h1 className="typing-animation line1 text-white text-xl sm:text-2xl lg:text-3xl font-bold">
-                    BOOK A PARCEL IN UNDER 60 SECONDS
-                  </h1>
-                  <div className="typing-animation line2 text-white">
-                    FAST, SECURE & RELIABLE DELIVERY.
+      {/* Progress */}
+      <div className="border-b border-black/[0.06] bg-[#f7f8f6]">
+        <div className="mx-auto flex max-w-3xl items-center gap-2 overflow-x-auto px-5 py-4 sm:px-8">
+          {BOOKING_STEPS.map((item, index) => {
+            const active = step === item.id;
+            const done = step > item.id;
+            return (
+              <div key={item.id} className="flex min-w-0 flex-1 items-center gap-2">
+                <div
+                  className={`flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                    active || done
+                      ? 'bg-[#00473E] text-[#E9FF15]'
+                      : 'border border-black/10 bg-white text-[#5c6562]'
+                  }`}
+                >
+                  {done ? <CheckCircle className="size-4" /> : item.id}
+                </div>
+                <span
+                  className={`truncate text-xs font-semibold sm:text-sm ${
+                    active ? 'text-[#111]' : 'text-[#5c6562]'
+                  }`}
+                >
+                  {item.label}
+                </span>
+                {index < BOOKING_STEPS.length - 1 && (
+                  <div className="mx-1 hidden h-px flex-1 bg-black/10 sm:block" aria-hidden />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Form */}
+      <section className="bg-white py-10 sm:py-14">
+        <div className="mx-auto max-w-3xl px-5 sm:px-8">
+          <p className="mb-6 text-sm text-[#5c6562]">
+            Step {step} of {BOOKING_STEPS.length}
+          </p>
+
+          <div className="rounded-2xl border border-black/[0.07] bg-white p-5 sm:p-8">
+            {step === 1 && (
+              <div className="space-y-8">
+                <div className="space-y-5">
+                  <h2 className={sectionTitleClass}>
+                    <User className="size-5 text-[#00473E]" aria-hidden />
+                    Your details
+                  </h2>
+                  <div>
+                    <label className={fieldLabelClass}>
+                      Your name <span className="text-[#00473E]">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      data-field="vendorName"
+                      value={formData.vendorName}
+                      onChange={(e) => handleInputChange('vendorName', e.target.value)}
+                      onBlur={() => handleBlur('vendorName')}
+                      placeholder="e.g. Ronald"
+                      className={fieldClass('vendorName')}
+                      aria-invalid={Boolean(fieldErrors.vendorName)}
+                    />
+                    {fieldErrors.vendorName && (
+                      <p className={fieldErrorClass} role="alert">
+                        {fieldErrors.vendorName}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className={fieldLabelClass}>
+                      Your phone <span className="text-[#00473E]">*</span>
+                    </label>
+                    <Input
+                      type="tel"
+                      data-field="vendorPhone"
+                      value={formData.vendorPhone}
+                      onChange={(e) => handleInputChange('vendorPhone', e.target.value)}
+                      onBlur={() => handleBlur('vendorPhone')}
+                      placeholder="0712 345 678"
+                      inputMode="tel"
+                      className={fieldClass('vendorPhone')}
+                      aria-invalid={Boolean(fieldErrors.vendorPhone)}
+                    />
+                    {fieldErrors.vendorPhone ? (
+                      <p className={fieldErrorClass} role="alert">
+                        {fieldErrors.vendorPhone}
+                      </p>
+                    ) : (
+                      <p className={fieldHintClass}>Use 07… or 01… (M-Pesa). 254… also works.</p>
+                    )}
                   </div>
                 </div>
-                <p className="text-sm sm:text-base lg:text-xl text-[#E9FF15]/90 mt-3" style={{ fontSize: 'clamp(0.875rem, 2.5vw, 1.25rem)' }}>
-                  Skip the long process & book a parcel in seconds. Drop Off When You're Ready.
-                </p>
+
+                <div className="border-t border-black/[0.06]" />
+
+                <div className="space-y-5">
+                  <h2 className={sectionTitleClass}>
+                    <User className="size-5 text-[#00473E]" aria-hidden />
+                    Who receives it
+                  </h2>
+                  <div>
+                    <label className={fieldLabelClass}>
+                      Receiver name <span className="text-[#00473E]">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      data-field="customerName"
+                      value={formData.customerName}
+                      onChange={(e) => handleInputChange('customerName', e.target.value)}
+                      onBlur={() => handleBlur('customerName')}
+                      placeholder="Their full name"
+                      className={fieldClass('customerName')}
+                      aria-invalid={Boolean(fieldErrors.customerName)}
+                    />
+                    {fieldErrors.customerName && (
+                      <p className={fieldErrorClass} role="alert">
+                        {fieldErrors.customerName}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className={fieldLabelClass}>
+                      Receiver phone <span className="text-[#00473E]">*</span>
+                    </label>
+                    <Input
+                      type="tel"
+                      data-field="customerPhone"
+                      value={formData.customerPhone}
+                      onChange={(e) => handleInputChange('customerPhone', e.target.value)}
+                      onBlur={() => handleBlur('customerPhone')}
+                      placeholder="0712 345 678"
+                      inputMode="tel"
+                      className={fieldClass('customerPhone')}
+                      aria-invalid={Boolean(fieldErrors.customerPhone)}
+                    />
+                    {fieldErrors.customerPhone ? (
+                      <p className={fieldErrorClass} role="alert">
+                        {fieldErrors.customerPhone}
+                      </p>
+                    ) : (
+                      <p className={fieldHintClass}>Use a Kenyan mobile number starting with 07… or 01…</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="border-t border-black/[0.06]" />
+
+                <div className="space-y-5">
+                  <h2 className={sectionTitleClass}>
+                    <MapPin className="size-5 text-[#00473E]" aria-hidden />
+                    Drop-off & pickup
+                  </h2>
+                  {stationsError && (
+                    <p className={fieldErrorClass} role="alert">
+                      {stationsError}
+                    </p>
+                  )}
+                  <div>
+                    <label className={fieldLabelClass}>
+                      Drop-off point <span className="text-[#00473E]">*</span>
+                    </label>
+                    <StationPicker
+                      stations={dropoffStations}
+                      value={formData.dropoffPoint}
+                      loading={stationsLoading}
+                      hasError={Boolean(fieldErrors.dropoffPoint)}
+                      error={fieldErrors.dropoffPoint || null}
+                      dataField="dropoffPoint"
+                      placeholder="Search town or shop to drop off…"
+                      searchPlaceholder="e.g. Nairobi, Kisumu, Iconic…"
+                      emptyMessage="No drop-off points match that search"
+                      onChange={(agentId) => {
+                        handleInputChange('dropoffPoint', agentId);
+                        setTouched((prev) => ({ ...prev, dropoffPoint: true }));
+                        setFieldError('dropoffPoint', agentId ? null : 'Select where you will drop off the parcel');
+                      }}
+                      onBlur={() => handleBlur('dropoffPoint')}
+                    />
+                    {!fieldErrors.dropoffPoint && (
+                      <p className={fieldHintClass}>
+                        Where you hand in the parcel — search by town or shop name.
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className={fieldLabelClass}>
+                      Pickup point <span className="text-[#00473E]">*</span>
+                    </label>
+                    <StationPicker
+                      stations={pickupStations}
+                      value={formData.pickupPoint}
+                      loading={stationsLoading}
+                      hasError={Boolean(fieldErrors.pickupPoint)}
+                      error={fieldErrors.pickupPoint || null}
+                      dataField="pickupPoint"
+                      placeholder="Search town or shop to collect…"
+                      searchPlaceholder="e.g. Mombasa, Nakuru, Bamburi…"
+                      emptyMessage="No pickup points match that search"
+                      onChange={(agentId, station) => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          pickupPoint: agentId,
+                          customerCounty: station?.town || prev.customerCounty,
+                        }));
+                        setTouched((prev) => ({ ...prev, pickupPoint: true }));
+                        setFieldError('pickupPoint', agentId ? null : 'Select where they will pick up the parcel');
+                      }}
+                      onBlur={() => handleBlur('pickupPoint')}
+                    />
+                    {!fieldErrors.pickupPoint && (
+                      <p className={fieldHintClass}>
+                        Where the receiver collects — town and station in one place.
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* Form Container */}
-            <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 lg:p-10 border border-gray-100">
-          {/* Step 1: Vendor & Customer Information Combined */}
-          {step === 1 && (
-            <div className="space-y-8">
-              {/* Vendor Section */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <User className="w-6 h-6 text-[#00473E]" />
-                  <h2 className="text-2xl font-bold text-[#00473E]">Vendor/Sender Information</h2>
-                </div>
+            {step === 2 && (
+              <div className="space-y-5">
+                <h2 className={sectionTitleClass}>
+                  <Package className="size-5 text-[#00473E]" aria-hidden />
+                  Parcel details
+                </h2>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Vendor/Sender Name <span className="text-red-500">*</span>
+                  <label className={fieldLabelClass}>
+                    Package type <span className="text-[#00473E]">*</span>
                   </label>
-                  <Input
-                    type="text"
-                    value={formData.vendorName}
-                    onChange={(e) => handleInputChange('vendorName', e.target.value)}
-                    placeholder="Enter vendor name"
-                    className="w-full"
+                  <SelectPicker
+                    dataField="packageType"
+                    value={formData.packageType}
+                    placeholder="Select package type"
+                    options={packageTypes.map((type) => ({ value: type, label: type }))}
+                    hasError={Boolean(fieldErrors.packageType)}
+                    error={fieldErrors.packageType || null}
+                    onChange={(value) => {
+                      handleInputChange('packageType', value);
+                      setTouched((prev) => ({ ...prev, packageType: true }));
+                    }}
+                    onBlur={() => handleBlur('packageType')}
                   />
                 </div>
 
+                {formData.packageType === 'Other' && (
+                  <div>
+                    <label className={fieldLabelClass}>
+                      Specify type <span className="text-[#00473E]">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      data-field="packageTypeOther"
+                      value={formData.packageTypeOther}
+                      onChange={(e) => handleInputChange('packageTypeOther', e.target.value)}
+                      onBlur={() => handleBlur('packageTypeOther')}
+                      placeholder="Describe your package"
+                      className={fieldClass('packageTypeOther')}
+                      aria-invalid={Boolean(fieldErrors.packageTypeOther)}
+                    />
+                    {fieldErrors.packageTypeOther && (
+                      <p className={fieldErrorClass} role="alert">
+                        {fieldErrors.packageTypeOther}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Vendor/Sender Phone Number <span className="text-red-500">*</span>
+                  <label className={fieldLabelClass}>
+                    Weight range <span className="text-[#00473E]">*</span>
+                  </label>
+                  <SelectPicker
+                    dataField="weightRange"
+                    value={formData.weightRange}
+                    placeholder={
+                      formData.specialSubItemId
+                        ? 'Using special item rate'
+                        : weightBandsLoading
+                          ? 'Loading weight ranges…'
+                          : weightBands.length === 0
+                            ? 'Weight ranges unavailable'
+                            : 'Select weight range'
+                    }
+                    options={weightBands.map((band) => ({
+                      value: band.value,
+                      label: band.label,
+                    }))}
+                    loading={weightBandsLoading}
+                    disabled={
+                      Boolean(formData.specialSubItemId) ||
+                      weightBandsLoading ||
+                      weightBands.length === 0
+                    }
+                    hasError={Boolean(fieldErrors.weightRange || weightBandsError)}
+                    error={fieldErrors.weightRange || weightBandsError || null}
+                    onChange={(value) => {
+                      handleInputChange('weightRange', value);
+                      setTouched((prev) => ({ ...prev, weightRange: true }));
+                      if (value) {
+                        setSelectedSpecialSubItem(null);
+                        setFormData((prev) => ({ ...prev, specialSubItemId: '' }));
+                      }
+                    }}
+                    onBlur={() => handleBlur('weightRange')}
+                  />
+                  {!fieldErrors.weightRange && !weightBandsError && (
+                    <p className={fieldHintClass}>
+                      {formData.specialSubItemId
+                        ? 'Special item selected — weight band not needed.'
+                        : 'Pick the weight range that best matches your parcel.'}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className={fieldLabelClass}>
+                    Declared value (KES) <span className="text-[#00473E]">*</span>
                   </label>
                   <Input
-                    type="tel"
-                    value={formData.vendorPhone}
-                    onChange={(e) => handleInputChange('vendorPhone', e.target.value)}
-                    placeholder="+254712345678"
-                    className="w-full"
+                    type="number"
+                    data-field="packageValue"
+                    value={formData.packageValue}
+                    onChange={(e) => handleInputChange('packageValue', e.target.value)}
+                    onBlur={() => handleBlur('packageValue')}
+                    placeholder="e.g. 5000"
+                    className={fieldClass('packageValue')}
+                    min="0"
+                    aria-invalid={Boolean(fieldErrors.packageValue)}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Include country code (e.g., +254)</p>
-                </div>
-              </div>
-
-              {/* Divider */}
-              <div className="border-t border-gray-200"></div>
-
-              {/* Customer Section */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <MapPin className="w-6 h-6 text-[#00473E]" />
-                  <h2 className="text-2xl font-bold text-[#00473E]">Customer Information</h2>
+                  {fieldErrors.packageValue && (
+                    <p className={fieldErrorClass} role="alert">
+                      {fieldErrors.packageValue}
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Customer Name <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.customerName}
-                    onChange={(e) => handleInputChange('customerName', e.target.value)}
-                    placeholder="Enter customer name"
-                    className="w-full"
-                  />
+                  <p className={fieldLabelClass}>Handling</p>
+                  <div className="flex flex-wrap gap-3">
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-black/10 bg-[#f7f8f6] px-4 py-2.5 text-sm text-[#222]">
+                      <input
+                        type="checkbox"
+                        checked={formData.isFragile}
+                        onChange={(e) => handleInputChange('isFragile', e.target.checked)}
+                        className="size-4 rounded border-black/20 text-[#00473E] focus:ring-[#00473E]"
+                      />
+                      Fragile
+                    </label>
+                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-black/10 bg-[#f7f8f6] px-4 py-2.5 text-sm text-[#222]">
+                      <input
+                        type="checkbox"
+                        checked={formData.isSpillProne}
+                        onChange={(e) => handleInputChange('isSpillProne', e.target.checked)}
+                        className="size-4 rounded border-black/20 text-[#00473E] focus:ring-[#00473E]"
+                      />
+                      Spill-prone
+                    </label>
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="tel"
-                    value={formData.customerPhone}
-                    onChange={(e) => handleInputChange('customerPhone', e.target.value)}
-                    placeholder="+254712345678"
-                    className="w-full"
+                  <label className={fieldLabelClass}>Parcel description</label>
+                  <textarea
+                    data-field="specialInstructions"
+                    value={formData.specialInstructions}
+                    onChange={(e) => {
+                      const text = e.target.value;
+                      handleInputChange('specialInstructions', text);
+                      applyDescriptionDetection(text);
+                    }}
+                    onBlur={() => handleBlur('specialInstructions')}
+                    placeholder={
+                      detectedSpecial
+                        ? `e.g. ${detectedSpecial.category.name} size / model`
+                        : 'e.g. cooker, 55 inch TV, mattress 6x6…'
+                    }
+                    className={textareaClass}
+                    rows={3}
+                    aria-invalid={Boolean(fieldErrors.specialInstructions)}
                   />
-                </div>
+                  <p className={fieldHintClass}>
+                    Type an item name to match special rates (cookers, TVs, fridges, mattresses…).
+                  </p>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Customer Location <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.customerCounty}
-                    onChange={(e) => handleInputChange('customerCounty', e.target.value)}
-                    placeholder="e.g., Kisumu, Mombasa, Nakuru"
-                    className="w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-[#00473E]" />
-                    Preferred Pickup Point <span className="text-red-500">*</span>
-                  </label>
-                  <div 
-                    className={`custom-radio-select ${dropdownOpen ? 'open' : ''}`}
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    onBlur={() => setTimeout(() => setDropdownOpen(false), 200)}
-                    tabIndex={0}
-                  >
-                    <div className={`custom-radio-selected ${formData.pickupPoint ? 'active' : ''}`}>
-                      <span className={formData.pickupPoint ? 'font-medium text-[#00473E]' : 'text-gray-500'}>
-                        {selectedPointLabel}
-                      </span>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className="custom-radio-arrow">
-                        <path d="M233.4 406.6c12.5 12.5 32.8 12.5 45.3 0l192-192c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L256 338.7 86.6 169.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l192 192z" />
-                      </svg>
-                    </div>
-                    <div className="custom-radio-options">
-                      {filteredPickupPoints.length > 0 ? (
-                        filteredPickupPoints.map((point) => (
-                          <div
-                            key={point.id}
-                            className={`custom-radio-option ${formData.pickupPoint === point.id ? 'selected' : ''}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleInputChange('pickupPoint', point.id);
-                              setSelectedPointLabel(point.info);
-                              setDropdownOpen(false);
-                            }}
-                          >
-                            {point.info}
-                          </div>
-                        ))
-                      ) : (
-                        <div className="custom-radio-option disabled">
-                          {formData.customerCounty 
-                            ? '⚠️ No pickup points found for this county'
-                            : '📍 Please select a customer location first'
-                          }
-                        </div>
+                  {detectedSpecial && detectedSpecial.category.subItems.length > 0 && (
+                    <div className="mt-3 space-y-2 rounded-2xl border border-[#00473E]/15 bg-[#00473E]/[0.04] p-3.5">
+                      <p className="text-sm font-semibold text-[#00473E]">
+                        {detectedSpecial.category.name} — pick a size / type
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {detectedSpecial.category.subItems.map((item) => {
+                          const active = String(item.id) === formData.specialSubItemId;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => selectSpecialSubItem(item)}
+                              className={`rounded-full px-3.5 py-2 text-left text-xs font-semibold transition ${
+                                active
+                                  ? 'bg-[#00473E] text-white'
+                                  : 'bg-white text-[#00473E] ring-1 ring-black/10 hover:ring-[#00473E]/35'
+                              }`}
+                            >
+                              <span className="block">{item.label}</span>
+                              {item.price > 0 && (
+                                <span
+                                  className={`mt-0.5 block font-medium ${
+                                    active ? 'text-white/80' : 'text-[#5c6562]'
+                                  }`}
+                                >
+                                  from KES {item.price.toLocaleString()}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {selectedSpecialSubItem && (
+                        <p className="text-xs font-medium text-[#00473E]">
+                          Special rate selected for {selectedSpecialSubItem.label}.
+                        </p>
                       )}
                     </div>
-                  </div>
+                  )}
+                  {fieldErrors.specialInstructions && (
+                    <p className={fieldErrorClass} role="alert">
+                      {fieldErrors.specialInstructions}
+                    </p>
+                  )}
                 </div>
-              </div>
-            </div>
-          )}
 
-          {/* Step 2: Package Details */}
-          {step === 2 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <Package className="w-6 h-6 text-[#00473E]" />
-                <h2 className="text-2xl font-bold text-[#00473E]">Package Details</h2>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Package Type <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.packageType}
-                  onChange={(e) => handleInputChange('packageType', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00473E] focus:border-transparent"
-                >
-                  <option value="">Select package type</option>
-                  {packageTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {formData.packageType === 'Other' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Specify Package Type <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="text"
-                    value={formData.packageTypeOther}
-                    onChange={(e) => handleInputChange('packageTypeOther', e.target.value)}
-                    placeholder="Describe your package type"
-                    className="w-full"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Weight Range <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={formData.weightRange}
-                  onChange={(e) => handleInputChange('weightRange', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00473E] focus:border-transparent"
-                >
-                  <option value="">Select weight range</option>
-                  {weightRanges.map((range) => (
-                    <option key={range} value={range}>
-                      {range}
-                    </option>
-                  ))}
-                </select>
-                {/* Delivery fee display */}
-                <div className="mt-3">
+                <div className="rounded-2xl border border-[#00473E]/15 bg-[#071410] px-4 py-4 text-white">
+                  <p className="text-[11px] font-semibold tracking-[0.14em] text-[#E9FF15] uppercase">
+                    Live delivery fee
+                  </p>
                   {feeLoading ? (
-                    <p className="text-sm text-gray-500">Calculating delivery fee...</p>
+                    <p className="mt-2 text-sm text-white/70">Updating fee…</p>
                   ) : feeError ? (
-                    <p className="text-sm text-amber-600">{feeError}</p>
+                    <p className="mt-2 text-sm text-amber-200">{feeError}</p>
                   ) : deliveryFee !== null ? (
-                    <p className="text-sm text-[#00473E] font-semibold">Estimated delivery fee: KES {deliveryFee.toLocaleString()}</p>
+                    <>
+                      <p className="mt-1 font-[Sora] text-3xl font-semibold tracking-tight">
+                        KES {deliveryFee.toLocaleString()}
+                      </p>
+                      {feeNote && <p className="mt-1 text-xs text-white/60">{feeNote}</p>}
+                    </>
                   ) : (
-                    <p className="text-sm text-gray-500">Select pickup point and weight to see delivery fee</p>
+                    <p className="mt-2 text-sm text-white/65">
+                      {formData.specialSubItemId
+                        ? 'Select drop-off & pickup to price this special item'
+                        : 'Select stations + weight (or a special item) to see the fee'}
+                    </p>
                   )}
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Package Value (KES) <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="number"
-                  value={formData.packageValue}
-                  onChange={(e) => handleInputChange('packageValue', e.target.value)}
-                  placeholder="e.g., 5000"
-                  className="w-full"
-                  min="0"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <label className="block text-sm font-medium text-gray-700">Package Properties</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="fragile"
-                    checked={formData.isFragile}
-                    onChange={(e) => handleInputChange('isFragile', e.target.checked)}
-                    className="w-4 h-4 text-[#00473E] border-gray-300 rounded focus:ring-[#00473E]"
-                  />
-                  <label htmlFor="fragile" className="text-sm text-gray-700">
-                    Fragile
-                  </label>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="spillProne"
-                    checked={formData.isSpillProne}
-                    onChange={(e) => handleInputChange('isSpillProne', e.target.checked)}
-                    className="w-4 h-4 text-[#00473E] border-gray-300 rounded focus:ring-[#00473E]"
-                  />
-                  <label htmlFor="spillProne" className="text-sm text-gray-700">
-                    Spill Prone
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Parcel Details
-                </label>
-                <textarea
-                  value={formData.specialInstructions}
-                  onChange={(e) => handleInputChange('specialInstructions', e.target.value)}
-                  placeholder="Enter items name, pieces, and variations.E.g., 2 phones, 1 tablet (Samsung), chargers, etc."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#00473E] focus:border-transparent resize-none"
-                  rows={4}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Checkout/Summary */}
-          {step === 3 && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-6">
-                <CheckCircle className="w-6 h-6 text-[#00473E]" />
-                <h2 className="text-2xl font-bold text-[#00473E]">Checkout - Review Your Booking</h2>
-              </div>
-
-              <div className="space-y-6">
-                {/* Vendor Info Summary */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-[#00473E] mb-3 flex items-center gap-2">
-                    <User className="w-5 h-5" />
-                    Vendor Information
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <p><strong>Name:</strong> {formData.vendorName}</p>
-                    <p><strong>Phone:</strong> {formData.vendorPhone}</p>
-                  </div>
-                </div>
-
-                {/* Customer Info Summary */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-[#00473E] mb-3 flex items-center gap-2">
-                    <MapPin className="w-5 h-5" />
-                    Customer Information
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <p><strong>Name:</strong> {formData.customerName}</p>
-                    <p><strong>Phone:</strong> {formData.customerPhone}</p>
-                    <p><strong>County:</strong> {formData.customerCounty}</p>
-                    <p><strong>Pickup Point:</strong> {
-                      points.find(p => String(p.id) === String(formData.pickupPoint))?.info || formData.pickupPoint
-                    }</p>
-                  </div>
-                </div>
-
-                {/* Package Info Summary */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-semibold text-[#00473E] mb-3 flex items-center gap-2">
-                    <Package className="w-5 h-5" />
-                    Package Details
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <p>
-                      <strong>Type:</strong>{' '}
-                      {formData.packageType === 'Other'
-                        ? formData.packageTypeOther
-                        : formData.packageType}
-                    </p>
-                    <p><strong>Weight:</strong> {formData.weightRange}</p>
-                    <p><strong>Value:</strong> KES {formData.packageValue}</p>
-                    {(formData.isFragile || formData.isSpillProne) && (
-                      <p>
-                        <strong>Properties:</strong>{' '}
-                        {[formData.isFragile && 'Fragile', formData.isSpillProne && 'Spill Prone']
-                          .filter(Boolean)
-                          .join(', ')}
-                      </p>
-                    )}
-                    {formData.specialInstructions && (
-                      <p><strong>Parcel Description:</strong> {formData.specialInstructions}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Delivery Fee Summary */}
-                {deliveryFee !== null && (
-                  <div className="bg-[#00473E] text-white rounded-lg p-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold">Delivery Fee:</span>
-                      <span className="text-2xl font-bold">KES {deliveryFee.toLocaleString()}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-[#E9FF15]/20 border border-[#E9FF15] rounded-lg p-4 mt-6">
-                <p className="text-sm text-gray-700">
-                  <strong>Note:</strong> Your Parcel Tracking number has been created. Pay the parcel fees so that you get a receipt NOW
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8 pt-6 border-t">
-            {step > 1 && (
-              <Button
-                onClick={handleBack}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back
-              </Button>
             )}
 
-            <div className={step === 1 ? 'ml-auto' : ''}>
-              {step < 3 ? (
-                <Button
-                  onClick={handleNext}
-                  className="bg-[#00473E] hover:bg-[#006644] text-white flex items-center gap-2"
+            {step === 3 && (
+              <div className="space-y-5">
+                <h2 className={sectionTitleClass}>
+                  <CheckCircle className="size-5 text-[#00473E]" aria-hidden />
+                  Review booking
+                </h2>
+
+                {deliveryFee !== null && (
+                  <div className="rounded-2xl bg-[#00473E] px-5 py-5 text-white">
+                    <p className="text-xs font-semibold tracking-[0.14em] text-[#E9FF15] uppercase">
+                      Delivery fee · Prepaid
+                    </p>
+                    <p className="mt-2 font-[Sora] text-3xl font-semibold tracking-tight">
+                      KES {deliveryFee.toLocaleString()}
+                    </p>
+                  </div>
+                )}
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-black/[0.06] bg-[#f7f8f6] p-4">
+                    <p className="text-xs font-semibold tracking-wide text-[#5c6562] uppercase">
+                      You
+                    </p>
+                    <p className="mt-2 font-semibold text-[#111]">{formData.vendorName}</p>
+                    <p className="mt-1 text-sm text-[#5c6562]">{formData.vendorPhone}</p>
+                  </div>
+                  <div className="rounded-2xl border border-black/[0.06] bg-[#f7f8f6] p-4">
+                    <p className="text-xs font-semibold tracking-wide text-[#5c6562] uppercase">
+                      Receiver
+                    </p>
+                    <p className="mt-2 font-semibold text-[#111]">{formData.customerName}</p>
+                    <p className="mt-1 text-sm text-[#5c6562]">{formData.customerPhone}</p>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-black/[0.06] bg-[#f7f8f6] p-4">
+                  <p className="text-xs font-semibold tracking-wide text-[#5c6562] uppercase">
+                    Route & parcel
+                  </p>
+                  <p className="mt-2 text-sm text-[#222]">
+                    <span className="font-semibold">Drop-off:</span>{' '}
+                    {selectedDropoff ? stationOptionLabel(selectedDropoff) : '—'}
+                  </p>
+                  <p className="mt-1 text-sm text-[#222]">
+                    <span className="font-semibold">Pickup:</span>{' '}
+                    {selectedPickup ? stationOptionLabel(selectedPickup) : '—'}
+                  </p>
+                  <p className="mt-2 text-sm text-[#5c6562]">
+                    {formData.packageType === 'Other'
+                      ? formData.packageTypeOther
+                      : formData.packageType}{' '}
+                    ·{' '}
+                    {selectedSpecialSubItem
+                      ? `Special · ${selectedSpecialSubItem.label}`
+                      : weightBands.find((b) => b.value === formData.weightRange)?.label ||
+                        formData.weightRange}{' '}
+                    · Value KES{' '}
+                    {Number(formData.packageValue || 0).toLocaleString()}
+                    {(formData.isFragile || formData.isSpillProne) &&
+                      ` · ${[
+                        formData.isFragile && 'Fragile',
+                        formData.isSpillProne && 'Spill-prone',
+                      ]
+                        .filter(Boolean)
+                        .join(', ')}`}
+                  </p>
+                  {formData.specialInstructions && (
+                    <p className="mt-2 text-sm text-[#5c6562]">{formData.specialInstructions}</p>
+                  )}
+                </div>
+
+                <div className="flex items-start gap-3 rounded-2xl border border-[#E9FF15]/60 bg-[#E9FF15]/20 px-4 py-3">
+                  <Truck className="mt-0.5 size-4 shrink-0 text-[#00473E]" aria-hidden />
+                  <p className="text-sm text-[#3d4542]">
+                    Confirm to create your tracking number, then pay the courier fee by M-Pesa
+                    Prompt or Paybill.
+                  </p>
+                </div>
+
+                {submitError && (
+                  <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+                    {submitError}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-black/[0.06] pt-6">
+              {step > 1 ? (
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  disabled={submitting}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-full border border-black/10 bg-white px-5 text-sm font-semibold text-[#00473E] transition-colors hover:border-[#00473E]/30 disabled:opacity-50"
                 >
-                  Next
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
+                  <ArrowLeft className="size-4" />
+                  Back
+                </button>
               ) : (
-                <Button
-                  onClick={handleSubmit}
-                  className="bg-[#E9FF15] hover:bg-[#d4e614] text-[#00473E] font-bold flex items-center gap-2"
+                <span />
+              )}
+
+              {step < 3 ? (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#00473E] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#00352f]"
                 >
-                  <CheckCircle className="w-4 h-4" />
-                  Proceed to Payment
-                </Button>
+                  Continue
+                  <ArrowRight className="size-4" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={submitting || feeLoading || !deliveryFee}
+                  className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#E9FF15] px-6 text-sm font-bold text-[#00473E] transition-colors hover:bg-[#d4ee12] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {submitting ? (
+                    <Loader2 className="size-4 animate-spin" aria-hidden />
+                  ) : (
+                    <CheckCircle className="size-4" />
+                  )}
+                  {submitting ? 'Creating booking…' : 'Confirm & pay'}
+                </button>
               )}
             </div>
           </div>
-            </div>
-          </div>
         </div>
-      </div>
+      </section>
+
+      <Footer />
     </div>
   );
 };

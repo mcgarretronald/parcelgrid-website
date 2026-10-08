@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { JsonLd } from '../components/JsonLd';
 import { Helmet } from 'react-helmet-async';
 import {
   Search,
@@ -7,8 +8,6 @@ import {
   Truck,
   Loader2,
   Clock,
-  Navigation,
-  FileText,
   User,
   Store,
   AlertCircle,
@@ -28,6 +27,8 @@ import {
 import { useScrollToTop } from '../hooks/useScrollToTop';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
+import Footer from '../components/Footer';
+import { TrackEmptyMarketing, TrackSoftSellRail } from '../components/track/TrackMarketing';
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -126,7 +127,7 @@ function mapTrackStatus(
     [/ready_for_collection/, 'Ready for Collection', 3],
     [/out_for_delivery|dispatched/, 'Out for Delivery', 3],
     [/received_by_escrow|received_by_hq/, 'Received by Escrow', 3],
-    [/arrived_at_hq|arrived_at/, 'Arrived at Hub', 3],
+    [/arrived_at_hq|arrived_at/, 'Arrived at Branch', 3],
     [/in_transit|transit/, 'In Transit', 2],
     [/received_at_origin|picked|collected|scanned/, 'Picked Up', 1],
     [/pending|booked|created/, 'Parcel Booked', 0],
@@ -143,7 +144,7 @@ function mapTrackStatus(
     ['readyForCollectionAt', 'Ready for Collection', 3],
     ['dispatchedAt', 'Out for Delivery', 3],
     ['receivedByEscrowAt', 'Received by Escrow', 3],
-    ['arrivedAtHqAt', 'Arrived at Hub', 3],
+    ['arrivedAtHqAt', 'Arrived at Branch', 3],
     ['inTransitToHqAt', 'In Transit', 2],
     ['receivedAtOriginAt', 'Picked Up', 1],
     ['bookedAt', 'Parcel Booked', 0],
@@ -176,7 +177,7 @@ const DELIVERY_STAGES: DeliveryStage[] = [
   },
   {
     title: 'Received by ParcelGrid',
-    description: 'ParcelGrid has received your parcel at the dispatch hub.',
+    description: 'ParcelGrid has received your parcel at the dispatch branch.',
     icon: Package,
   },
   {
@@ -277,7 +278,7 @@ function buildSyntheticEvents(input: {
     },
     {
       label: 'Received by ParcelGrid',
-      desc: 'ParcelGrid has received your parcel at the dispatch hub.',
+      desc: 'ParcelGrid has received your parcel at the dispatch branch.',
     },
     {
       label: 'In Transit',
@@ -447,7 +448,7 @@ const AgentPhoneLine: React.FC<{
       onClick={onCopy}
       aria-label={`Copy pickup agent phone number ${phone}`}
       title="Copy phone number"
-      className="inline-flex items-center gap-1.5 rounded-full border border-[#00473E]/25 bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#00473E] transition-colors hover:bg-[#00473E] hover:text-white"
+      className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-[#00473E]/25 bg-white px-3.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-[#00473E] transition-colors hover:bg-[#00473E] hover:text-white"
     >
       {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
       {copied ? 'Copied' : 'Copy'}
@@ -594,6 +595,8 @@ function normalizeTrackResponse(payload: any, fallbackTrackingNo: string): Track
 /* ------------------------------------------------------------------ */
 
 const TRACK_API = 'https://app.escrowcourier.com/order-services/api/track';
+const TRACK_PROXY_PATH = '/track-api';
+const TRACK_FUNCTION_PATH = '/api/track';
 const PICKUP_POINTS_API = 'https://app.escrowcourier.com/website-backend-services/api/pickup-points';
 // Same-origin alternatives to the pickup-points API above:
 //  - `/api/pickup-points` = the serverless function in `api/pickup-points.js`
@@ -651,40 +654,76 @@ async function fetchPickupPoints(): Promise<any[]> {
 
 async function fetchTracking(trackingNo: string): Promise<TrackingData> {
   const value = trackingNo.trim();
-  const url = `${TRACK_API}/${encodeURIComponent(value)}`;
-  const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
+  const encoded = encodeURIComponent(value);
 
-  // The track endpoint returns 404 when the parcel doesn't exist / isn't trackable.
-  if (res.status === 404) {
+  // Prefer same-origin proxies (avoid CORS). Upstream only allows escrowcourier.com.
+  const sources = import.meta.env.DEV
+    ? [`${TRACK_PROXY_PATH}/${encoded}`, `${TRACK_FUNCTION_PATH}?tracking=${encoded}`, `${TRACK_API}/${encoded}`]
+    : [`${TRACK_FUNCTION_PATH}?tracking=${encoded}`, `${TRACK_PROXY_PATH}/${encoded}`, `${TRACK_API}/${encoded}`];
+
+  let lastStatus: number | null = null;
+  let lastNetworkError = false;
+
+  for (const url of sources) {
+    try {
+      // Simple GET — no Content-Type header (avoids CORS preflight on direct calls).
+      const res = await fetch(url, { headers: { Accept: 'application/json' } });
+      lastStatus = res.status;
+
+      if (res.status === 404) {
+        throw new Error(
+          'Parcel not found. Please double-check your tracking number and try again, or contact our support team for help.'
+        );
+      }
+      if (!res.ok) {
+        // Try next source for gateway/proxy failures; keep last status for messaging.
+        if (res.status >= 500 || res.status === 502 || res.status === 503) continue;
+        throw new Error(
+          `Unable to reach the tracking service right now (${res.status}). Please try again later.`
+        );
+      }
+
+      const text = await res.text();
+      let json: any = null;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        continue;
+      }
+
+      // The track endpoint returns: { success, data: { trackingNo, currentStatus, order, milestones, journey } }
+      const payload = json?.data && typeof json.data === 'object' ? json.data : json;
+
+      if (
+        json?.success === false ||
+        !payload ||
+        (typeof payload === 'object' && !Array.isArray(payload) && Object.keys(payload).length === 0)
+      ) {
+        throw new Error(
+          'Parcel not found. Please double-check your tracking number and try again, or contact our support team for help.'
+        );
+      }
+
+      return normalizeTrackResponse(payload, value);
+    } catch (err) {
+      if (err instanceof Error && err.message.startsWith('Parcel not found')) throw err;
+      if (err instanceof Error && err.message.startsWith('Unable to reach')) throw err;
+      // Network/CORS failure — try the next source.
+      lastNetworkError = true;
+    }
+  }
+
+  if (lastNetworkError && lastStatus == null) {
     throw new Error(
-      'Parcel not found. Please double-check your tracking number and try again, or contact our support team for help.'
+      'Unable to reach the tracking service right now. Please check your connection and try again.'
     );
   }
-  if (!res.ok) {
-    throw new Error(`Unable to reach the tracking service right now (${res.status}). Please try again later.`);
-  }
 
-  let json: any = null;
-  try {
-    json = await res.json();
-  } catch {
-    throw new Error('The tracking service returned an invalid response. Please try again in a few minutes.');
-  }
-
-  // The track endpoint returns: { success, data: { trackingNo, currentStatus, order, milestones, journey } }
-  const payload = json?.data && typeof json.data === 'object' ? json.data : json;
-
-  if (
-    json?.success === false ||
-    !payload ||
-    (typeof payload === 'object' && !Array.isArray(payload) && Object.keys(payload).length === 0)
-  ) {
-    throw new Error(
-      'Parcel not found. Please double-check your tracking number and try again, or contact our support team for help.'
-    );
-  }
-
-  return normalizeTrackResponse(payload, value);
+  throw new Error(
+    lastStatus
+      ? `Unable to reach the tracking service right now (${lastStatus}). Please try again later.`
+      : 'Unable to reach the tracking service right now. Please try again later.'
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -710,13 +749,13 @@ const TrackingPage: React.FC = () => {
   const [agentLoading, setAgentLoading] = useState(false);
   const [agentError, setAgentError] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const value = trackingNo.trim();
+  const runTrack = async (raw: string) => {
+    const value = raw.trim();
     if (!value) {
       setError('Please enter a tracking number.');
       return;
     }
+    setTrackingNo(value);
     setLoading(true);
     setError(null);
     setResult(null);
@@ -731,6 +770,20 @@ const TrackingPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    const value = new URLSearchParams(window.location.search).get('tracking');
+    if (value?.trim()) {
+      void runTrack(value);
+    }
+    // Prefill from the landing tracker once on arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await runTrack(trackingNo);
   };
 
   const isReturned = !!result?.isReturned;
@@ -824,36 +877,42 @@ const TrackingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       <Helmet>
-        <title>Track Your Parcel in Real-Time | ParcelGrid</title>
+        <title>Track Your Parcel | Live Upcountry Delivery Tracking | ParcelGrid</title>
         <meta
           name="title"
-          content="Track Your Parcel in Real-Time | ParcelGrid"
+          content="Track Your Parcel | Live Upcountry Delivery Tracking | ParcelGrid"
         />
         <meta
           name="description"
-          content="Track your ParcelGrid parcel instantly using your tracking number. View live delivery status and the full journey route from booking to delivery across Kenya."
+          content="Track your ParcelGrid shipment across 300+ towns in Kenya. Real-time updates for prepaid and Pay on Delivery (COD) parcels with Communications Authority licensed security."
         />
         <meta
           name="keywords"
-          content="track parcel Kenya, parcel tracking, ParcelGrid tracking, track courier delivery, delivery status, track my parcel, parcel route, COD tracking"
+          content="track parcel Kenya, parcel tracking, ParcelGrid tracking, track courier delivery, delivery status, track my parcel, parcel route, COD tracking, upcountry delivery tracking"
         />
         <meta name="robots" content="index, follow" />
 
         <meta property="og:type" content="website" />
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
-        <meta property="og:title" content="Track Your Parcel in Real-Time | ParcelGrid" />
+        <meta
+          property="og:title"
+          content="Track Your Parcel | Live Upcountry Delivery Tracking | ParcelGrid"
+        />
         <meta
           property="og:description"
-          content="Enter your tracking number to see live parcel status and the full delivery route."
+          content="Track your ParcelGrid shipment across 300+ towns in Kenya. Real-time updates for prepaid and Pay on Delivery (COD) parcels."
         />
         <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/logo1.png` : ''} />
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
-        <meta property="twitter:title" content="Track Your Parcel in Real-Time | ParcelGrid" />
+        <meta
+          property="twitter:title"
+          content="Track Your Parcel | Live Upcountry Delivery Tracking | ParcelGrid"
+        />
         <meta
           property="twitter:description"
-          content="Enter your tracking number to see live parcel status and the full delivery route."
+          content="Track your ParcelGrid shipment across 300+ towns in Kenya with CA-licensed security."
         />
         <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/logo1.png` : ''} />
 
@@ -862,74 +921,75 @@ const TrackingPage: React.FC = () => {
         <meta name="geo.region" content="KE" />
         <meta name="geo.placename" content="Kenya" />
 
-        <script type="application/ld+json">
-          {JSON.stringify({
+      </Helmet>
+      <JsonLd data={{
             '@context': 'https://schema.org',
             '@type': 'WebPage',
             name: 'Track Your Parcel | ParcelGrid',
             description:
-              'Track your ParcelGrid parcel instantly using your tracking number. View live delivery status and the full journey route.',
+              'Track your ParcelGrid shipment across 300+ towns in Kenya. Real-time updates for prepaid and Pay on Delivery (COD) parcels with Communications Authority licensed security.',
             url: typeof window !== 'undefined' ? `${window.location.origin}/track` : '',
             publisher: {
               '@type': 'Organization',
               name: 'Escrow Courier Networks Limited',
             },
-          })}
-        </script>
-      </Helmet>
+          }} />
 
       {/* Hero + Tracking form */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#00473E] via-[#006644] to-[#00473E]">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-6 left-6 w-24 h-24 rounded-full bg-[#E9FF15] animate-pulse" />
-          <div className="absolute bottom-8 right-10 w-16 h-16 rounded-full bg-[#E9FF15] animate-pulse delay-500" />
-          <div className="absolute top-1/3 right-1/4 w-10 h-10 rounded-full bg-[#E9FF15] animate-pulse delay-1000" />
-        </div>
-
-        <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3">
+      <section className="relative -mt-24 overflow-hidden bg-[#071410]">
+        <div
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(0,71,62,0.55),transparent_70%)]"
+          aria-hidden="true"
+        />
+        <div className="relative z-10 mx-auto max-w-3xl px-5 pb-14 pt-28 text-center sm:px-8 sm:pb-16 sm:pt-32">
+          <h1 className="font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">
             Track Your Parcel
           </h1>
-          <p className="text-base sm:text-lg text-[#E9FF15] mb-8 sm:mb-10">
-            Enter your tracking number to see the latest status
+          <p className="mx-auto mt-3 max-w-xl text-base text-white/75 sm:text-lg">
+            Real-time status updates for ParcelGrid deliveries across Kenya.
           </p>
 
-          {/* Search form */}
           <form
             onSubmit={handleSubmit}
-            className="max-w-xl mx-auto bg-white rounded-full shadow-xl p-2 flex items-center gap-2"
+            className="mx-auto mt-8 flex max-w-xl items-center gap-2 rounded-full bg-white p-2 shadow-lg sm:mt-10"
           >
-            <Search className="ml-3 w-5 h-5 text-gray-400 flex-shrink-0" />
+            <Search className="ml-3 h-5 w-5 shrink-0 text-gray-400" />
             <Input
               type="text"
               value={trackingNo}
               onChange={(e) => setTrackingNo(e.target.value)}
-              placeholder="e.g. LILI#57267"
-              className="flex-1 h-12 px-2 text-base bg-transparent border-0 focus-visible:ring-0 focus-visible:border-transparent"
+              placeholder="Enter your Tracking Number"
+              className="h-12 flex-1 border-0 bg-transparent px-2 text-base focus-visible:border-transparent focus-visible:ring-0"
               aria-label="Tracking number"
             />
             <Button
               type="submit"
               disabled={loading}
-              className="h-12 px-6 rounded-full bg-[#E9FF15] text-[#00473E] hover:bg-[#d4e614] font-semibold text-sm sm:text-base transition-all duration-200 hover:scale-[1.02] disabled:opacity-70 disabled:hover:scale-100 whitespace-nowrap"
+              className="h-12 whitespace-nowrap rounded-full bg-[#E9FF15] px-6 text-sm font-semibold text-[#00473E] transition-colors hover:bg-[#d4ee12] disabled:opacity-70 sm:text-base"
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                   Tracking...
                 </>
               ) : (
                 <>
                   Track Now
-                  <ChevronRight className="w-4 h-4 ml-1" />
+                  <ChevronRight className="ml-1 h-4 w-4" />
                 </>
               )}
             </Button>
           </form>
 
+          <p className="mt-5 text-xs font-medium tracking-[0.12em] text-white/55 uppercase sm:text-[13px] sm:tracking-[0.08em] sm:normal-case">
+            <span className="sm:tracking-normal">
+              CA-Licensed Courier · Next-Day Upcountry · Instant M-Pesa COD Payouts
+            </span>
+          </p>
+
           {error && hasSearched && (
-            <div className="max-w-2xl mx-auto mt-6 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-5 py-4 text-left">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <div className="mx-auto mt-6 flex max-w-2xl items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-left text-red-700">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
               <div>
                 <p className="font-semibold">Tracking failed</p>
                 <p className="text-sm text-red-600">{error}</p>
@@ -941,10 +1001,11 @@ const TrackingPage: React.FC = () => {
 
       {/* Results / status */}
       {hasSearched && !loading && result && (
-        <section className="py-10 sm:py-14 bg-gradient-to-br from-gray-50 to-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <section className="bg-[#f7f8f6] py-10 sm:py-14">
+          <div className="mx-auto grid max-w-6xl gap-8 px-5 sm:px-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
+            <div className="min-w-0 space-y-6">
             {/* Status card */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-sm">
               <div className="px-6 sm:px-8 py-6 sm:py-7">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                   <div>
@@ -959,7 +1020,7 @@ const TrackingPage: React.FC = () => {
                         type="button"
                         onClick={handleCopy}
                         aria-label="Copy tracking number"
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-[#00473E] hover:bg-gray-100 transition-colors"
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-gray-400 hover:text-[#00473E] hover:bg-gray-100 transition-colors"
                       >
                         {copied ? (
                           <Check className="w-4 h-4 text-green-600" />
@@ -1005,7 +1066,7 @@ const TrackingPage: React.FC = () => {
                     onClick={handleToggleDetails}
                     aria-expanded={showDetails}
                     aria-controls="parcel-details-panel"
-                    className="mx-auto flex items-center gap-2 rounded-full border border-[#00473E]/25 bg-[#00473E]/5 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-[#00473E] transition-colors hover:bg-[#00473E] hover:text-white"
+                    className="mx-auto flex min-h-11 items-center gap-2 rounded-full border border-[#00473E]/25 bg-[#00473E]/5 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-[#00473E] transition-colors hover:bg-[#00473E] hover:text-white"
                   >
                     {showDetails ? (
                       <>
@@ -1069,7 +1130,7 @@ const TrackingPage: React.FC = () => {
                           <button
                             type="button"
                             onClick={retryAgents}
-                            className="rounded-full border border-amber-400 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-900 transition-colors hover:bg-amber-400 hover:text-white"
+                            className="inline-flex min-h-11 items-center rounded-full border border-amber-400 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-wide text-amber-900 transition-colors hover:bg-amber-400 hover:text-white"
                           >
                             Retry
                           </button>
@@ -1124,12 +1185,12 @@ const TrackingPage: React.FC = () => {
             </div>
 
             {/* Delivery progress — vertical step timeline */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mt-6">
-              <div className="px-6 sm:px-8 py-6 sm:py-7">
+            <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-sm">
+              <div className="px-6 py-6 sm:px-8 sm:py-7">
                 {/* Heading */}
-                <div className="flex items-start justify-between gap-4 mb-6">
+                <div className="mb-6 flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-lg font-bold text-gray-900">Delivery Progress</h2>
+                    <h2 className="font-[Sora] text-lg font-semibold text-gray-900">Delivery Progress</h2>
                     <p className="mt-1 text-sm text-gray-500">
                       Track your parcel&rsquo;s journey in real time.
                     </p>
@@ -1288,28 +1349,10 @@ const TrackingPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Support note */}
-            <div className="mt-6 bg-[#00473E]/5 border border-[#00473E]/10 rounded-2xl px-6 py-5 flex flex-col sm:flex-row sm:items-center gap-4">
-              <AlertCircle className="w-6 h-6 text-[#00473E] flex-shrink-0" />
-              <div className="text-sm text-gray-700">
-                <span className="font-semibold text-[#00473E]">Need help with your parcel?</span>{' '}
-                Our support team is available at{' '}
-                <a href="tel:+254745111555" className="font-semibold text-[#00473E] underline underline-offset-2">
-                  0745 111 555
-                </a>{' '}
-                /{' '}
-                <a href="tel:+254794333888" className="font-semibold text-[#00473E] underline underline-offset-2">
-                  0794 333 888
-                </a>{' '}
-                or{' '}
-                <a
-                  href="mailto:info@escrowcourier.com"
-                  className="font-semibold text-[#00473E] underline underline-offset-2"
-                >
-                  info@escrowcourier.com
-                </a>
-                .
-              </div>
+            </div>
+
+            <div className="lg:sticky lg:top-24">
+              <TrackSoftSellRail />
             </div>
           </div>
         </section>
@@ -1317,8 +1360,8 @@ const TrackingPage: React.FC = () => {
 
       {/* Loading state */}
       {hasSearched && loading && (
-        <section className="py-10 sm:py-14 bg-gradient-to-br from-gray-50 to-white">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <section className="bg-[#f7f8f6] py-10 sm:py-14">
+          <div className="mx-auto max-w-4xl px-5 sm:px-8">
             {/* Status message */}
             <div className="flex flex-col items-center text-center mb-8">
               <div className="relative flex items-center justify-center w-16 h-16 mb-4">
@@ -1404,43 +1447,10 @@ const TrackingPage: React.FC = () => {
         </section>
       )}
 
-      {/* Info section when no search yet */}
-      {!hasSearched && (
-        <section className="py-14 sm:py-16 bg-gradient-to-br from-gray-50 to-white">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  icon: FileText,
-                  title: 'Enter Your Tracking Number',
-                  desc: 'Find the tracking number on your booking receipt, payment confirmation SMS, or in the ParcelGrid app.',
-                },
-                {
-                  icon: Truck,
-                  title: 'See Live Status Updates',
-                  desc: 'Instantly see where your parcel is right now and its current delivery status in real-time.',
-                },
-                {
-                  icon: Navigation,
-                  title: 'View the Full Route',
-                  desc: 'Follow every step of the journey — from booking and pickup to transit, out for delivery, and final delivery.',
-                },
-              ].map((card) => (
-                <div
-                  key={card.title}
-                  className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center hover:shadow-md transition-shadow duration-200"
-                >
-                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#00473E] text-[#E9FF15] mb-4">
-                    <card.icon className="w-7 h-7" />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{card.title}</h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">{card.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Empty state — marketing conversion */}
+      {!hasSearched && <TrackEmptyMarketing />}
+
+      <Footer />
     </div>
   );
 };
