@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PickupPoint, GoogleMapProps } from '../../lib/types'
+import { fetchAgents } from '../../lib/api'
 
 // Custom hook to fetch and normalize agent data
 export function useAgentData() {
@@ -10,61 +11,16 @@ export function useAgentData() {
     let mounted = true
 
     const fetchPoints = async () => {
-      // Direct API call to the pickup points endpoint
-      const endpoint = 'https://app.escrowcourier.com/website-backend-services/api/pickup-points';
-
       setLoading(true)
       try {
-        const res = await fetch(endpoint, {
-          headers: { 'Content-Type': 'application/json' }
-        })
-        
-        // Check if response is actually JSON
-        const contentType = res.headers.get('content-type')
-        if (!res.ok || !contentType?.includes('application/json')) {
-          console.warn(`API endpoint returned non-JSON response:`, res.status, res.statusText)
-          if (mounted) {
-            setPoints([])
-            setLoading(false)
-          }
-          return
-        }
-        
-        const data = await res.json()
-
-        // Debug: log first agent to see structure
-        console.log('Agent API response type:', Array.isArray(data) ? 'array' : typeof data);
-        if (Array.isArray(data) && data.length > 0) {
-          console.log('First agent sample:', data[0]);
-        } else if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
-          console.log('First agent sample (from data.data):', data.data[0]);
-        }
-
-        // Handle different response formats
-        let arr: any[] = []
-        if (Array.isArray(data)) {
-          arr = data
-        } else if (data?.data && Array.isArray(data.data)) {
-          arr = data.data
-        } else if (data?.agents && Array.isArray(data.agents)) {
-          arr = data.agents
-        } else if (data?.results && Array.isArray(data.results)) {
-          arr = data.results
-        } else if (typeof data === 'object') {
-          const possibleArrays = Object.values(data).filter((v) => Array.isArray(v))
-          if (possibleArrays.length > 0) {
-            arr = possibleArrays[0] as any[]
-          }
-        }
+        // Public agents list (same-origin proxy/function first, then the API directly).
+        const arr = await fetchAgents()
 
         const normalized: PickupPoint[] = arr
           .filter((item: any) => {
             // Filter out inactive agents - only show active ones
             const status = item.status ?? item.accountStatus ?? item.active ?? item.isActive
-            
-            // Debug logging to see actual status values
-            console.log('Agent:', item.name ?? item.businessName, 'Status:', status, 'Full item:', item)
-            
+
             if (typeof status === 'string') {
               return status.toLowerCase() === 'active'
             }
@@ -158,7 +114,6 @@ export function useAgentData() {
               rawData: item, // Preserve original data
             }
           })
-          .filter((p: PickupPoint) => p.lat !== 0 || p.lng !== 0)
 
         if (mounted) {
           setPoints(normalized)
@@ -270,6 +225,10 @@ export default function GoogleMap({
       const markerMap: Record<string, any> = {}
 
       points.forEach((p) => {
+        // The public agents payload has no coordinates for many entries; skip
+        // those when placing markers rather than dropping them from the list.
+        if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng) || (p.lat === 0 && p.lng === 0)) return
+
         const iconUrl = '/logo1.png'
         const iconSize = new google.maps.Size(48, 48)
 
@@ -301,9 +260,12 @@ export default function GoogleMap({
         markerMap[String(p.id)] = marker
       })
 
-      if (points.length > 0) {
+      const mappable = points.filter(
+        (p) => Number.isFinite(p.lat) && Number.isFinite(p.lng) && !(p.lat === 0 && p.lng === 0)
+      )
+      if (mappable.length > 0) {
         const bounds = new google.maps.LatLngBounds()
-        points.forEach((p) => bounds.extend({ lat: p.lat, lng: p.lng }))
+        mappable.forEach((p) => bounds.extend({ lat: p.lat, lng: p.lng }))
         map.fitBounds(bounds)
       }
 

@@ -28,6 +28,7 @@ import {
 import { useScrollToTop } from '../hooks/useScrollToTop';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
+import { fetchAgents } from '../lib/api';
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -594,60 +595,6 @@ function normalizeTrackResponse(payload: any, fallbackTrackingNo: string): Track
 /* ------------------------------------------------------------------ */
 
 const TRACK_API = 'https://app.escrowcourier.com/order-services/api/track';
-const PICKUP_POINTS_API = 'https://app.escrowcourier.com/website-backend-services/api/pickup-points';
-// Same-origin alternatives to the pickup-points API above:
-//  - `/api/pickup-points` = the serverless function in `api/pickup-points.js`
-//    (returns `Access-Control-Allow-Origin: *`, so it works from any host)
-//  - `/pickup-points-api` = dev-only Vite proxy (see `vite.config.ts`) that
-//    bypasses the API's CORS allowlist, which rejects http://localhost:5174
-const PICKUP_POINTS_FUNCTION_PATH = '/api/pickup-points';
-const PICKUP_POINTS_PROXY_PATH = '/pickup-points-api';
-
-/**
- * Load the pickup-points (agents) list.
- *
- * The escrow API only reflects CORS headers for `escrowcourier.com` and
- * `localhost:5173`, so a direct browser fetch fails (without any error surfacing)
- * on other origins - including this project's dev server on port 5174. We therefore
- * try the same-origin options first and only then the API itself, so the agent
- * address/phone lookup works in development, on Netlify and on the k8s deploy.
- */
-async function fetchPickupPoints(): Promise<any[]> {
-  const sources = import.meta.env.DEV
-    ? [PICKUP_POINTS_PROXY_PATH, PICKUP_POINTS_FUNCTION_PATH, PICKUP_POINTS_API]
-    : [PICKUP_POINTS_FUNCTION_PATH, PICKUP_POINTS_API, PICKUP_POINTS_PROXY_PATH];
-
-  for (const source of sources) {
-    try {
-      // No Content-Type header: keeps this a simple GET request (no CORS preflight).
-      const res = await fetch(source, { headers: { Accept: 'application/json' } });
-      if (!res.ok) continue;
-
-      // Read as text first: an SPA host answers unknown paths with index.html,
-      // which must not be treated as a successful API response.
-      const text = await res.text();
-      let data: any;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        continue;
-      }
-
-      const arr = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.data)
-        ? data.data
-        : Array.isArray(data?.agents)
-        ? data.agents
-        : [];
-      if (arr.length) return arr;
-    } catch {
-      // Network/CORS failure - try the next source.
-    }
-  }
-
-  throw new Error('Unable to load pickup station details.');
-}
 
 async function fetchTracking(trackingNo: string): Promise<TrackingData> {
   const value = trackingNo.trim();
@@ -757,7 +704,7 @@ const TrackingPage: React.FC = () => {
     setAgentError(false);
     (async () => {
       try {
-        const arr = await fetchPickupPoints();
+        const arr = await fetchAgents();
         if (!cancelled) setAgentsList(arr);
       } catch {
         if (!cancelled) {

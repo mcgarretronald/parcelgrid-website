@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { QRCodeSVG } from 'qrcode.react';
+import { fetchAgents } from '../lib/api';
 
 interface ReceiptProps {
   orderData: any;
@@ -41,13 +42,7 @@ const Receipt: React.FC<ReceiptProps> = ({ orderData, onClose }) => {
       }
 
       try {
-        const response = await fetch('https://app.escrowcourier.com/website-backend-services/api/pickup-points');
-        if (!response.ok) {
-          throw new Error('Failed to fetch pickup points');
-        }
-
-        const data = await response.json();
-        const agents = Array.isArray(data) ? data : (data.data || []);
+        const agents = await fetchAgents();
         
         // Find the matching agent by ID
         const matchedAgent = agents.find((agent: any) => 
