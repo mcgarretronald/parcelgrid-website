@@ -111,7 +111,9 @@ export async function calculateDeliveryFee(
   }
 
   const token = await fetchWebsiteToken();
-  const auth = token ? { Authorization: `Bearer ${token}` } : {};
+  const auth: Record<string, string> = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
 
   if (import.meta.env.DEV && token) {
     try {

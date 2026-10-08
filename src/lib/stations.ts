@@ -204,18 +204,17 @@ export async function fetchDropOffStations(): Promise<Station[]> {
     ? [DROPOFF_PROXY, DROPOFF_FN, DROPOFF_API]
     : [DROPOFF_FN, DROPOFF_PROXY, DROPOFF_API];
   const raw = await fetchJson(sources);
-  const fromApi = raw
-    .map((item) => {
-      const station = normalizePickupStation(item);
-      if (!station) return null;
-      return {
-        ...station,
-        source: "dropoff" as const,
-        capability: "send_collect" as const,
-        id: `dropoff-${station.agentId}-${station.town}`,
-      };
-    })
-    .filter((s): s is Station => !!s);
+  const fromApi: Station[] = [];
+  for (const item of raw) {
+    const station = normalizePickupStation(item);
+    if (!station) continue;
+    fromApi.push({
+      ...station,
+      source: "dropoff",
+      capability: "send_collect",
+      id: `dropoff-${station.agentId}-${station.town}`,
+    });
+  }
 
   if (fromApi.length) return fromApi;
 

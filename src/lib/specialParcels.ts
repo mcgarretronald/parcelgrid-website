@@ -89,9 +89,10 @@ export async function fetchSpecialCategories(): Promise<ParcelCategory[]> {
   }
 
   const token = await fetchWebsiteToken();
-  const authHeaders = token
-    ? { Accept: 'application/json', Authorization: `Bearer ${token}` }
-    : { Accept: 'application/json' };
+  const authHeaders: Record<string, string> = {
+    Accept: 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
 
   if (import.meta.env.DEV && token) {
     try {

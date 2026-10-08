@@ -2,6 +2,7 @@ import path from "path"
 import tailwindcss from "@tailwindcss/vite"
 import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
+// @ts-expect-error local Vite plugin has no type declarations
 import { pricingApiPlugin } from "./scripts/vite-pricing-api-plugin.mjs"
 
 // https://vite.dev/config/
