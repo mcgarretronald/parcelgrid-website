@@ -254,11 +254,16 @@ html {
   }
 }
 
+.corp-hero-slide {
+  animation: corp-hero-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .corp-hero-photo,
   .corp-hero-veil,
   .corp-hero-copy > *,
-  .corp-hero-stats {
+  .corp-hero-stats,
+  .corp-hero-slide {
     opacity: 1;
     animation: none;
   }
@@ -320,49 +325,108 @@ html {
   }
 }
 
-/* Site-wide scroll reveals */
+/* Soft section blends — adjacent bands feel continuous while scrolling */
+.section-blend-top {
+  position: relative;
+}
+.section-blend-top::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 72px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.04), transparent);
+  z-index: 1;
+}
+.section-blend-bottom {
+  position: relative;
+}
+.section-blend-bottom::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 72px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.035), transparent);
+  z-index: 1;
+}
+
+.parallax-media {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Site-wide scroll reveals — softer, longer, slight blur for a blended feel */
 .reveal-fade,
 .reveal-up,
-.reveal-scale {
+.reveal-scale,
+.reveal-left,
+.reveal-right {
   opacity: 0;
-  will-change: transform, opacity;
+  will-change: transform, opacity, filter;
 }
 
 .reveal-up {
-  transform: translateY(28px);
+  transform: translateY(36px);
+  filter: blur(4px);
 }
 
 .reveal-scale {
-  transform: translateY(18px) scale(0.985);
+  transform: translateY(22px) scale(0.97);
+  filter: blur(3px);
+}
+
+.reveal-left {
+  transform: translateX(-28px);
+  filter: blur(3px);
+}
+
+.reveal-right {
+  transform: translateX(28px);
+  filter: blur(3px);
 }
 
 .reveal.is-in .reveal-fade,
 .reveal-fade.is-in {
-  animation: reveal-fade 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: reveal-fade 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .reveal.is-in .reveal-up,
 .reveal-up.is-in {
-  animation: reveal-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: reveal-up 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .reveal.is-in .reveal-scale,
 .reveal-scale.is-in {
-  animation: reveal-scale 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: reveal-scale 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.reveal.is-in .reveal-left,
+.reveal-left.is-in {
+  animation: reveal-left 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.reveal.is-in .reveal-right,
+.reveal-right.is-in {
+  animation: reveal-right 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .reveal-stagger > * {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(28px);
+  filter: blur(3px);
 }
 
 .reveal-stagger > [aria-hidden="true"] {
   opacity: 1;
   transform: none;
+  filter: none;
 }
 
 .reveal.is-in .reveal-stagger > * {
-  animation: reveal-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: reveal-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .reveal.is-in .reveal-stagger > [aria-hidden="true"] {
@@ -370,58 +434,59 @@ html {
 }
 
 .reveal.is-in .reveal-stagger > *:nth-child(1) {
-  animation-delay: 0.05s;
+  animation-delay: 0.04s;
 }
 .reveal.is-in .reveal-stagger > *:nth-child(2) {
-  animation-delay: 0.14s;
+  animation-delay: 0.12s;
 }
 .reveal.is-in .reveal-stagger > *:nth-child(3) {
-  animation-delay: 0.23s;
+  animation-delay: 0.2s;
 }
 .reveal.is-in .reveal-stagger > *:nth-child(4) {
-  animation-delay: 0.32s;
+  animation-delay: 0.28s;
 }
 .reveal.is-in .reveal-stagger > *:nth-child(5) {
-  animation-delay: 0.41s;
+  animation-delay: 0.36s;
 }
 .reveal.is-in .reveal-stagger > *:nth-child(6) {
-  animation-delay: 0.5s;
+  animation-delay: 0.44s;
 }
 .reveal.is-in .reveal-stagger > *:nth-child(7) {
-  animation-delay: 0.59s;
+  animation-delay: 0.52s;
 }
 .reveal.is-in .reveal-stagger > *:nth-child(8) {
-  animation-delay: 0.68s;
+  animation-delay: 0.6s;
 }
 .reveal.is-in .reveal-stagger > *:nth-child(9) {
-  animation-delay: 0.77s;
+  animation-delay: 0.68s;
 }
 
 .reveal-delay-1 {
-  animation-delay: 0.08s !important;
+  animation-delay: 0.1s !important;
 }
 .reveal-delay-2 {
-  animation-delay: 0.16s !important;
+  animation-delay: 0.2s !important;
 }
 .reveal-delay-3 {
-  animation-delay: 0.24s !important;
+  animation-delay: 0.3s !important;
 }
 
 /* Reveal applied directly to a grid/list wrapper (see components/Reveal.tsx) */
 .reveal-stagger.is-in > * {
-  animation: reveal-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: reveal-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.reveal-stagger.is-in > *:nth-child(2) { animation-delay: 0.07s; }
-.reveal-stagger.is-in > *:nth-child(3) { animation-delay: 0.14s; }
-.reveal-stagger.is-in > *:nth-child(4) { animation-delay: 0.21s; }
-.reveal-stagger.is-in > *:nth-child(5) { animation-delay: 0.28s; }
-.reveal-stagger.is-in > *:nth-child(6) { animation-delay: 0.35s; }
-.reveal-stagger.is-in > *:nth-child(n + 7) { animation-delay: 0.42s; }
-/* Long lists (e.g. 300+ station cards): animate only the first dozen, show the rest instantly */
+.reveal-stagger.is-in > *:nth-child(2) { animation-delay: 0.08s; }
+.reveal-stagger.is-in > *:nth-child(3) { animation-delay: 0.16s; }
+.reveal-stagger.is-in > *:nth-child(4) { animation-delay: 0.24s; }
+.reveal-stagger.is-in > *:nth-child(5) { animation-delay: 0.32s; }
+.reveal-stagger.is-in > *:nth-child(6) { animation-delay: 0.4s; }
+.reveal-stagger.is-in > *:nth-child(n + 7) { animation-delay: 0.48s; }
+/* Long lists (e.g. station cards): animate only the first dozen, show the rest instantly */
 .reveal-stagger.is-in > *:nth-child(n + 13) {
   animation: none;
   opacity: 1;
   transform: none;
+  filter: none;
 }
 
 /* Respect reduced-motion: show content immediately, no movement */
@@ -429,46 +494,88 @@ html {
   .reveal-fade,
   .reveal-up,
   .reveal-scale,
+  .reveal-left,
+  .reveal-right,
   .reveal-stagger > *,
   .reveal .reveal-fade,
   .reveal .reveal-up,
   .reveal .reveal-scale,
-  .reveal .reveal-stagger > * {
+  .reveal .reveal-left,
+  .reveal .reveal-right,
+  .reveal .reveal-stagger > *,
+  .parallax-media {
     opacity: 1 !important;
     transform: none !important;
+    filter: none !important;
     animation: none !important;
     will-change: auto !important;
+  }
+  .section-blend-top::before,
+  .section-blend-bottom::after {
+    display: none;
   }
 }
 
 @keyframes reveal-up {
   from {
     opacity: 0;
-    transform: translateY(28px);
+    transform: translateY(36px);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: none;
+    filter: blur(0);
   }
 }
 
 @keyframes reveal-fade {
   from {
     opacity: 0;
+    filter: blur(2px);
   }
   to {
     opacity: 1;
+    filter: blur(0);
   }
 }
 
 @keyframes reveal-scale {
   from {
     opacity: 0;
-    transform: translateY(18px) scale(0.985);
+    transform: translateY(22px) scale(0.97);
+    filter: blur(3px);
   }
   to {
     opacity: 1;
     transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes reveal-left {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+@keyframes reveal-right {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
   }
 }
 

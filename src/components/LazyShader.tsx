@@ -2,11 +2,13 @@ import { lazy, Suspense, useEffect, useRef, useState, type ComponentProps } from
 
 const GhostFibers = lazy(() => import("./GhostFibers"));
 const GradientWaves = lazy(() => import("./GradientWaves"));
+const Grainient = lazy(() => import("./Grainient"));
+const Plasma = lazy(() => import("./Plasma"));
 
 /**
- * WebGL backgrounds are decorative and expensive. Only mount one when the user is near it, and skip it
- * entirely on small screens, with reduced-motion, or when the browser asks to save data. This also keeps
- * the WebGL library (ogl) out of the initial JavaScript download.
+ * WebGL backgrounds are decorative. Mount when near viewport; skip only when
+ * the user prefers reduced motion or asks to save data. Keep ogl out of the
+ * initial JS download via lazy import.
  */
 function useShaderGate() {
   const ref = useRef<HTMLDivElement>(null);
@@ -16,9 +18,10 @@ function useShaderGate() {
     const el = ref.current;
     if (!el) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const saveData = Boolean((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData);
-    const small = window.innerWidth < 768;
-    if (reduce || saveData || small) return;
+    const saveData = Boolean(
+      (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData,
+    );
+    if (reduce || saveData) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -27,7 +30,7 @@ function useShaderGate() {
           observer.disconnect();
         }
       },
-      { rootMargin: "300px" },
+      { rootMargin: "200px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -56,6 +59,32 @@ export function LazyGradientWaves(props: ComponentProps<typeof GradientWaves>) {
       {enabled && (
         <Suspense fallback={null}>
           <GradientWaves {...props} />
+        </Suspense>
+      )}
+    </div>
+  );
+}
+
+export function LazyGrainient(props: ComponentProps<typeof Grainient>) {
+  const [ref, enabled] = useShaderGate();
+  return (
+    <div ref={ref} className="h-full w-full">
+      {enabled && (
+        <Suspense fallback={null}>
+          <Grainient {...props} />
+        </Suspense>
+      )}
+    </div>
+  );
+}
+
+export function LazyPlasma(props: ComponentProps<typeof Plasma>) {
+  const [ref, enabled] = useShaderGate();
+  return (
+    <div ref={ref} className="h-full w-full">
+      {enabled && (
+        <Suspense fallback={null}>
+          <Plasma {...props} />
         </Suspense>
       )}
     </div>

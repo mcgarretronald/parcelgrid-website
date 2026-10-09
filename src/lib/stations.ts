@@ -132,11 +132,48 @@ export function stationSearchHaystack(station: Station): string {
     .toLowerCase();
 }
 
+/** Common misspellings / short forms → canonical tokens used in matching. */
+const QUERY_ALIASES: Record<string, string[]> = {
+  mombasa: ["mombassa", "mombasa", "msa"],
+  nairobi: ["nairobi", "nrb", "nai"],
+  nakuru: ["nakuru", "nkuru"],
+  eldoret: ["eldoret", "eld"],
+  kisumu: ["kisumu", "ksm"],
+};
+
+function expandQueryTokens(raw: string): string[] {
+  const q = raw.trim().toLowerCase().replace(/\s+/g, " ");
+  if (!q) return [];
+  const tokens = new Set<string>([q]);
+  for (const [canonical, aliases] of Object.entries(QUERY_ALIASES)) {
+    if (aliases.some((a) => a === q || q.startsWith(a) || a.startsWith(q))) {
+      tokens.add(canonical);
+      for (const a of aliases) tokens.add(a);
+    }
+  }
+  return [...tokens];
+}
+
+function fieldMatches(field: string, tokens: string[]): "exact" | "start" | "incl" | null {
+  for (const t of tokens) {
+    if (!t) continue;
+    if (field === t) return "exact";
+  }
+  for (const t of tokens) {
+    if (t.length >= 2 && field.startsWith(t)) return "start";
+  }
+  for (const t of tokens) {
+    if (t.length >= 3 && field.includes(t)) return "incl";
+  }
+  return null;
+}
+
 /**
- * Rank matches so town / shop hits beat address-only hits
- * (e.g. “Kiambu Nairobi Road” should not outrank Nairobi CBD Offices).
+ * Rank matches so town / shop hits beat address-only hits.
+ * Nairobi CBD (agent 366) only ranks high when the query actually matches it —
+ * never inject it into unrelated searches (e.g. "mombasa").
  */
-function stationSearchScore(station: Station, q: string): number {
+function stationSearchScore(station: Station, tokens: string[]): number {
   const town = station.town.toLowerCase();
   const shop = station.businessName.toLowerCase();
   const address = station.address.toLowerCase();
@@ -144,31 +181,40 @@ function stationSearchScore(station: Station, q: string): number {
 
   let score = 0;
 
-  // Canonical Nairobi CBD Offices (agent 366) — always top among matches
-  if (station.agentId === "366") score += 1000;
+  const townHit = fieldMatches(town, tokens);
+  if (townHit === "exact") score += 500;
+  else if (townHit === "start") score += 400;
+  else if (townHit === "incl") score += 300;
 
-  if (town === q) score += 500;
-  else if (town.startsWith(q)) score += 400;
-  else if (town.includes(q)) score += 300;
+  const shopHit = fieldMatches(shop, tokens);
+  if (shopHit === "exact") score += 250;
+  else if (shopHit === "start") score += 200;
+  else if (shopHit === "incl") score += 150;
 
-  if (shop === q) score += 250;
-  else if (shop.startsWith(q)) score += 200;
-  else if (shop.includes(q)) score += 150;
+  const countyHit = fieldMatches(county, tokens);
+  if (countyHit) score += 40;
 
-  if (county.startsWith(q) || county.includes(q)) score += 40;
+  // Address-only mention (highway names, etc.) — lowest priority; require 4+ chars
+  // so short typos don't match random address fragments.
+  for (const t of tokens) {
+    if (t.length >= 4 && address.includes(t)) {
+      score += 10;
+      break;
+    }
+  }
 
-  // Address-only mention (highway names, etc.) — lowest priority
-  if (address.includes(q)) score += 10;
+  // Boost canonical Nairobi CBD only when this station already matched the query
+  if (score > 0 && station.agentId === "366") score += 80;
 
   return score;
 }
 
 export function filterStations(stations: Station[], query: string): Station[] {
-  const q = query.trim().toLowerCase();
-  if (!q) return stations;
+  const tokens = expandQueryTokens(query);
+  if (!tokens.length) return stations;
   return stations
-    .map((s) => ({ s, score: stationSearchScore(s, q) }))
-    .filter(({ score, s }) => score > 0 || stationSearchHaystack(s).includes(q))
+    .map((s) => ({ s, score: stationSearchScore(s, tokens) }))
+    .filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score || a.s.town.localeCompare(b.s.town))
     .map(({ s }) => s);
 }
@@ -196,8 +242,30 @@ export async function fetchPickupStations(): Promise<Station[]> {
 }
 
 /**
+ * Drop-off list order: Nairobi CBD Offices first, then other Nairobi, then the rest A–Z.
+ * Pickup directory is left in API order.
+ */
+export function sortDropOffStationsNairobiFirst(stations: Station[]): Station[] {
+  const rank = (s: Station) => {
+    if (s.agentId === "366") return 0; // Nairobi CBD Offices
+    const town = s.town.toLowerCase();
+    if (town === "nairobi" || town.startsWith("nairobi ")) return 1;
+    return 2;
+  };
+  return [...stations].sort((a, b) => {
+    const ra = rank(a);
+    const rb = rank(b);
+    if (ra !== rb) return ra - rb;
+    return (
+      a.town.localeCompare(b.town) || a.businessName.localeCompare(b.businessName)
+    );
+  });
+}
+
+/**
  * Drop-off / send points — booking-enabled agents.
  * Tries dedicated allowed-drop-off-points API; falls back to send_collect from pickup list.
+ * Nairobi stations are sorted to the top for booking UX.
  */
 export async function fetchDropOffStations(): Promise<Station[]> {
   const sources = import.meta.env.DEV
@@ -216,16 +284,18 @@ export async function fetchDropOffStations(): Promise<Station[]> {
     });
   }
 
-  if (fromApi.length) return fromApi;
+  if (fromApi.length) return sortDropOffStationsNairobiFirst(fromApi);
 
   const pickup = await fetchPickupStations();
-  return pickup
-    .filter((s) => s.capability === "send_collect")
-    .map((s) => ({
-      ...s,
-      source: "dropoff" as const,
-      id: `dropoff-${s.agentId}-${s.town}`,
-    }));
+  return sortDropOffStationsNairobiFirst(
+    pickup
+      .filter((s) => s.capability === "send_collect")
+      .map((s) => ({
+        ...s,
+        source: "dropoff" as const,
+        id: `dropoff-${s.agentId}-${s.town}`,
+      })),
+  );
 }
 
 const SHARE_ORIGIN = "https://escrowcourier.com";

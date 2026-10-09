@@ -11,11 +11,6 @@ export type WeightBandOption = {
   maxWeight: number;
 };
 
-const AUTH_TOKEN_URL =
-  'https://app.escrowcourier.com/website-backend-services/api/auth/token';
-const WEIGHT_BANDS_DIRECT =
-  'https://app.escrowcourier.com/pricing-services/api/pricing/weight-bands';
-const WEIGHT_BANDS_PROXY = '/weight-bands-api';
 const WEIGHT_BANDS_FN = '/api/weight-bands';
 
 /** Standard Pricing — matches pricing-service feeCalculation default (tier 2). */
@@ -61,19 +56,6 @@ function asArray(data: unknown): any[] {
     if (Array.isArray(obj.data)) return obj.data;
   }
   return [];
-}
-
-async function fetchWebsiteToken(): Promise<string | null> {
-  try {
-    const res = await fetch(AUTH_TOKEN_URL, {
-      headers: { Accept: 'application/json' },
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.token || data.access_token || data.bearer_token || data.data?.token || null;
-  } catch {
-    return null;
-  }
 }
 
 function normalizeBands(raw: any[]): WeightBandOption[] {
@@ -144,35 +126,7 @@ export async function fetchWeightBands(): Promise<WeightBandOption[]> {
     );
     if (fromFn.length) return fromFn;
   } catch {
-    /* try authenticated proxies */
-  }
-
-  const token = await fetchWebsiteToken();
-  const authHeaders: Record<string, string> = {
-    Accept: 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-
-  if (import.meta.env.DEV) {
-    try {
-      const fromProxy = await parseBandsResponse(
-        await fetch(WEIGHT_BANDS_PROXY, { headers: authHeaders }),
-      );
-      if (fromProxy.length) return fromProxy;
-    } catch {
-      /* fall through */
-    }
-  }
-
-  if (token) {
-    try {
-      const fromDirect = await parseBandsResponse(
-        await fetch(WEIGHT_BANDS_DIRECT, { headers: authHeaders }),
-      );
-      if (fromDirect.length) return fromDirect;
-    } catch {
-      /* fall through */
-    }
+    /* use fallback */
   }
 
   return FALLBACK_STANDARD_BANDS;

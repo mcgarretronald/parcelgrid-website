@@ -1,16 +1,11 @@
 /**
  * Courier-fee payment helpers — STK prompt + status (Paybill / prompt confirmation).
+ * Browser never fetches website-backend tokens; all payment calls go through /api proxies.
  */
 
 export const MPESA_PAYBILL = '4157233';
 export const MPESA_PAYBILL_NAME = 'PARCELGRID- ESCROW COURIER';
 
-const AUTH_TOKEN_URL =
-  'https://app.escrowcourier.com/website-backend-services/api/auth/token';
-const PROMPT_DIRECT =
-  'https://app.escrowcourier.com/payment-services/api/payments/prompts/courier-fee';
-const STATUS_DIRECT =
-  'https://app.escrowcourier.com/payment-services/api/payments/status';
 const PROMPT_FN = '/api/payments/courier-fee';
 const STATUS_FN = '/api/payments/status';
 
@@ -34,28 +29,15 @@ export type PromptResult = {
   raw: unknown;
 };
 
-async function fetchWebsiteToken(): Promise<string | null> {
-  try {
-    const res = await fetch(AUTH_TOKEN_URL, { headers: { Accept: 'application/json' } });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.token || data.access_token || data.bearer_token || data.data?.token || null;
-  } catch {
-    return null;
-  }
-}
-
 async function postJson(
   url: string,
   body: Record<string, unknown>,
-  headers: Record<string, string> = {},
 ): Promise<{ ok: boolean; status: number; data: any }> {
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      ...headers,
     },
     body: JSON.stringify(body),
   });
@@ -82,28 +64,13 @@ export async function sendCourierFeePrompt(payload: {
     paymentDesc: 'courierFee',
   };
 
-  try {
-    const viaFn = await postJson(PROMPT_FN, body);
-    if (viaFn.ok || (viaFn.data && !String(viaFn.data?.raw || '').includes('<!DOCTYPE'))) {
-      if (viaFn.ok) return extractPromptIds(viaFn.data);
-      if (viaFn.status !== 404) {
-        throw new Error(
-          viaFn.data?.error?.message || viaFn.data?.message || `Prompt failed (${viaFn.status})`,
-        );
-      }
-    }
-  } catch (err: any) {
-    if (err?.message && !/failed to fetch|network/i.test(err.message)) throw err;
-  }
-
-  const token = await fetchWebsiteToken();
-  const direct = await postJson(PROMPT_DIRECT, body, token ? { Authorization: `Bearer ${token}` } : {});
-  if (!direct.ok) {
-    throw new Error(
-      direct.data?.error?.message || direct.data?.message || `Prompt failed (${direct.status})`,
-    );
-  }
-  return extractPromptIds(direct.data);
+  const viaFn = await postJson(PROMPT_FN, body);
+  if (viaFn.ok) return extractPromptIds(viaFn.data);
+  throw new Error(
+    viaFn.data?.error?.message ||
+      viaFn.data?.message ||
+      `Prompt failed (${viaFn.status})`,
+  );
 }
 
 function extractPromptIds(data: any): PromptResult {
@@ -136,36 +103,20 @@ export async function checkPaymentStatus(params: {
   if (params.checkoutRequestId) body.checkoutRequestId = params.checkoutRequestId;
   if (params.trackingNo) body.trackingNo = params.trackingNo;
 
-  try {
-    const viaFn = await postJson(STATUS_FN, body);
-    if (viaFn.ok) return normalizeStatus(viaFn.data);
-    if (viaFn.status === 404 && viaFn.data?.error?.code === 'PAYMENT_NOT_FOUND') {
-      return { status: 'NOT_FOUND', isPaid: false, message: viaFn.data?.error?.message };
-    }
-    if (viaFn.status !== 404 && !String(viaFn.data?.raw || '').includes('<!DOCTYPE')) {
-      throw new Error(
-        viaFn.data?.error?.message || viaFn.data?.message || `Status check failed (${viaFn.status})`,
-      );
-    }
-  } catch (err: any) {
-    if (err?.message && !/failed to fetch|network/i.test(err.message)) throw err;
-  }
-
-  const token = await fetchWebsiteToken();
-  const direct = await postJson(STATUS_DIRECT, body, token ? { Authorization: `Bearer ${token}` } : {});
-  if (direct.status === 404) {
+  const viaFn = await postJson(STATUS_FN, body);
+  if (viaFn.ok) return normalizeStatus(viaFn.data);
+  if (viaFn.status === 404 || viaFn.data?.error === 'PAYMENT_NOT_FOUND') {
     return {
       status: 'NOT_FOUND',
       isPaid: false,
-      message: direct.data?.error?.message || 'Payment not found yet',
+      message: viaFn.data?.message || viaFn.data?.error?.message || 'Payment not found yet',
     };
   }
-  if (!direct.ok) {
-    throw new Error(
-      direct.data?.error?.message || direct.data?.message || `Status check failed (${direct.status})`,
-    );
-  }
-  return normalizeStatus(direct.data);
+  throw new Error(
+    viaFn.data?.error?.message ||
+      viaFn.data?.message ||
+      `Status check failed (${viaFn.status})`,
+  );
 }
 
 function normalizeStatus(data: any): PaymentStatusData {

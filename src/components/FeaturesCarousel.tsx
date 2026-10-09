@@ -36,7 +36,7 @@ const slides: FeatureSlide[] = [
   {
     id: 5,
     title: "Delivery Infrastructure Built for Online Vendors",
-    description: "Everything you need to sell and deliver nationwide",
+    description: "Everything you need to sell and deliver outside Nairobi",
     visual: 'vendor-shop'
   },
   {

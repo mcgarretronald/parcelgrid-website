@@ -15,7 +15,7 @@ const steps = [
   },
   {
     title: "Next-Day Transit",
-    body: "Parcels dispatch daily along major transit routes to 300+ towns. Both you and your customer get real-time SMS and tracking updates at every checkpoint.",
+    body: "Parcels dispatch daily along major transit routes to 132 towns. Both you and your customer get real-time SMS and tracking updates at every checkpoint.",
     icon: Truck,
   },
   {
@@ -32,7 +32,7 @@ export function HowItWorks() {
   return (
     <section
       ref={ref}
-      className={`reveal bg-white py-16 sm:py-24 ${className}`}
+      className={`reveal section-blend-top bg-white py-16 sm:py-24 ${className}`}
       aria-labelledby="how-it-works-heading"
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
@@ -46,10 +46,10 @@ export function HowItWorks() {
             id="how-it-works-heading"
             className="font-[Sora] text-4xl font-semibold tracking-[-0.04em] text-[#111] sm:text-5xl"
           >
-            How to Send with ParcelGrid
+            How our Kenya courier service works
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-[#5c6562] sm:text-lg">
-            Whether your parcel is already paid for or Pay on Delivery (COD), shipping upcountry takes just four simple steps:
+            Whether your parcel is already paid for or Pay on Delivery (COD), ParcelGrid courier shipping upcountry takes four simple steps:
           </p>
         </header>
 

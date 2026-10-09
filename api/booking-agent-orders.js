@@ -1,40 +1,97 @@
 /**
- * Proxy website prepaid bookings to website-backend (avoids browser CORS).
- * Upstream: POST /website-backend-services/api/booking-agent-orders
+ * Website prepaid booking proxy — allowlisted CORS, rate-limited, validated fields.
  */
-const AUTH_URL = 'https://app.escrowcourier.com/website-backend-services/api/auth/token';
+import {
+  applyCors,
+  handleOptions,
+  rateLimit,
+  parseJsonBody,
+  normalizeKenyaPhone,
+  clampAmount,
+  safeError,
+  fetchWebsiteToken,
+  isAllowedBrowserOrigin,
+} from './_lib/security.js';
+
 const ORDERS_URL =
   'https://app.escrowcourier.com/website-backend-services/api/booking-agent-orders';
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Authorization, Content-Type, X-Booking-Source',
-  );
+function cleanStr(v, max = 200) {
+  const s = String(v ?? '').trim();
+  if (!s) return null;
+  return s.slice(0, max);
+}
 
-  if (req.method === 'OPTIONS') return res.status(200).json({});
+export default async function handler(req, res) {
+  applyCors(req, res, {
+    methods: 'POST, OPTIONS',
+    headers: 'Accept, Content-Type, X-Booking-Source',
+  });
+
+  if (req.method === 'OPTIONS') return handleOptions(req, res, {
+    methods: 'POST, OPTIONS',
+    headers: 'Accept, Content-Type, X-Booking-Source',
+  });
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'METHOD_NOT_ALLOWED' });
+    return safeError(res, 405, 'METHOD_NOT_ALLOWED', 'POST only');
+  }
+  if (!isAllowedBrowserOrigin(req)) {
+    return safeError(res, 403, 'FORBIDDEN', 'Origin not allowed');
+  }
+
+  const limited = rateLimit(req, { key: 'booking', limit: 10, windowMs: 60_000 });
+  if (limited !== true) {
+    res.setHeader('Retry-After', String(limited.body.retryAfterSeconds || 60));
+    return res.status(limited.status).json(limited.body);
   }
 
   try {
-    const tokenRes = await fetch(AUTH_URL, { headers: { Accept: 'application/json' } });
-    if (!tokenRes.ok) {
-      return res.status(502).json({ success: false, error: 'AUTH_FAILED' });
+    const body = parseJsonBody(req);
+    if (!body) return safeError(res, 400, 'INVALID_JSON', 'Invalid request body');
+
+    const customerPhone = normalizeKenyaPhone(body.customerPhone);
+    const vendorPhone = normalizeKenyaPhone(body.vendorPhone || body.senderPhone);
+    const shippingCharges = clampAmount(body.shippingCharges);
+    const customerName = cleanStr(body.customerName, 120);
+    const vendorName = cleanStr(body.vendorName || body.senderName, 120);
+    const agentId = Number(body.agentId);
+    const originAgentId = Number(body.originAgentId || body.expectedDropoffPoint);
+
+    if (!customerPhone || !vendorPhone) {
+      return safeError(res, 400, 'INVALID_PHONE', 'Valid Kenyan mobiles required for sender and receiver');
     }
-    const tokenData = await tokenRes.json();
-    const token =
-      tokenData.token ||
-      tokenData.access_token ||
-      tokenData.bearer_token ||
-      tokenData.data?.token;
-    if (!token) {
-      return res.status(502).json({ success: false, error: 'AUTH_FAILED' });
+    if (!customerName || !vendorName) {
+      return safeError(res, 400, 'VALIDATION_ERROR', 'Sender and receiver names are required');
+    }
+    if (!shippingCharges) {
+      return safeError(res, 400, 'INVALID_FEE', 'Valid delivery fee is required');
+    }
+    if (!Number.isFinite(agentId) || agentId <= 0) {
+      return safeError(res, 400, 'VALIDATION_ERROR', 'Pickup station is required');
     }
 
-    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
+    const token = await fetchWebsiteToken();
+    if (!token) return safeError(res, 502, 'AUTH_FAILED', 'Booking service unavailable');
+
+    const payload = {
+      ...body,
+      customerName,
+      vendorName,
+      senderName: vendorName,
+      customerPhone,
+      vendorPhone,
+      senderPhone: vendorPhone,
+      shippingCharges,
+      agentId,
+      ...(Number.isFinite(originAgentId) && originAgentId > 0
+        ? { originAgentId, expectedDropoffPoint: originAgentId }
+        : {}),
+      // Force website attribution — never trust client overrides for privilege
+      bookingSource: 'website',
+      fromWebsite: true,
+      isCod: false,
+      codAmount: 0,
+    };
 
     const upstream = await fetch(ORDERS_URL, {
       method: 'POST',
@@ -44,11 +101,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${token}`,
         'X-Booking-Source': 'website',
       },
-      body: JSON.stringify({
-        ...body,
-        bookingSource: 'website',
-        fromWebsite: true,
-      }),
+      body: JSON.stringify(payload),
     });
 
     const text = await upstream.text();
@@ -56,18 +109,10 @@ export default async function handler(req, res) {
     try {
       data = JSON.parse(text);
     } catch {
-      return res.status(502).json({
-        success: false,
-        error: 'BAD_UPSTREAM',
-        details: text?.slice?.(0, 500) || text,
-      });
+      return safeError(res, 502, 'BAD_UPSTREAM', 'Booking service returned an invalid response');
     }
     return res.status(upstream.status).json(data);
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: 'PROXY_ERROR',
-      message: error?.message || 'Failed to create booking',
-    });
+  } catch {
+    return safeError(res, 500, 'PROXY_ERROR', 'Failed to create booking');
   }
 }

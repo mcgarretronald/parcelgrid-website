@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="en-KE">
   <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-R80P9G4W4C"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-R80P9G4W4C');
+    </script>
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#00473E" />
@@ -18,23 +27,26 @@
       crawlers that do not run JavaScript still see page-specific metadata. When the app mounts, React adds the
       page's own tags and src/main.tsx removes these static ones, so there are never duplicates.
     -->
-    <title>Courier Service for Online Sellers in Kenya | ParcelGrid</title>
-    <meta data-static-seo name="description" content="Expand your business with ParcelGrid. Cash on Delivery (COD) with instant settlements, nationwide pickup points, and smart notifications. Get started today!" />
+    <title>Courier Services Kenya | Upcountry Delivery & COD | ParcelGrid</title>
+    <meta data-static-seo name="description" content="ParcelGrid courier services in Kenya: next-day upcountry delivery to 132 towns, Pay on Delivery with instant M-Pesa, and prepaid booking from Nairobi CBD branches. CA-licensed." />
     <link data-static-seo rel="canonical" href="https://escrowcourier.com/" />
     <meta data-static-seo property="og:type" content="website" />
     <meta data-static-seo property="og:site_name" content="ParcelGrid" />
     <meta data-static-seo property="og:locale" content="en_KE" />
     <meta data-static-seo property="og:url" content="https://escrowcourier.com/" />
-    <meta data-static-seo property="og:title" content="Courier Service for Online Sellers in Kenya | ParcelGrid" />
-    <meta data-static-seo property="og:description" content="Expand your business with ParcelGrid. Cash on Delivery (COD) with instant settlements, nationwide pickup points, and smart notifications. Get started today!" />
-    <meta data-static-seo property="og:image" content="https://escrowcourier.com/og-image.jpg" />
+    <meta data-static-seo property="og:title" content="Courier Services Kenya | Upcountry Delivery & COD | ParcelGrid" />
+    <meta data-static-seo property="og:description" content="ParcelGrid courier services in Kenya: next-day upcountry delivery to 132 towns, Pay on Delivery with instant M-Pesa, and prepaid booking from Nairobi CBD branches. CA-licensed." />
+    <!-- Absolute prod URLs for crawlers. Dev/ngrok rewrites these via vite-og-share-plugin. -->
+    <meta data-static-seo property="og:image" content="https://escrowcourier.com/share_banner.jpg" />
+    <meta data-static-seo property="og:image:secure_url" content="https://escrowcourier.com/share_banner.jpg" />
+    <meta data-static-seo property="og:image:type" content="image/jpeg" />
     <meta data-static-seo property="og:image:width" content="1200" />
     <meta data-static-seo property="og:image:height" content="630" />
-    <meta data-static-seo property="og:image:alt" content="ParcelGrid: next-day upcountry delivery and instant Pay on Delivery in Kenya" />
+    <meta data-static-seo property="og:image:alt" content="ParcelGrid courier services: next-day upcountry delivery and instant Pay on Delivery in Kenya" />
     <meta data-static-seo name="twitter:card" content="summary_large_image" />
-    <meta data-static-seo name="twitter:title" content="Courier Service for Online Sellers in Kenya | ParcelGrid" />
-    <meta data-static-seo name="twitter:description" content="Expand your business with ParcelGrid. Cash on Delivery (COD) with instant settlements, nationwide pickup points, and smart notifications. Get started today!" />
-    <meta data-static-seo name="twitter:image" content="https://escrowcourier.com/og-image.jpg" />
+    <meta data-static-seo name="twitter:title" content="Courier Services Kenya | Upcountry Delivery & COD | ParcelGrid" />
+    <meta data-static-seo name="twitter:description" content="ParcelGrid courier services in Kenya: next-day upcountry delivery to 132 towns, Pay on Delivery with instant M-Pesa, and prepaid booking from Nairobi CBD branches. CA-licensed." />
+    <meta data-static-seo name="twitter:image" content="https://escrowcourier.com/share_banner.jpg" />
 
     <!-- Connect early to the API host used by tracking and station search -->
     <link rel="dns-prefetch" href="https://app.escrowcourier.com" />
@@ -43,20 +55,32 @@
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "Organization",
+        "@type": ["Organization", "LocalBusiness", "CourierService"],
         "@id": "https://escrowcourier.com/#organization",
         "name": "ParcelGrid",
         "legalName": "Escrow Courier Networks Ltd",
+        "alternateName": ["ParcelGrid Courier", "Escrow Courier"],
+        "description": "Licensed courier services in Kenya for online sellers — next-day upcountry delivery, Pay on Delivery with instant M-Pesa, and prepaid parcel booking.",
         "url": "https://escrowcourier.com/",
         "logo": "https://escrowcourier.com/brand/parcelgrid-mark.png",
-        "image": "https://escrowcourier.com/og-image.jpg",
+        "image": "https://escrowcourier.com/share_banner.jpg",
         "email": "info@escrowcourier.com",
         "telephone": "+254745111555",
+        "priceRange": "$$",
+        "currenciesAccepted": "KES",
+        "paymentAccepted": "M-Pesa, Cash",
         "areaServed": { "@type": "Country", "name": "Kenya" },
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "City Centre Mall, Shop LG12, Ronald Ngala Street",
+          "addressLocality": "Nairobi",
+          "addressCountry": "KE"
+        },
         "sameAs": [
           "https://www.facebook.com/p/ParcelGrid-61582861464189/",
           "https://www.instagram.com/parcelgrid/",
-          "https://www.tiktok.com/@parcelgrid"
+          "https://www.tiktok.com/@parcelgrid",
+          "https://play.google.com/store/apps/details?id=com.escrow.escrowApp"
         ],
         "contactPoint": [
           { "@type": "ContactPoint", "telephone": "+254745111555", "contactType": "customer service", "areaServed": "KE", "availableLanguage": ["en", "sw"] },
@@ -71,8 +95,17 @@
         "@id": "https://escrowcourier.com/#website",
         "url": "https://escrowcourier.com/",
         "name": "ParcelGrid",
+        "description": "Courier services Kenya — upcountry delivery and Pay on Delivery for online sellers.",
         "inLanguage": "en-KE",
-        "publisher": { "@id": "https://escrowcourier.com/#organization" }
+        "publisher": { "@id": "https://escrowcourier.com/#organization" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://escrowcourier.com/track?tracking={tracking_number}"
+          },
+          "query-input": "required name=tracking_number"
+        }
       }
     </script>
   </head>

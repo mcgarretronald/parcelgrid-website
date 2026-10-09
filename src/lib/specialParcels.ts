@@ -22,11 +22,6 @@ export type DetectionResult = {
   subItem: ParcelSubItem | null;
 };
 
-const AUTH_TOKEN_URL =
-  'https://app.escrowcourier.com/website-backend-services/api/auth/token';
-const CUSTOM_PARCELS_DIRECT =
-  'https://app.escrowcourier.com/pricing-services/api/pricing/custom-parcels';
-const CUSTOM_PARCELS_PROXY = '/custom-parcels-api';
 const CUSTOM_PARCELS_FN = '/api/custom-parcels';
 
 function asArray(data: unknown): any[] {
@@ -58,17 +53,6 @@ function normalizeCategory(raw: any): ParcelCategory | null {
   };
 }
 
-async function fetchWebsiteToken(): Promise<string | null> {
-  try {
-    const res = await fetch(AUTH_TOKEN_URL, { headers: { Accept: 'application/json' } });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.token || data.access_token || data.bearer_token || data.data?.token || null;
-  } catch {
-    return null;
-  }
-}
-
 async function parseCategories(res: Response): Promise<ParcelCategory[]> {
   if (!res.ok) return [];
   const data = await res.json();
@@ -85,35 +69,7 @@ export async function fetchSpecialCategories(): Promise<ParcelCategory[]> {
     );
     if (fromFn.length) return fromFn;
   } catch {
-    /* continue */
-  }
-
-  const token = await fetchWebsiteToken();
-  const authHeaders: Record<string, string> = {
-    Accept: 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-
-  if (import.meta.env.DEV && token) {
-    try {
-      const fromProxy = await parseCategories(
-        await fetch(CUSTOM_PARCELS_PROXY, { headers: authHeaders }),
-      );
-      if (fromProxy.length) return fromProxy;
-    } catch {
-      /* continue */
-    }
-  }
-
-  if (token) {
-    try {
-      const fromDirect = await parseCategories(
-        await fetch(CUSTOM_PARCELS_DIRECT, { headers: authHeaders }),
-      );
-      if (fromDirect.length) return fromDirect;
-    } catch {
-      /* continue */
-    }
+    /* empty catalog */
   }
 
   return [];

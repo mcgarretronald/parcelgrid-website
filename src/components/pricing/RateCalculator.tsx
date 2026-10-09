@@ -19,6 +19,7 @@ import {
 } from '../../lib/specialParcels';
 import { calculateDeliveryFee } from '../../lib/pricing';
 import { NAIROBI_CBD_ORIGIN_AGENT_ID } from '../../lib/nairobiHub';
+import { LazyGhostFibers, LazyGrainient } from '../LazyShader';
 
 const fieldLabel = 'mb-2 block text-sm font-semibold text-[#222]';
 const hint = 'mt-1.5 text-xs text-[#5c6562]';
@@ -200,13 +201,77 @@ export function RateCalculator() {
 
   return (
     <div className="rounded-[1.75rem] border border-black/[0.07] bg-white shadow-[0_18px_40px_rgba(7,20,16,0.08)]">
-      <div className="overflow-hidden rounded-t-[1.75rem] border-b border-black/[0.05] bg-[#071410] px-5 py-4 sm:px-6">
-        <p className="font-[Sora] text-lg font-semibold tracking-[-0.02em] text-white">
-          Live Rate Calculator
-        </p>
-        <p className="mt-1 text-sm text-white/65">
-          Build your quote in seconds based on actual transit routes.
-        </p>
+      <div className="relative overflow-hidden rounded-t-[1.75rem] border-b border-black/[0.05] bg-[#071410] px-5 py-5 sm:px-6 sm:py-6">
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          {/* Grainient: brand gradient — visible on mobile + desktop */}
+          <div className="absolute inset-0 opacity-90">
+            <LazyGrainient
+              color1="#E9FF15"
+              color2="#00473E"
+              color3="#041612"
+              timeSpeed={0.18}
+              colorBalance={0.15}
+              warpStrength={0.85}
+              warpFrequency={4.5}
+              warpSpeed={1.4}
+              warpAmplitude={55}
+              blendAngle={18}
+              blendSoftness={0.08}
+              rotationAmount={280}
+              noiseScale={1.6}
+              grainAmount={0.08}
+              grainScale={2.2}
+              grainAnimated={false}
+              contrast={1.35}
+              gamma={1.05}
+              saturation={1.05}
+              centerX={0.05}
+              centerY={-0.05}
+              zoom={0.95}
+              className="h-full w-full"
+            />
+          </div>
+          {/* Ghost Fibers: brand lime fibers over Grainient (mobile + desktop) */}
+          <div className="absolute inset-0 opacity-45 sm:opacity-55">
+            <LazyGhostFibers
+              lineColor="#E9FF15"
+              glowColor="#0f8f6b"
+              speed={0.14}
+              scale={2.2}
+              rotation={0}
+              rotationSpeed={0.12}
+              layers={3}
+              waveAmplitude={0.01}
+              waveFrequency={3}
+              waveSpeed={0.1}
+              layerSpeed={0.05}
+              twist={0.06}
+              twistFrequency={5}
+              twistSpeed={0.9}
+              lineFrequency={5}
+              lineSpacing={2}
+              lineSharpness={16}
+              glowFalloff={10}
+              glowIntensity={1.2}
+              brightness={1.55}
+              blueBoost={0.55}
+              vignette={0.92}
+              grain={0.03}
+              dpr={1}
+              fps={40}
+              className="h-full w-full"
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#071410]/80 via-[#071410]/45 to-[#071410]/65" />
+        </div>
+        <div className="relative z-10">
+          <p className="font-[Sora] text-lg font-semibold tracking-[-0.02em] text-white">
+            Live Rate Calculator
+          </p>
+          <p className="mt-1 text-sm text-white/70">
+            Build your quote in seconds based on actual transit routes.
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1.15fr_0.85fr]">
@@ -234,7 +299,7 @@ export function RateCalculator() {
               searchPlaceholder="e.g. Nakuru, Mombasa, Bamburi…"
               onChange={(id) => setPickupId(id)}
             />
-            <p className={hint}>Any ParcelGrid collection station across 300+ towns.</p>
+            <p className={hint}>Any ParcelGrid collection station across 132 towns.</p>
           </div>
 
           <div>

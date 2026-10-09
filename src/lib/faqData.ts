@@ -30,7 +30,7 @@ export const FAQ_TOPICS: FaqTopic[] = [
         answer: {
           text: 'ParcelGrid has three drop-off branches in Nairobi CBD. Walk-in bookings are welcome at all of them:',
           list: [
-            'City Centre Mall, Ronald Ngala Street',
+            'City Centre Mall (Shop LG12), Ronald Ngala Street',
             'Iconic Business Plaza (Shop G13), Moi Avenue, between Sasa Mall and Sawa Mall',
             'Jithada Shopping Complex (Shop F7), Taveta Road, opposite Samagat Building',
           ],
@@ -49,7 +49,7 @@ export const FAQ_TOPICS: FaqTopic[] = [
         answer: {
           text: 'ParcelGrid is built for online sellers, not general courier traffic:',
           list: [
-            'One of the widest pickup networks in Kenya, covering 300+ towns.',
+            'One of the widest pickup networks in Kenya, covering 132 towns.',
             'Instant COD settlements to M-Pesa.',
             'A transparent 1.8% handling fee on COD settlements only, with no hidden charges.',
             'Smart SMS and app notifications for sellers and buyers.',
@@ -99,14 +99,14 @@ export const FAQ_TOPICS: FaqTopic[] = [
         id: 'drop-off-cbd',
         question: 'Where can I drop off parcels in Nairobi CBD?',
         answer: {
-          text: 'You can drop off parcels at any of our three central CBD branches: City Centre Mall on Ronald Ngala Street, Iconic Business Plaza (Shop G13) on Moi Avenue, or Jithada Shopping Complex (Shop F7) on Taveta Road. Walk-in bookings are welcome at all branches.',
+          text: 'You can drop off parcels at any of our three central CBD branches: City Centre Mall (Shop LG12) on Ronald Ngala Street, Iconic Business Plaza (Shop G13) on Moi Avenue, or Jithada Shopping Complex (Shop F7) on Taveta Road. Walk-in bookings are welcome at all branches.',
         },
       },
       {
         id: 'delivery-time',
         question: 'How long does upcountry delivery take?',
         answer: {
-          text: 'We deliver next-day to over 300 upcountry towns across Kenya. Our Nairobi CBD branches are open 9:00 AM to 7:00 PM, Monday to Saturday. Parcels leave at night and are expected to arrive the following day.',
+          text: 'We deliver next-day to 132 upcountry towns across Kenya. Our Nairobi CBD branches are open 9:00 AM to 7:00 PM, Monday to Saturday. Parcels leave at night and are expected to arrive the following day.',
         },
       },
       {
@@ -148,7 +148,7 @@ export const FAQ_TOPICS: FaqTopic[] = [
         answer: {
           text: 'We operate three CBD drop-off branches, open Monday to Saturday:',
           list: [
-            'Ronald Ngala: City Centre Mall, Ronald Ngala Street',
+            'Ronald Ngala: City Centre Mall, Shop LG12, Ronald Ngala Street',
             'Moi Avenue: Iconic Business Plaza, Ground Floor, Shop G13',
             'Taveta Road: Jithada Shopping Complex, Ground Floor, Shop F7',
           ],
@@ -172,7 +172,7 @@ export const FAQ_TOPICS: FaqTopic[] = [
         id: 'how-many-stations',
         question: 'How many pickup stations do you have?',
         answer: {
-          text: 'ParcelGrid covers 300+ towns across Kenya, and the network keeps growing. Search for your town on the Stations page.',
+          text: 'ParcelGrid covers 132 towns across Kenya, and the network keeps growing. Search for your town on the Stations page.',
         },
       },
     ],

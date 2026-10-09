@@ -1,18 +1,31 @@
 /**
  * Proxy for user-service allowed drop-off points (is_booking_enabled agents).
- * Avoids browser CORS when booking from the website.
  */
+import {
+  applyCors,
+  handleOptions,
+  rateLimit,
+  safeError,
+  isAllowedBrowserOrigin,
+} from './_lib/security.js';
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  applyCors(req, res, { methods: 'GET, OPTIONS' });
 
   if (req.method === 'OPTIONS') {
-    return res.status(200).json({});
+    return handleOptions(req, res, { methods: 'GET, OPTIONS' });
+  }
+  if (req.method !== 'GET') {
+    return safeError(res, 405, 'METHOD_NOT_ALLOWED', 'GET only');
+  }
+  if (!isAllowedBrowserOrigin(req)) {
+    return safeError(res, 403, 'FORBIDDEN', 'Origin not allowed');
   }
 
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  const limited = rateLimit(req, { key: 'dropoff', limit: 60, windowMs: 60_000 });
+  if (limited !== true) {
+    res.setHeader('Retry-After', String(limited.body.retryAfterSeconds || 60));
+    return res.status(limited.status).json(limited.body);
   }
 
   try {
@@ -27,21 +40,12 @@ export default async function handler(req, res) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      return res.status(response.status).json({
-        error: 'Failed to fetch drop-off points',
-        status: response.status,
-        details: errorText,
-      });
+      return safeError(res, response.status, 'UPSTREAM_ERROR', 'Failed to fetch drop-off points');
     }
 
     const data = await response.json();
     return res.status(200).json(data);
-  } catch (error) {
-    console.error('Drop-off points handler error:', error);
-    return res.status(500).json({
-      error: 'Internal server error',
-      message: error.message,
-    });
+  } catch {
+    return safeError(res, 500, 'PROXY_ERROR', 'Drop-off points unavailable');
   }
 }

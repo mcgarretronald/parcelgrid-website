@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { JsonLd } from '../components/JsonLd';
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { MessageCircle, Search, SearchX } from 'lucide-react';
@@ -79,21 +80,18 @@ const FAQ: React.FC = () => {
         <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
         <meta property="og:title" content="Courier Service FAQs & Answers | ParcelGrid" />
         <meta property="og:description" content="Answers on Pay on Delivery, upcountry delivery times, drop-off branches and M-Pesa withdrawals." />
-        <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
+        <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/share_banner.jpg` : ''} />
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:title" content="Courier Service FAQs & Answers" />
         <meta property="twitter:description" content="Answers on Pay on Delivery, upcountry delivery times, drop-off branches and M-Pesa withdrawals." />
-        <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/phone.png` : ''} />
+        <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/share_banner.jpg` : ''} />
         <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/faq` : ''} />
       </Helmet>
       <JsonLd data={faqStructuredData} />
 
       {/* Hero — -mt-24 cancels root main padding so the dark band sits under the fixed header */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-6xl px-5 pb-12 pt-28 text-center sm:px-8 sm:pb-14 sm:pt-32">
           <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">Help Centre</p>
           <h1 className="mt-4 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">

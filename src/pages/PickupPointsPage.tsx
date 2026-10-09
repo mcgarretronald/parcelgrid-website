@@ -15,6 +15,7 @@ import {
   Truck,
 } from "lucide-react";
 import Footer from "../components/Footer";
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import { MiniFaq } from "../components/MiniFaq";
 import { Reveal } from "../components/Reveal";
 import { STATIONS_FAQ_IDS, faqByIds } from "../lib/faqData";
@@ -492,14 +493,14 @@ export default function PickupPointsPage() {
   return (
     <div className="min-h-screen bg-white text-[#222222]">
       <Helmet>
-        <title>ParcelGrid Pickup & Drop-Off Stations Kenya | 300+ Towns Covered</title>
+        <title>ParcelGrid Pickup & Drop-Off Stations Kenya | 132 Towns Covered</title>
         <meta
           name="title"
-          content="ParcelGrid Pickup & Drop-Off Stations Kenya | 300+ Towns Covered"
+          content="ParcelGrid Pickup & Drop-Off Stations Kenya | 132 Towns Covered"
         />
         <meta
           name="description"
-          content="Find ParcelGrid parcel pickup points and drop-off stations across Kenya. Send or collect parcels in Nairobi CBD, Mombasa, Nakuru, Eldoret, Kisumu, and 300+ towns."
+          content="Find ParcelGrid parcel pickup points and drop-off stations across Kenya. Send or collect parcels in Nairobi CBD, Mombasa, Nakuru, Eldoret, Kisumu, and 132 towns."
         />
         <meta
           name="keywords"
@@ -511,25 +512,22 @@ export default function PickupPointsPage() {
         <meta property="og:url" content={origin ? `${origin}/pickup-points` : ""} />
         <meta
           property="og:title"
-          content="ParcelGrid Pickup & Drop-Off Stations Kenya | 300+ Towns Covered"
+          content="ParcelGrid Pickup & Drop-Off Stations Kenya | 132 Towns Covered"
         />
         <meta
           property="og:description"
-          content="Send or collect parcels at ParcelGrid stations across Nairobi CBD and 300+ towns in Kenya."
+          content="Send or collect parcels at ParcelGrid stations across Nairobi CBD and 132 towns in Kenya."
         />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
-          content="ParcelGrid Pickup & Drop-Off Stations Kenya | 300+ Towns Covered"
+          content="ParcelGrid Pickup & Drop-Off Stations Kenya | 132 Towns Covered"
         />
       </Helmet>
 
       {/* Hero */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-28 text-center sm:px-8 sm:pb-16 sm:pt-32">
           <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">
             Drop-Off & Pickup Stations
@@ -539,7 +537,7 @@ export default function PickupPointsPage() {
           </h1>
           <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-white/75 sm:text-lg">
             Send parcels upcountry from our Nairobi CBD branches and selected regional stations, or direct
-            your buyers to collect at over 300 verified pickup points countrywide.
+            your buyers to collect at verified pickup points across 132 towns outside Nairobi.
           </p>
         </div>
       </section>
@@ -685,7 +683,7 @@ export default function PickupPointsPage() {
           >
             {(
               [
-                { id: "all" as const, label: `All Stations (300+)` },
+                { id: "all" as const, label: `All Stations (132)` },
                 { id: "send" as const, label: `Drop-Off & Send (${sendCount || "—"})` },
                 { id: "collect" as const, label: `Pickup / Collection Only (${collectCount || "—"})` },
               ] as const

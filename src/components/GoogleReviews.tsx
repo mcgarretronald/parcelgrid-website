@@ -4,7 +4,7 @@ import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 const profiles = {
   "ronald-ngala": {
     label: "Ronald Ngala",
-    place: "City Centre Mall",
+    place: "City Centre Mall, Shop LG12",
     href: "https://www.google.com/maps?cid=4912618892420080821",
   },
   "moi-avenue": {
@@ -142,9 +142,9 @@ export function GoogleReviews() {
           <h2 id="google-reviews-heading" className="mt-3 text-3xl font-bold tracking-tight text-[#071410] sm:text-4xl">
             Trusted by online sellers across Kenya
           </h2>
-          <div className="mt-5 inline-flex items-center gap-3 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-[#3d4a47]">
+          <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-full border border-black/10 bg-white px-4 py-2 text-sm text-[#3d4a47]">
             <GoogleMark />
-            <span className="font-semibold text-[#071410]">5-star Google reviews</span>
+            <span className="font-semibold text-[#071410]">4.8 on Google &amp; Play Store</span>
             <span>across our 3 Nairobi CBD branches</span>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { JsonLd } from '../components/JsonLd';
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import { Helmet } from "react-helmet-async";
 import {
   ArrowRight,
@@ -31,7 +32,7 @@ const STEPS = [
   {
     icon: Moon,
     title: "Overnight transit",
-    body: "We securely ship the parcel overnight to any of our 300+ upcountry pickup stations.",
+    body: "We securely ship the parcel overnight to any of our 132 upcountry pickup stations.",
   },
   {
     icon: PackageCheck,
@@ -101,10 +102,7 @@ export default function PrepaidCODPage() {
 
       {/* Hero */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-28 text-center sm:px-8 sm:pb-16 sm:pt-32">
           <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">Pay on Delivery</p>
           <h1 className="mx-auto mt-4 max-w-3xl font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">
@@ -136,7 +134,7 @@ export default function PrepaidCODPage() {
           {[
             { v: "Instant", l: "Wallet credit on collection" },
             { v: "1.8%", l: "Handling fee, COD only" },
-            { v: "300+", l: "Pickup towns" },
+            { v: "132", l: "Pickup towns" },
             { v: "M-Pesa", l: "Buyer pays at the station" },
           ].map((s) => (
             <div key={s.l} className="min-w-0 bg-white px-3 py-7 text-center sm:px-4 sm:py-9">

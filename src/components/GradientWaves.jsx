@@ -158,20 +158,31 @@ const GradientWaves = ({
     const container = containerRef.current;
     if (!container) return;
 
-    const renderer = new Renderer({
-      webgl: 2,
-      alpha: true,
-      premultipliedAlpha: true,
-      antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
-    });
-
-    const gl = renderer.gl;
-    gl.clearColor(0, 0, 0, 0);
-    const canvas = gl.canvas;
+    // OGL throws if both WebGL2 and WebGL1 contexts fail (common under
+    // React Strict Mode remounts / browser context limits). Fail soft.
+    const canvas = document.createElement('canvas');
     canvas.style.width = '100%';
     canvas.style.height = '100%';
     canvas.style.display = 'block';
+    canvas.setAttribute('aria-hidden', 'true');
+
+    let renderer;
+    try {
+      renderer = new Renderer({
+        canvas,
+        webgl: 2,
+        alpha: true,
+        premultipliedAlpha: true,
+        antialias: false,
+        dpr: Math.min(window.devicePixelRatio || 1, 2),
+      });
+    } catch {
+      return;
+    }
+    if (!renderer?.gl) return;
+
+    const gl = renderer.gl;
+    gl.clearColor(0, 0, 0, 0);
     container.appendChild(canvas);
 
     const geometry = new Triangle(gl);
@@ -291,11 +302,18 @@ const GradientWaves = ({
       canvas.removeEventListener('pointerleave', onPointerLeave);
       ctxMap.delete(container);
       try {
-        container.removeChild(canvas);
+        canvas.remove();
       } catch {
         /* canvas already removed */
       }
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      // Defer loseContext so Strict Mode remounts aren't racing a dead GL slot.
+      requestAnimationFrame(() => {
+        try {
+          gl.getExtension('WEBGL_lose_context')?.loseContext();
+        } catch {
+          /* ignore */
+        }
+      });
     };
   }, []);
 

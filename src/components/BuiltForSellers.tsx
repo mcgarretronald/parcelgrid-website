@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { CircleCheck } from "lucide-react";
+import { useParallax } from "../hooks/useParallax";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 
 const points = [
@@ -23,17 +24,21 @@ const points = [
 
 export function BuiltForSellers() {
   const { ref, className } = useRevealOnScroll();
+  const photoRef = useParallax<HTMLImageElement>({ speed: 0.14, maxPx: 40 });
 
   return (
     <section
       ref={ref}
-      className={`reveal relative overflow-hidden ${className}`}
+      className={`reveal section-blend-top section-blend-bottom relative overflow-hidden ${className}`}
       aria-labelledby="built-for-sellers-heading"
     >
-      <img decoding="async" loading="lazy"
+      <img
+        ref={photoRef}
+        decoding="async"
+        loading="lazy"
         src="/parcel-van-golden-hour.webp"
         alt="ParcelGrid courier van delivering upcountry parcels from Nairobi at golden hour"
-        className="reveal-scale absolute inset-0 h-full w-full object-cover object-[78%_center]"
+        className="reveal-scale parallax-media absolute inset-0 h-[115%] w-full object-cover object-[78%_center]"
       />
       <div
         className="absolute inset-0 bg-gradient-to-r from-[#071410]/92 via-[#071410]/80 to-[#071410]/55"
@@ -52,7 +57,7 @@ export function BuiltForSellers() {
             Grow Your Business Beyond Nairobi Without the Delivery Headaches
           </h2>
           <p className="mt-5 text-sm leading-relaxed text-white/75 sm:text-base">
-            Most upcountry buyers prefer to pay when they see their item. ParcelGrid bridges the trust gap between you and your customers with verified pickup points across 300+ towns, automated SMS updates, and zero-delay M-Pesa settlements.
+            Most upcountry buyers prefer to pay when they see their item. ParcelGrid bridges the trust gap between you and your customers with verified pickup points across 132 towns, automated SMS updates, and zero-delay M-Pesa settlements.
           </p>
 
           <ul className="reveal-stagger mt-8 space-y-4">

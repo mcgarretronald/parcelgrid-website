@@ -1,5 +1,6 @@
 /**
  * Live delivery fee — same calculate-delivery-fee endpoint the vendor app uses.
+ * Browser never fetches website-backend tokens; pricing goes through /api or CORS-safe website-backend.
  */
 
 export type CalculateFeePayload = {
@@ -20,25 +21,9 @@ export type CalculateFeeResult = {
   error?: string;
 };
 
-const AUTH_TOKEN_URL =
-  'https://app.escrowcourier.com/website-backend-services/api/auth/token';
-const FEE_DIRECT =
-  'https://app.escrowcourier.com/pricing-services/api/pricing/calculate-delivery-fee';
-const FEE_PROXY = '/calculate-fee-api';
 const FEE_FN = '/api/calculate-fee';
 const FEE_WEBSITE =
   'https://app.escrowcourier.com/website-backend-services/api/calculate-delivery-fee';
-
-async function fetchWebsiteToken(): Promise<string | null> {
-  try {
-    const res = await fetch(AUTH_TOKEN_URL, { headers: { Accept: 'application/json' } });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.token || data.access_token || data.bearer_token || data.data?.token || null;
-  } catch {
-    return null;
-  }
-}
 
 function extractFee(data: any): CalculateFeeResult {
   const nested = data?.data ?? data?.result ?? data;
@@ -62,12 +47,11 @@ function extractFee(data: any): CalculateFeeResult {
 async function postFee(
   url: string,
   payload: CalculateFeePayload,
-  headers: Record<string, string>,
   signal?: AbortSignal,
 ): Promise<CalculateFeeResult | null> {
   const res = await fetch(url, {
     method: 'POST',
-    headers: { Accept: 'application/json', 'Content-Type': 'application/json', ...headers },
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
     signal,
   });
@@ -90,48 +74,20 @@ export async function calculateDeliveryFee(
   payload: CalculateFeePayload,
   signal?: AbortSignal,
 ): Promise<CalculateFeeResult> {
-  // Dev Vite middleware / Netlify function — token kept server-side
   try {
-    const fromFn = await postFee(FEE_FN, payload, {}, signal);
+    const fromFn = await postFee(FEE_FN, payload, signal);
     if (fromFn && fromFn.totalFee != null) return fromFn;
-    // Keep hard errors (bad route) but continue if the path 404'd as SPA HTML
-    if (fromFn?.error && !/status 404|doctype|<!doctype/i.test(fromFn.error)) {
-      // Prefer continuing to CORS-friendly website-backend before surfacing
-    }
   } catch (err: any) {
     if (err?.name === 'AbortError') throw err;
   }
 
-  // Website-backend proxy — CORS-friendly from escrowcourier.com (no browser token needed)
+  // Website-backend proxy — CORS-friendly from escrowcourier.com (no browser token)
   try {
-    const fromSite = await postFee(FEE_WEBSITE, payload, {}, signal);
+    const fromSite = await postFee(FEE_WEBSITE, payload, signal);
     if (fromSite && fromSite.totalFee != null) return fromSite;
+    if (fromSite?.error) return fromSite;
   } catch (err: any) {
     if (err?.name === 'AbortError') throw err;
-  }
-
-  const token = await fetchWebsiteToken();
-  const auth: Record<string, string> = token
-    ? { Authorization: `Bearer ${token}` }
-    : {};
-
-  if (import.meta.env.DEV && token) {
-    try {
-      const fromProxy = await postFee(FEE_PROXY, payload, auth, signal);
-      if (fromProxy && fromProxy.totalFee != null) return fromProxy;
-    } catch (err: any) {
-      if (err?.name === 'AbortError') throw err;
-    }
-  }
-
-  if (token) {
-    try {
-      const fromDirect = await postFee(FEE_DIRECT, payload, auth, signal);
-      if (fromDirect && fromDirect.totalFee != null) return fromDirect;
-      if (fromDirect?.error) return fromDirect;
-    } catch (err: any) {
-      if (err?.name === 'AbortError') throw err;
-    }
   }
 
   return { totalFee: null, error: 'Unable to calculate delivery fee' };

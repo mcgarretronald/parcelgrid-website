@@ -39,7 +39,7 @@ const stats: {
   value?: number;
   suffix?: string;
 }[] = [
-  { value: 300, suffix: "+", label: "Towns covered" },
+  { value: 132, label: "Towns covered" },
   { display: "Next-Day", label: "Upcountry transit" },
   { display: "Instant", label: "M-Pesa COD payouts" },
   { display: "100%", label: "Escrow-protected funds" },
@@ -139,7 +139,7 @@ export default function AboutPage() {
     name: "ParcelGrid",
     legalName: "Escrow Courier Networks Limited",
     description:
-      "CA-licensed courier connecting online sellers to 300+ towns with next-day delivery and instant COD settlements.",
+      "CA-licensed courier connecting online sellers to 132 towns with next-day delivery and instant COD settlements.",
     url: origin,
     logo: origin ? `${origin}/logo.png` : "",
     address: {
@@ -166,7 +166,7 @@ export default function AboutPage() {
         />
         <meta
           name="description"
-          content="Learn about ParcelGrid by Escrow Courier Networks Ltd. CA-licensed courier connecting online sellers to 300+ towns with next-day delivery and instant COD settlements."
+          content="Learn about ParcelGrid by Escrow Courier Networks Ltd. CA-licensed courier connecting online sellers to 132 towns with next-day delivery and instant COD settlements."
         />
         <meta
           name="keywords"
@@ -181,9 +181,9 @@ export default function AboutPage() {
         />
         <meta
           property="og:description"
-          content="CA-licensed courier connecting online sellers to 300+ towns with next-day delivery and instant COD settlements."
+          content="CA-licensed courier connecting online sellers to 132 towns with next-day delivery and instant COD settlements."
         />
-        <meta property="og:image" content={origin ? `${origin}/phone.png` : ""} />
+        <meta property="og:image" content={origin ? `${origin}/share_banner.jpg` : ""} />
         <meta name="twitter:card" content="summary_large_image" />
         <meta
           name="twitter:title"
@@ -191,7 +191,7 @@ export default function AboutPage() {
         />
         <meta
           name="twitter:description"
-          content="CA-licensed courier connecting online sellers to 300+ towns with next-day delivery and instant COD settlements."
+          content="CA-licensed courier connecting online sellers to 132 towns with next-day delivery and instant COD settlements."
         />
         <link rel="canonical" href={origin ? `${origin}/about` : "/about"} />
       </Helmet>
@@ -212,7 +212,7 @@ export default function AboutPage() {
               id="about-heading"
               className="reveal-up reveal-delay-1 mt-5 font-[Sora] text-4xl font-semibold leading-[1.05] tracking-[-0.045em] text-[#111] sm:text-5xl lg:text-6xl"
             >
-              Connecting Kenyan Online Sellers to 300+ Towns with Trust and Speed
+              Connecting Kenyan Online Sellers to 132 Towns with Trust and Speed
             </h1>
             <p className="reveal-up reveal-delay-2 mx-auto mt-5 max-w-2xl text-base leading-relaxed text-[#5c6562] sm:text-lg">
               ParcelGrid by Escrow Courier Networks Ltd — CA-licensed courier built for Instagram vendors,
@@ -268,7 +268,7 @@ export default function AboutPage() {
           </p>
           <p className="reveal-up reveal-delay-3 mt-4 text-base leading-relaxed text-[#5c6562] sm:text-lg">
             We bridge the gap between Nairobi vendors and upcountry buyers. By combining secure next-day
-            delivery to over 300 towns with automated Pay on Delivery (Cash on Delivery), we remove the
+            delivery to 132 towns with automated Pay on Delivery (Cash on Delivery), we remove the
             friction, doubt, and payment risk from remote selling in Kenya.
           </p>
         </div>
@@ -446,7 +446,7 @@ export default function AboutPage() {
                   <MapPin className="size-4" aria-hidden />
                 </span>
                 <div>
-                  <p className="font-semibold">300+ Nationwide Collection Points</p>
+                  <p className="font-semibold">132 Outside Nairobi Collection Points</p>
                   <p className="mt-1 text-sm leading-relaxed text-white/70">
                     Verified pickup locations in all major counties and commercial centres across the
                     country.
@@ -570,7 +570,7 @@ export default function AboutPage() {
           <p className="text-sm text-[#5c6562]">
             <span className="font-semibold text-[#111]">Ship with ParcelGrid</span>
             <span className="mx-2 text-black/20">·</span>
-            CA-licensed · Instant COD · 300+ towns
+            CA-licensed · Instant COD · 132 towns
           </p>
           <Link
             to="/book-parcel"

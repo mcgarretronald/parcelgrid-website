@@ -5,8 +5,8 @@ import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 const cards = [
   {
     number: "01",
-    title: "Next-Day Upcountry Delivery",
-    body: "Daily parcel dispatches to 300+ towns outside Nairobi. Optimized transit routes ensure your customer collects their package promptly without delays.",
+    title: "Next-Day Upcountry Courier",
+    body: "Daily courier dispatches to 132 towns outside Nairobi. Optimized transit routes so your customer collects their package promptly without delays.",
     href: "/services/upcountry-parcel-delivery",
     icon: Truck,
   },
@@ -32,8 +32,8 @@ export function ServiceHighlights() {
   return (
     <section
       ref={ref}
-      className={`reveal bg-white py-8 sm:py-14 ${className}`}
-      aria-label="Why sellers choose ParcelGrid"
+      className={`reveal section-blend-top bg-white py-8 sm:py-14 ${className}`}
+      aria-label="Courier services for sellers in Kenya"
     >
       <ul className="reveal-stagger mx-auto grid max-w-7xl grid-cols-1 divide-y divide-black/[0.06] md:grid-cols-3 md:divide-x md:divide-y-0">
         {cards.map((card) => {

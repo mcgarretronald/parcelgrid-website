@@ -3,7 +3,7 @@ import { LazyGhostFibers } from "./LazyShader";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 
 const branches = [
-  { name: "Ronald Ngala", place: "City Centre Mall, Ground Floor" },
+  { name: "Ronald Ngala", place: "City Centre Mall, Shop LG12" },
   { name: "Moi Avenue", place: "Iconic Business Plaza, Shop G13" },
   { name: "Taveta Road", place: "Jithada Shopping Complex, Shop F7" },
 ];

@@ -133,9 +133,10 @@ export function SelectPicker({
                     }`}
                     onClick={() => {
                       if (opt.disabled) return;
+                      // Do not call onBlur here — parent state may not have
+                      // committed yet, so blur validation would see a stale empty value.
                       onChange(opt.value);
                       setOpen(false);
-                      onBlur?.();
                     }}
                   >
                     <span className="min-w-0 flex-1 break-words">{opt.label}</span>

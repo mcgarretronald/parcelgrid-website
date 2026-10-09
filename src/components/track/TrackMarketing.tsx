@@ -15,7 +15,7 @@ const journeyStages = [
   },
   {
     title: "Upcountry Transit",
-    body: "Overnight transit across regional highway routes to 300+ towns.",
+    body: "Overnight transit across regional highway routes to 132 towns.",
     icon: Truck,
   },
   {
@@ -26,7 +26,7 @@ const journeyStages = [
 ];
 
 const proofs = [
-  { value: "300+", label: "Towns Covered" },
+  { value: "132", label: "Towns Covered" },
   { value: "Next-Day", label: "Regional Transit" },
   { value: "Instant", label: "M-Pesa COD Payouts" },
   { value: "CA", label: "Licensed by CA Kenya" },
@@ -115,7 +115,7 @@ export function TrackEmptyMarketing() {
                 to="/pickup-points"
                 className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/50 px-7 text-sm font-semibold text-white transition-colors hover:bg-white/10"
               >
-                View All 300+ Pickup Points →
+                View All 132 Pickup Points →
               </Link>
             </div>
           </div>
@@ -136,7 +136,7 @@ export function TrackSoftSellRail() {
           Selling online in Kenya?
         </h2>
         <p className="mt-3 text-sm leading-relaxed text-white/75">
-          Ship to 300+ towns with next-day dispatch and instant M-Pesa COD settlement.
+          Ship to 132 towns with next-day dispatch and instant M-Pesa COD settlement.
         </p>
         <div className="mt-6 flex flex-col gap-2.5">
           <Link

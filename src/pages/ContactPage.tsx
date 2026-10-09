@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { JsonLd } from '../components/JsonLd';
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import { Helmet } from 'react-helmet-async';
+import { Reveal } from '../components/Reveal';
 import { Phone, Mail, Clock, MessageCircle, BadgeCheck, ArrowUpRight, Loader2, AlertCircle } from 'lucide-react';
 import Footer from '../components/Footer';
 import { BRANCHES, SUPPORT_EMAIL, mapsLink } from '../lib/branches';
@@ -17,9 +19,9 @@ const CONTACT_ENDPOINTS = import.meta.env.DEV
   ? ['/contact-api', '/api/contact']
   : ['/api/contact', '/contact-api'];
 
-const PAGE_TITLE = 'Contact ParcelGrid | Nairobi CBD Branches & Customer Support';
+const PAGE_TITLE = 'Contact ParcelGrid Courier | Nairobi CBD Branches & Support';
 const PAGE_DESCRIPTION =
-  'Visit ParcelGrid at our Nairobi CBD branches: City Centre Mall (Ronald Ngala), Iconic Business Plaza (Moi Ave), and Jithada Complex (Taveta Rd). Call 0745 111 555.';
+  'Visit ParcelGrid courier branches in Nairobi CBD: City Centre Mall Shop LG12 (Ronald Ngala), Iconic Business Plaza Shop G13 (Moi Ave), and Jithada Complex Shop F7 (Taveta Rd). Call 0745 111 555.';
 
 const buildSchema = (origin: string) => ({
   '@context': 'https://schema.org',
@@ -223,10 +225,7 @@ const ContactPage: React.FC = () => {
 
       {/* Hero */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-28 text-center sm:px-8 sm:pb-16 sm:pt-32">
           <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">Contact & Support</p>
           <h1 className="mt-4 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">
@@ -239,7 +238,7 @@ const ContactPage: React.FC = () => {
       </section>
 
       {/* Branches + map */}
-      <section className="border-b border-black/[0.06] bg-[#f7f8f6] py-12 sm:py-16" id="branches">
+      <Reveal as="section" variant="up" className="border-b border-black/[0.06] bg-[#f7f8f6] py-12 sm:py-16" id="branches">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <div className="max-w-2xl">
             <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">Central branches</p>
@@ -251,7 +250,7 @@ const ContactPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="reveal-stagger mt-8 grid gap-4 md:grid-cols-3">
             {BRANCHES.map((b) => (
               <article key={b.id} className="flex flex-col rounded-2xl border border-black/10 bg-white p-5 sm:p-6">
                 <span className="inline-flex w-fit rounded-full bg-[#E9FF15] px-2.5 py-1 text-[11px] font-semibold text-[#00473E]">
@@ -334,10 +333,10 @@ const ContactPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* Support + form */}
-      <section className="py-12 sm:py-16" id="message">
+      <Reveal as="section" variant="up" className="py-12 sm:py-16" id="message">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 sm:px-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <div className="space-y-4">
             <div>
@@ -487,7 +486,7 @@ const ContactPage: React.FC = () => {
             )}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       <Footer />
     </div>

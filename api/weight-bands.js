@@ -2,7 +2,15 @@
  * Proxy weight bands from pricing-service (same source as the ParcelGrid app).
  * Uses the website-backend token so the browser never talks to pricing-services directly.
  */
-const AUTH_URL = 'https://app.escrowcourier.com/website-backend-services/api/auth/token';
+import {
+  applyCors,
+  handleOptions,
+  rateLimit,
+  safeError,
+  fetchWebsiteToken,
+  isAllowedBrowserOrigin,
+} from './_lib/security.js';
+
 const BANDS_URL = 'https://app.escrowcourier.com/pricing-services/api/pricing/weight-bands';
 const STANDARD_TIER_ID = 2;
 
@@ -39,38 +47,26 @@ function normalizeBands(raw) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Accept, Content-Type, Authorization');
+  applyCors(req, res, { methods: 'GET, OPTIONS' });
 
-  if (req.method === 'OPTIONS') return res.status(200).json({});
+  if (req.method === 'OPTIONS') return handleOptions(req, res, { methods: 'GET, OPTIONS' });
   if (req.method !== 'GET') {
-    return res.status(405).json({ success: false, error: 'METHOD_NOT_ALLOWED' });
+    return safeError(res, 405, 'METHOD_NOT_ALLOWED', 'GET only');
+  }
+  if (!isAllowedBrowserOrigin(req)) {
+    return safeError(res, 403, 'FORBIDDEN', 'Origin not allowed');
+  }
+
+  const limited = rateLimit(req, { key: 'weight-bands', limit: 60, windowMs: 60_000 });
+  if (limited !== true) {
+    res.setHeader('Retry-After', String(limited.body.retryAfterSeconds || 60));
+    return res.status(limited.status).json(limited.body);
   }
 
   try {
-    const tokenRes = await fetch(AUTH_URL, {
-      headers: { Accept: 'application/json' },
-    });
-    if (!tokenRes.ok) {
-      return res.status(502).json({
-        success: false,
-        error: 'AUTH_FAILED',
-        message: 'Could not authorize weight-band lookup',
-      });
-    }
-    const tokenData = await tokenRes.json();
-    const token =
-      tokenData.token ||
-      tokenData.access_token ||
-      tokenData.bearer_token ||
-      tokenData.data?.token;
+    const token = await fetchWebsiteToken();
     if (!token) {
-      return res.status(502).json({
-        success: false,
-        error: 'AUTH_FAILED',
-        message: 'No auth token for weight bands',
-      });
+      return safeError(res, 502, 'AUTH_FAILED', 'Could not authorize weight-band lookup');
     }
 
     const bandsRes = await fetch(BANDS_URL, {
@@ -80,23 +76,14 @@ export default async function handler(req, res) {
       },
     });
     if (!bandsRes.ok) {
-      const details = await bandsRes.text();
-      return res.status(bandsRes.status).json({
-        success: false,
-        error: 'WEIGHT_BANDS_UPSTREAM',
-        details,
-      });
+      return safeError(res, bandsRes.status, 'WEIGHT_BANDS_UPSTREAM', 'Failed to load weight bands');
     }
 
     const payload = await bandsRes.json();
     const raw = Array.isArray(payload) ? payload : payload?.data || [];
     const data = normalizeBands(raw);
     return res.status(200).json({ success: true, data });
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: 'PROXY_ERROR',
-      message: error?.message || 'Failed to load weight bands',
-    });
+  } catch {
+    return safeError(res, 500, 'PROXY_ERROR', 'Failed to load weight bands');
   }
 }

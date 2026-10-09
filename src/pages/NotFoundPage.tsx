@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import Footer from "../components/Footer";
+import { PageHeroBackground } from '../components/PageHeroBackground';
 
 const LINKS = [
   { to: "/track", label: "Track a parcel" },
@@ -21,10 +22,7 @@ export default function NotFoundPage() {
       </Helmet>
 
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-3xl px-5 pb-16 pt-24 text-center sm:px-8 sm:pb-20 sm:pt-28">
           <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">Error 404</p>
           <h1 className="mt-4 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">

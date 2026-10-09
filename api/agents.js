@@ -1,48 +1,47 @@
-// Netlify/Vercel serverless function to proxy API requests
+import {
+  applyCors,
+  handleOptions,
+  rateLimit,
+  safeError,
+  isAllowedBrowserOrigin,
+} from './_lib/security.js';
+
 export default async function handler(req, res) {
-  console.log('Handler called with method:', req.method);
-  console.log('Request URL:', req.url);
-  console.log('Request headers:', req.headers);
-  
-  // Handle CORS preflight
+  applyCors(req, res, { methods: 'GET, OPTIONS' });
+
   if (req.method === 'OPTIONS') {
-    return res.status(200).json({});
+    return handleOptions(req, res, { methods: 'GET, OPTIONS' });
+  }
+  if (req.method !== 'GET') {
+    return safeError(res, 405, 'METHOD_NOT_ALLOWED', 'GET only');
+  }
+  if (!isAllowedBrowserOrigin(req)) {
+    return safeError(res, 403, 'FORBIDDEN', 'Origin not allowed');
+  }
+
+  const limited = rateLimit(req, { key: 'agents', limit: 60, windowMs: 60_000 });
+  if (limited !== true) {
+    res.setHeader('Retry-After', String(limited.body.retryAfterSeconds || 60));
+    return res.status(limited.status).json(limited.body);
   }
 
   try {
     const apiUrl = 'https://app.escrowcourier.com/website-backend-services/api/pickup-points';
-    console.log('Making request to:', apiUrl);
-    
-    const headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
-    
     const response = await fetch(apiUrl, {
       method: 'GET',
-      headers,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
     });
-    
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-    
+
     if (!response.ok) {
-      console.error('API Error:', response.status, response.statusText);
-      return res.status(response.status).json({ 
-        error: 'Failed to fetch agents',
-        status: response.status 
-      });
+      return safeError(res, response.status, 'UPSTREAM_ERROR', 'Failed to fetch agents');
     }
-    
+
     const data = await response.json();
-    console.log('Received data length:', Array.isArray(data) ? data.length : 'not array');
     return res.status(200).json(data);
-    
-  } catch (error) {
-    console.error('Handler error:', error);
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message 
-    });
+  } catch {
+    return safeError(res, 500, 'PROXY_ERROR', 'Agents unavailable');
   }
 }

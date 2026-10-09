@@ -27,7 +27,7 @@ export const BRANCHES: Branch[] = [
     tab: 'Ronald Ngala',
     name: 'City Centre Mall Branch',
     street: 'Ronald Ngala Street',
-    address: 'Ronald Ngala Street, Ground Floor, Nairobi CBD',
+    address: 'City Centre Mall, Shop LG12, Basement, Ronald Ngala Street, Nairobi CBD',
     hours: HOURS,
     hoursSpec: HOURS_SPEC,
     phone: '0745 111 555',

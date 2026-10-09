@@ -25,7 +25,7 @@ export const AGENT_ROLES: AgentRole[] = [
     tagline: "Join Kenya's widest pickup point network and earn commission on every parcel handled.",
     summary:
       'Turn your shop into a trusted collection point where customers pick up their prepaid or COD parcels, even after work.',
-    tags: ['Nationwide', 'Flexible hours'],
+    tags: ['Outside Nairobi', 'Flexible hours'],
     highlights: [
       '20% commission on the net courier fee',
       'Listed free on our national station directory',

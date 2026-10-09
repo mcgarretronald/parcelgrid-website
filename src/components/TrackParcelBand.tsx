@@ -4,7 +4,7 @@ import { Search, Truck } from "lucide-react";
 import { useRevealOnScroll } from "../hooks/useRevealOnScroll";
 
 const proofs = [
-  { value: "300+", label: "Upcountry Towns Covered" },
+  { value: "132", label: "Upcountry Towns Covered" },
   { value: "Next-Day", label: "Upcountry Delivery Speed" },
   { value: "Instant", label: "M-Pesa COD Payouts" },
   { value: "3", label: "Nairobi CBD Branches" },
@@ -34,9 +34,9 @@ export function TrackParcelBand() {
       ref={ref}
       id="track-parcel"
       aria-labelledby="track-parcel-heading"
-      className={`reveal grid lg:grid-cols-[minmax(300px,38%)_1fr] ${className}`}
+      className={`reveal section-blend-top grid lg:grid-cols-[minmax(300px,38%)_1fr] ${className}`}
     >
-      <div className="reveal-up flex h-full min-h-[520px] flex-col items-center bg-[#00473E] px-8 py-14 text-center text-white sm:px-12 sm:py-16 lg:min-h-[640px]">
+      <div className="reveal-left flex h-full min-h-[520px] flex-col items-center bg-[#00473E] px-8 py-14 text-center text-white sm:px-12 sm:py-16 lg:min-h-[640px]">
         <div className="my-auto flex w-full max-w-sm flex-col items-center">
           <Truck className="mb-6 h-11 w-11" strokeWidth={1.75} aria-hidden="true" />
           <h2 id="track-parcel-heading" className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -132,10 +132,10 @@ export function TrackParcelBand() {
         </div>
       </div>
 
-      <div className="reveal-scale relative min-h-[520px] bg-[#071410] lg:min-h-[640px]">
+      <div className="reveal-right relative min-h-[520px] bg-[#071410] lg:min-h-[640px]">
         <img decoding="async" loading="lazy"
           src="/fleet-delivery.jpg"
-          alt="ParcelGrid delivery fleet on the road, serving 300+ upcountry towns across Kenya"
+          alt="ParcelGrid delivery fleet on the road, serving 132 upcountry towns across Kenya"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-[#071410]/72" aria-hidden="true" />

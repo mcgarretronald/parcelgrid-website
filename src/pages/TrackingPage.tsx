@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { JsonLd } from '../components/JsonLd';
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import { Helmet } from 'react-helmet-async';
 import {
   Search,
@@ -22,8 +23,10 @@ import {
   ChevronUp,
   Eye,
   Phone,
+  MessageCircle,
   type LucideIcon,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useScrollToTop } from '../hooks/useScrollToTop';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
@@ -652,6 +655,68 @@ async function fetchPickupPoints(): Promise<any[]> {
   throw new Error('Unable to load pickup station details.');
 }
 
+type TrackingErrorKind = 'empty' | 'not_found' | 'network' | 'unavailable';
+
+type TrackingUiError = {
+  kind: TrackingErrorKind;
+  title: string;
+  what: string;
+  nextSteps: string[];
+};
+
+class TrackingLookupError extends Error {
+  kind: Exclude<TrackingErrorKind, 'empty'>;
+  constructor(kind: Exclude<TrackingErrorKind, 'empty'>, message: string) {
+    super(message);
+    this.kind = kind;
+    this.name = 'TrackingLookupError';
+  }
+}
+
+function toTrackingUiError(err: unknown, searched: string): TrackingUiError {
+  const ref = searched.trim() ? `“${searched.trim()}”` : 'that number';
+
+  if (err instanceof TrackingLookupError && err.kind === 'not_found') {
+    return {
+      kind: 'not_found',
+      title: 'No parcel matches this tracking number',
+      what: `We could not find a ParcelGrid shipment for ${ref}. The number may be mistyped, incomplete, or not created yet.`,
+      nextSteps: [
+        'Check the full tracking number (for example WEB#12345 or MARK#12345) — include letters, #, and digits.',
+        'If you just booked, wait a minute and try again after payment.',
+        'Still stuck? WhatsApp support with the number you used.',
+      ],
+    };
+  }
+
+  if (
+    (err instanceof TrackingLookupError && err.kind === 'network') ||
+    (err instanceof Error && /fetch|network|connection/i.test(err.message))
+  ) {
+    return {
+      kind: 'network',
+      title: 'Could not connect to tracking',
+      what: 'Your device could not reach our tracking service. This is usually a network or connection issue.',
+      nextSteps: [
+        'Check your internet connection.',
+        'Try Track Now again.',
+        'If it keeps failing, WhatsApp support and share the tracking number.',
+      ],
+    };
+  }
+
+  return {
+    kind: 'unavailable',
+    title: 'Tracking is temporarily unavailable',
+    what: 'Our tracking service did not respond correctly. This is on our side, not your tracking number.',
+    nextSteps: [
+      'Wait a moment, then try Track Now again.',
+      'You can also track later from the same link or SMS we sent.',
+      'Need help now? WhatsApp support with your tracking number.',
+    ],
+  };
+}
+
 async function fetchTracking(trackingNo: string): Promise<TrackingData> {
   const value = trackingNo.trim();
   const encoded = encodeURIComponent(value);
@@ -671,16 +736,12 @@ async function fetchTracking(trackingNo: string): Promise<TrackingData> {
       lastStatus = res.status;
 
       if (res.status === 404) {
-        throw new Error(
-          'Parcel not found. Please double-check your tracking number and try again, or contact our support team for help.'
-        );
+        throw new TrackingLookupError('not_found', 'NOT_FOUND');
       }
       if (!res.ok) {
         // Try next source for gateway/proxy failures; keep last status for messaging.
         if (res.status >= 500 || res.status === 502 || res.status === 503) continue;
-        throw new Error(
-          `Unable to reach the tracking service right now (${res.status}). Please try again later.`
-        );
+        throw new TrackingLookupError('unavailable', `STATUS_${res.status}`);
       }
 
       const text = await res.text();
@@ -699,31 +760,22 @@ async function fetchTracking(trackingNo: string): Promise<TrackingData> {
         !payload ||
         (typeof payload === 'object' && !Array.isArray(payload) && Object.keys(payload).length === 0)
       ) {
-        throw new Error(
-          'Parcel not found. Please double-check your tracking number and try again, or contact our support team for help.'
-        );
+        throw new TrackingLookupError('not_found', 'NOT_FOUND');
       }
 
       return normalizeTrackResponse(payload, value);
     } catch (err) {
-      if (err instanceof Error && err.message.startsWith('Parcel not found')) throw err;
-      if (err instanceof Error && err.message.startsWith('Unable to reach')) throw err;
+      if (err instanceof TrackingLookupError) throw err;
       // Network/CORS failure — try the next source.
       lastNetworkError = true;
     }
   }
 
   if (lastNetworkError && lastStatus == null) {
-    throw new Error(
-      'Unable to reach the tracking service right now. Please check your connection and try again.'
-    );
+    throw new TrackingLookupError('network', 'NETWORK');
   }
 
-  throw new Error(
-    lastStatus
-      ? `Unable to reach the tracking service right now (${lastStatus}). Please try again later.`
-      : 'Unable to reach the tracking service right now. Please try again later.'
-  );
+  throw new TrackingLookupError('unavailable', lastStatus ? `STATUS_${lastStatus}` : 'UNAVAILABLE');
 }
 
 /* ------------------------------------------------------------------ */
@@ -739,7 +791,7 @@ const TrackingPage: React.FC = () => {
 
   const [trackingNo, setTrackingNo] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<TrackingUiError | null>(null);
   const [result, setResult] = useState<TrackingData | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -752,7 +804,16 @@ const TrackingPage: React.FC = () => {
   const runTrack = async (raw: string) => {
     const value = raw.trim();
     if (!value) {
-      setError('Please enter a tracking number.');
+      setError({
+        kind: 'empty',
+        title: 'Enter a tracking number',
+        what: 'We need your ParcelGrid tracking number to look up the parcel.',
+        nextSteps: [
+          'Type the full tracking number from your SMS or booking confirmation.',
+          'Then tap Track Now.',
+        ],
+      });
+      setHasSearched(true);
       return;
     }
     setTrackingNo(value);
@@ -765,8 +826,8 @@ const TrackingPage: React.FC = () => {
     try {
       const data = await fetchTracking(value);
       setResult(data);
-    } catch (err: any) {
-      setError(err?.message || 'Something went wrong while tracking your parcel. Please try again.');
+    } catch (err: unknown) {
+      setError(toTrackingUiError(err, value));
     } finally {
       setLoading(false);
     }
@@ -884,7 +945,7 @@ const TrackingPage: React.FC = () => {
         />
         <meta
           name="description"
-          content="Track your ParcelGrid shipment across 300+ towns in Kenya. Real-time updates for prepaid and Pay on Delivery (COD) parcels with Communications Authority licensed security."
+          content="Track your ParcelGrid shipment across 132 towns in Kenya. Real-time updates for prepaid and Pay on Delivery (COD) parcels with Communications Authority licensed security."
         />
         <meta
           name="keywords"
@@ -900,9 +961,9 @@ const TrackingPage: React.FC = () => {
         />
         <meta
           property="og:description"
-          content="Track your ParcelGrid shipment across 300+ towns in Kenya. Real-time updates for prepaid and Pay on Delivery (COD) parcels."
+          content="Track your ParcelGrid shipment across 132 towns in Kenya. Real-time updates for prepaid and Pay on Delivery (COD) parcels."
         />
-        <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/logo1.png` : ''} />
+        <meta property="og:image" content={typeof window !== 'undefined' ? `${window.location.origin}/share_banner.jpg` : ''} />
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
@@ -912,9 +973,9 @@ const TrackingPage: React.FC = () => {
         />
         <meta
           property="twitter:description"
-          content="Track your ParcelGrid shipment across 300+ towns in Kenya with CA-licensed security."
+          content="Track your ParcelGrid shipment across 132 towns in Kenya with CA-licensed security."
         />
-        <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/logo1.png` : ''} />
+        <meta property="twitter:image" content={typeof window !== 'undefined' ? `${window.location.origin}/share_banner.jpg` : ''} />
 
         <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/track` : ''} />
 
@@ -927,7 +988,7 @@ const TrackingPage: React.FC = () => {
             '@type': 'WebPage',
             name: 'Track Your Parcel | ParcelGrid',
             description:
-              'Track your ParcelGrid shipment across 300+ towns in Kenya. Real-time updates for prepaid and Pay on Delivery (COD) parcels with Communications Authority licensed security.',
+              'Track your ParcelGrid shipment across 132 towns in Kenya. Real-time updates for prepaid and Pay on Delivery (COD) parcels with Communications Authority licensed security.',
             url: typeof window !== 'undefined' ? `${window.location.origin}/track` : '',
             publisher: {
               '@type': 'Organization',
@@ -937,10 +998,7 @@ const TrackingPage: React.FC = () => {
 
       {/* Hero + Tracking form */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_0%,rgba(0,71,62,0.55),transparent_70%)]"
-          aria-hidden="true"
-        />
+        <PageHeroBackground />
         <div className="relative z-10 mx-auto max-w-3xl px-5 pb-14 pt-28 text-center sm:px-8 sm:pb-16 sm:pt-32">
           <h1 className="font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">
             Track Your Parcel
@@ -988,11 +1046,63 @@ const TrackingPage: React.FC = () => {
           </p>
 
           {error && hasSearched && (
-            <div className="mx-auto mt-6 flex max-w-2xl items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-left text-red-700">
-              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
-              <div>
-                <p className="font-semibold">Tracking failed</p>
-                <p className="text-sm text-red-600">{error}</p>
+            <div
+              className="mx-auto mt-6 max-w-2xl rounded-2xl border border-red-200 bg-red-50 px-5 py-5 text-left text-red-950 shadow-sm"
+              role="alert"
+            >
+              <div className="flex items-start gap-3">
+                <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-700">
+                  <AlertCircle className="h-5 w-5" aria-hidden />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-[Sora] text-base font-semibold tracking-tight">{error.title}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-red-900/85">{error.what}</p>
+
+                  <div className="mt-4 rounded-xl border border-red-200/80 bg-white/70 px-4 py-3">
+                    <p className="text-[11px] font-semibold tracking-[0.14em] text-red-800/70 uppercase">
+                      What to do next
+                    </p>
+                    <ol className="mt-2 list-decimal space-y-1.5 pl-4 text-sm leading-snug text-red-950/90">
+                      {error.nextSteps.map((step) => (
+                        <li key={step}>{step}</li>
+                      ))}
+                    </ol>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {error.kind !== 'empty' && (
+                      <button
+                        type="button"
+                        onClick={() => void runTrack(trackingNo)}
+                        disabled={loading}
+                        className="inline-flex min-h-10 items-center rounded-full bg-[#00473E] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#00352f] disabled:opacity-50"
+                      >
+                        {loading ? 'Tracking…' : 'Try again'}
+                      </button>
+                    )}
+                    <a
+                      href={`https://wa.me/254745111555?text=${encodeURIComponent(
+                        trackingNo.trim()
+                          ? `Hi ParcelGrid, I need help tracking ${trackingNo.trim()}`
+                          : 'Hi ParcelGrid, I need help tracking my parcel',
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-red-200 bg-white px-4 text-xs font-semibold text-red-950 transition-colors hover:bg-red-50"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" aria-hidden />
+                      WhatsApp support
+                    </a>
+                    {error.kind === 'not_found' && (
+                      <Link
+                        to="/book-parcel"
+                        className="inline-flex min-h-10 items-center rounded-full border border-red-200 bg-white px-4 text-xs font-semibold text-red-950 transition-colors hover:bg-red-50"
+                      >
+                        Book a parcel
+                      </Link>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}

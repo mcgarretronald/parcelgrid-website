@@ -3,12 +3,14 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock, MapPin, MessageCircle, Phone } from 'lucide-react';
 import Footer from '../components/Footer';
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import { useScrollToTop } from '../hooks/useScrollToTop';
+import { Reveal } from '../components/Reveal';
 import { CAREER_VALUES, JOBS } from '../lib/careers';
 
 const PAGE_TITLE = 'Careers at ParcelGrid | Courier Jobs in Nairobi, Kenya';
 const PAGE_DESCRIPTION =
-  'Build the future of logistics in Kenya. Explore open roles at ParcelGrid, a licensed courier network growing fast across 300+ towns.';
+  'Build the future of logistics in Kenya. Explore open roles at ParcelGrid, a licensed courier network growing fast across 132 towns.';
 
 const CareersPage: React.FC = () => {
   useScrollToTop();
@@ -28,10 +30,7 @@ const CareersPage: React.FC = () => {
 
       {/* Hero */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-28 text-center sm:px-8 sm:pb-16 sm:pt-32">
           <span className="inline-flex rounded-full border border-[#E9FF15]/40 px-4 py-1.5 text-xs font-semibold tracking-[0.14em] text-[#E9FF15]">
             We&apos;re hiring
@@ -54,13 +53,13 @@ const CareersPage: React.FC = () => {
       </section>
 
       {/* Values */}
-      <section className="border-b border-black/[0.06] bg-[#f7f8f6] py-12 sm:py-16" aria-labelledby="values-title">
+      <Reveal as="section" variant="up" className="border-b border-black/[0.06] bg-[#f7f8f6] py-12 sm:py-16" aria-labelledby="values-title">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">How we work</p>
           <h2 id="values-title" className="mt-3 font-[Sora] text-2xl font-semibold tracking-[-0.03em] text-[#111] sm:text-3xl">
             What we value
           </h2>
-          <ul className="mt-8 grid gap-4 md:grid-cols-3">
+          <ul className="reveal-stagger mt-8 grid gap-4 md:grid-cols-3">
             {CAREER_VALUES.map((v, i) => (
               <li key={v.title} className="rounded-2xl border border-black/10 bg-white p-5 sm:p-6">
                 <span className="flex size-9 items-center justify-center rounded-full bg-[#E9FF15] font-[Sora] text-sm font-semibold text-[#00473E]">
@@ -72,10 +71,10 @@ const CareersPage: React.FC = () => {
             ))}
           </ul>
         </div>
-      </section>
+      </Reveal>
 
       {/* Open roles */}
-      <section id="open-roles" className="scroll-mt-24 py-14 sm:py-20" aria-labelledby="roles-title">
+      <Reveal as="section" variant="up" id="open-roles" className="scroll-mt-24 py-14 sm:py-20" aria-labelledby="roles-title">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -119,10 +118,10 @@ const CareersPage: React.FC = () => {
             ))}
           </ul>
         </div>
-      </section>
+      </Reveal>
 
       {/* Contact */}
-      <section className="bg-[#071410] py-14 text-white sm:py-20">
+      <Reveal as="section" variant="fade" className="bg-[#071410] py-14 text-white sm:py-20">
         <div className="mx-auto max-w-3xl px-5 text-center sm:px-8">
           <h2 className="font-[Sora] text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">
             Questions about working at ParcelGrid?
@@ -147,7 +146,7 @@ const CareersPage: React.FC = () => {
             </a>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       <Footer />
     </div>

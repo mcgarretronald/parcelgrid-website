@@ -7,11 +7,13 @@ import {
   Check,
   CheckCircle,
   Copy,
+  Lightbulb,
   Loader2,
   RefreshCw,
   Smartphone,
 } from 'lucide-react';
 import Receipt from '../components/Receipt';
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import { BRANCHES } from '../lib/branches';
 import { isValidKenyaMobile, kenyaMobileError, normalizeKenyaMobile } from '../lib/phone';
 import {
@@ -33,19 +35,25 @@ type LocationState = {
 type PayMethod = 'prompt' | 'paybill';
 type Phase = 'ready' | 'awaiting_prompt' | 'awaiting_paybill' | 'success' | 'failed';
 
+/** Max status checks after an STK prompt before we stop and send the user to Paybill. */
+const PROMPT_STATUS_MAX_ATTEMPTS = 5;
+/** Max Paybill auto-polls after "I've paid" before we stop the spinner. */
+const PAYBILL_STATUS_MAX_ATTEMPTS = 5;
+const POLL_INTERVAL_MS = 4000;
+
 const inputClass =
   'h-12 w-full rounded-full border border-black/10 bg-white px-5 text-sm text-[#111] outline-none transition-colors placeholder:text-[#9aa3a0] focus:border-[#00473E]/40 focus:ring-2 focus:ring-[#00473E]/15';
 
 function readCachedOrder() {
-  const storedOrder = localStorage.getItem('currentOrder');
-  const storedTimestamp = localStorage.getItem('currentOrderTimestamp');
+  const storedOrder = sessionStorage.getItem('currentOrder');
+  const storedTimestamp = sessionStorage.getItem('currentOrderTimestamp');
   if (!storedOrder || !storedTimestamp) return null;
   try {
     const timestamp = parseInt(storedTimestamp, 10);
     if (Date.now() - timestamp > 60 * 60 * 1000) {
-      localStorage.removeItem('currentOrder');
-      localStorage.removeItem('currentOrderTimestamp');
-      localStorage.removeItem('currentBookingForm');
+      sessionStorage.removeItem('currentOrder');
+      sessionStorage.removeItem('currentOrderTimestamp');
+      sessionStorage.removeItem('currentBookingForm');
       return null;
     }
     return JSON.parse(storedOrder);
@@ -113,7 +121,17 @@ export default function PaymentPage() {
     [orderBundle, state.trackingNo, state.orderId],
   );
 
-  const amount = Number(state.bookingData?.deliveryFee || 0);
+  const amount = useMemo(() => {
+    const fromOrder =
+      orderBundle?.shippingCharges ??
+      orderBundle?.data?.order?.[0]?.shippingCharges ??
+      orderBundle?.data?.order?.shippingCharges ??
+      orderBundle?.order?.shippingCharges ??
+      orderBundle?.data?.shippingCharges;
+    const fromBooking = state.bookingData?.deliveryFee;
+    const n = Number(fromOrder ?? fromBooking ?? 0);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  }, [orderBundle, state.bookingData?.deliveryFee]);
 
   const [phoneNumber, setPhoneNumber] = useState(
     () => state.bookingData?.vendorPhone || '',
@@ -122,20 +140,26 @@ export default function PaymentPage() {
   const [phase, setPhase] = useState<Phase>('ready');
   const [error, setError] = useState<string | null>(null);
   const [statusHint, setStatusHint] = useState<string | null>(null);
-  const [merchantRequestId, setMerchantRequestId] = useState('');
-  const [checkoutRequestId, setCheckoutRequestId] = useState('');
+  const [, setMerchantRequestId] = useState('');
+  const [, setCheckoutRequestId] = useState('');
   const [transactionCode, setTransactionCode] = useState<string | null>(null);
   const [showReceipt, setShowReceipt] = useState(false);
   const [sending, setSending] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
+  const [pollAttempt, setPollAttempt] = useState(0);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const pollStartedAt = useRef<number>(0);
+  const pollAttemptsRef = useRef(0);
+  const pollModeRef = useRef<'prompt' | 'paybill'>('prompt');
+  const tickInFlight = useRef(false);
 
   const stopPolling = useCallback(() => {
     if (pollRef.current) {
       clearInterval(pollRef.current);
       pollRef.current = null;
     }
+    tickInFlight.current = false;
+    setIsPolling(false);
   }, []);
 
   useEffect(() => () => stopPolling(), [stopPolling]);
@@ -147,9 +171,16 @@ export default function PaymentPage() {
   }, [state.bookingData, trackingNo, navigate]);
 
   const clearBookingCache = () => {
-    localStorage.removeItem('currentOrder');
-    localStorage.removeItem('currentOrderTimestamp');
-    localStorage.removeItem('currentBookingForm');
+    sessionStorage.removeItem('currentOrder');
+    sessionStorage.removeItem('currentOrderTimestamp');
+    sessionStorage.removeItem('currentBookingForm');
+    try {
+      localStorage.removeItem('currentOrder');
+      localStorage.removeItem('currentOrderTimestamp');
+      localStorage.removeItem('currentBookingForm');
+    } catch {
+      /* ignore */
+    }
   };
 
   const markSuccess = (code?: string | null, message?: string | null) => {
@@ -171,6 +202,17 @@ export default function PaymentPage() {
     setConfirming(false);
   };
 
+  /** After STK prompt checks are exhausted, stop spinner and open Paybill. */
+  const switchToPaybill = (message: string) => {
+    stopPolling();
+    setMethod('paybill');
+    setPhase('ready');
+    setSending(false);
+    setConfirming(false);
+    setError(null);
+    setStatusHint(message);
+  };
+
   const pollOnce = useCallback(
     async (opts: {
       merchantRequestId?: string;
@@ -180,50 +222,99 @@ export default function PaymentPage() {
       const result = await checkPaymentStatus(opts);
       if (result.isPaid || String(result.status).toUpperCase() === 'SUCCESS') {
         markSuccess(result.transactionCode, result.message);
-        return 'paid';
+        return 'paid' as const;
       }
       if (isTerminalFailure(result.status)) {
-        markFailed(
-          result.resultDesc ||
-            result.message ||
-            'Payment was not completed. You can retry the prompt.',
-        );
-        return 'failed';
+        return 'terminal' as const;
       }
       if (result.status === 'NOT_FOUND') {
         setStatusHint('Waiting for M-Pesa… payment not received yet.');
-        return 'pending';
+        return 'pending' as const;
       }
       setStatusHint(result.message || result.resultDesc || 'Waiting for M-Pesa confirmation…');
-      return 'pending';
+      return 'pending' as const;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
 
   const startPolling = useCallback(
-    (opts: {
-      merchantRequestId?: string;
-      checkoutRequestId?: string;
-      trackingNo?: string;
-    }) => {
+    (
+      opts: {
+        merchantRequestId?: string;
+        checkoutRequestId?: string;
+        trackingNo?: string;
+      },
+      mode: 'prompt' | 'paybill' = 'prompt',
+    ) => {
       stopPolling();
-      pollStartedAt.current = Date.now();
+      pollModeRef.current = mode;
+      pollAttemptsRef.current = 0;
+      setPollAttempt(0);
+      setIsPolling(true);
+      const maxAttempts =
+        mode === 'prompt' ? PROMPT_STATUS_MAX_ATTEMPTS : PAYBILL_STATUS_MAX_ATTEMPTS;
+
       const tick = async () => {
+        if (tickInFlight.current) return;
+        tickInFlight.current = true;
+        pollAttemptsRef.current += 1;
+        const attempt = pollAttemptsRef.current;
+        setPollAttempt(attempt);
         try {
           const outcome = await pollOnce(opts);
-          if (outcome !== 'pending') return;
-          if (Date.now() - pollStartedAt.current > 90_000) {
-            markFailed(
-              'No confirmation yet. If you paid by Paybill, tap Confirm payment. Or retry the prompt.',
-            );
+          if (outcome === 'paid') return;
+          if (outcome === 'terminal') {
+            if (pollModeRef.current === 'prompt') {
+              switchToPaybill(
+                'The M-Pesa prompt was not completed. Pay with Paybill using your tracking number, then tap confirm.',
+              );
+            } else {
+              markFailed(
+                'Payment was not completed. Finish Paybill, wait a few seconds, then confirm again.',
+              );
+            }
+            return;
+          }
+          // pending
+          setStatusHint(
+            `Waiting for M-Pesa… check ${attempt} of ${maxAttempts}.`,
+          );
+          if (attempt >= maxAttempts) {
+            if (pollModeRef.current === 'prompt') {
+              switchToPaybill(
+                'No confirmation after 5 checks. Use Paybill with your tracking number as the account, then tap “I’ve paid”.',
+              );
+            } else {
+              stopPolling();
+              setConfirming(false);
+              setPhase('ready');
+              setStatusHint(
+                'Payment not seen yet. Finish Paybill, wait a few seconds, then tap confirm again.',
+              );
+            }
           }
         } catch (err: any) {
           setStatusHint(err?.message || 'Still checking…');
+          if (attempt >= maxAttempts) {
+            if (pollModeRef.current === 'prompt') {
+              switchToPaybill(
+                'Could not confirm the prompt. Use Paybill with your tracking number, then tap confirm.',
+              );
+            } else {
+              stopPolling();
+              setConfirming(false);
+              setPhase('ready');
+              setError(err?.message || 'Could not confirm payment. Try again shortly.');
+            }
+          }
+        } finally {
+          tickInFlight.current = false;
         }
       };
+
       void tick();
-      pollRef.current = setInterval(tick, 4000);
+      pollRef.current = setInterval(tick, POLL_INTERVAL_MS);
     },
     [pollOnce, stopPolling],
   );
@@ -260,14 +351,19 @@ export default function PaymentPage() {
       setCheckoutRequestId(prompt.checkoutRequestId || '');
       setPhase('awaiting_prompt');
       setStatusHint('Check your phone and enter your M-Pesa PIN.');
-      startPolling({
-        merchantRequestId: prompt.merchantRequestId,
-        checkoutRequestId: prompt.checkoutRequestId,
-        trackingNo,
-      });
+      startPolling(
+        {
+          merchantRequestId: prompt.merchantRequestId,
+          checkoutRequestId: prompt.checkoutRequestId,
+          trackingNo,
+        },
+        'prompt',
+      );
     } catch (err: any) {
-      setError(err?.message || 'Could not send M-Pesa prompt. Try again.');
+      setError(err?.message || 'Could not send M-Pesa prompt. Try Paybill instead.');
       setPhase('failed');
+      setMethod('paybill');
+      setStatusHint('Use Paybill with your tracking number as the account number.');
     } finally {
       setSending(false);
     }
@@ -284,14 +380,16 @@ export default function PaymentPage() {
     setStatusHint('Checking Paybill payment…');
     try {
       const outcome = await pollOnce({ trackingNo });
-      if (outcome === 'pending') {
-        setStatusHint(
-          'Payment not seen yet. Finish the Paybill payment, wait a few seconds, then confirm again.',
-        );
-        startPolling({ trackingNo });
+      if (outcome === 'paid') return;
+      if (outcome === 'terminal') {
+        markFailed('Payment was not completed. Finish Paybill, then confirm again.');
+        return;
       }
+      setStatusHint('Payment not seen yet — checking a few more times…');
+      startPolling({ trackingNo }, 'paybill');
     } catch (err: any) {
       setError(err?.message || 'Could not confirm payment. Try again shortly.');
+      setPhase('ready');
     } finally {
       setConfirming(false);
     }
@@ -303,6 +401,7 @@ export default function PaymentPage() {
     setMethod('prompt');
     setError(null);
     setStatusHint(null);
+    setPollAttempt(0);
     setMerchantRequestId('');
     setCheckoutRequestId('');
   };
@@ -325,6 +424,7 @@ export default function PaymentPage() {
           <meta name="robots" content="noindex, nofollow" />
         </Helmet>
         <section className="relative -mt-24 overflow-hidden bg-[#071410]">
+          <PageHeroBackground />
           <div className="relative mx-auto max-w-2xl px-5 pb-12 pt-28 text-center sm:px-8 sm:pt-32">
             <CheckCircle className="mx-auto size-12 text-[#E9FF15]" aria-hidden />
             <h1 className="mt-4 font-[Sora] text-3xl font-semibold tracking-[-0.03em] text-white">
@@ -338,17 +438,71 @@ export default function PaymentPage() {
         </section>
 
         <div className="mx-auto max-w-2xl px-5 py-10 sm:px-8">
-          <p className="text-sm leading-relaxed text-[#5c6562]">
-            Drop your parcel at any Nairobi CBD branch when ready:
-          </p>
-          <ul className="mt-4 space-y-3">
-            {BRANCHES.map((b) => (
-              <li key={b.id} className="border-b border-black/[0.06] pb-3 last:border-0">
-                <p className="font-[Sora] text-sm font-semibold text-[#111]">{b.name}</p>
-                <p className="mt-1 text-sm text-[#5c6562]">{b.address}</p>
-              </li>
-            ))}
-          </ul>
+          {(() => {
+            const bd = state.bookingData || {};
+            const selectedDropoff =
+              bd.dropoffPointLabel ||
+              (bd.dropoffPointName
+                ? `${bd.dropoffPointTown ? `${bd.dropoffPointTown} — ` : ''}${bd.dropoffPointName}`
+                : null);
+            const selectedAddress = bd.dropoffPointAddress || null;
+            const isCbdOffices =
+              String(bd.dropoffPointId || bd.originAgentId || '') === '366' ||
+              /nairobi cbd|cbd office/i.test(String(selectedDropoff || ''));
+
+            return (
+              <div className="space-y-5">
+                <div>
+                  <p className="text-[11px] font-semibold tracking-[0.16em] text-[#00473E] uppercase">
+                    Drop off your parcel
+                  </p>
+                  <p className="mt-2 text-sm leading-relaxed text-[#5c6562]">
+                    Write <span className="font-mono font-semibold text-[#111]">{trackingNo}</span>{' '}
+                    on the parcel, then drop it at the station you selected — or at any ParcelGrid
+                    Nairobi CBD office.
+                  </p>
+                </div>
+
+                {selectedDropoff && !isCbdOffices && (
+                  <div className="rounded-2xl bg-[#00473E]/[0.06] px-4 py-3.5">
+                    <p className="text-xs font-semibold tracking-wide text-[#00473E] uppercase">
+                      Your selected drop-off
+                    </p>
+                    <p className="mt-1 font-[Sora] text-sm font-semibold text-[#111]">
+                      {selectedDropoff}
+                    </p>
+                    {selectedAddress && (
+                      <p className="mt-1 text-sm text-[#5c6562]">{selectedAddress}</p>
+                    )}
+                  </div>
+                )}
+
+                <div>
+                  <p className="text-xs font-semibold tracking-wide text-[#5c6562] uppercase">
+                    Nairobi CBD offices
+                  </p>
+                  <ul className="mt-3 space-y-3">
+                    {BRANCHES.map((b) => (
+                      <li
+                        key={b.id}
+                        className="border-b border-black/[0.06] pb-3 last:border-0"
+                      >
+                        <p className="font-[Sora] text-sm font-semibold text-[#111]">{b.name}</p>
+                        <p className="mt-1 text-sm text-[#5c6562]">{b.address}</p>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    to="/contact"
+                    className="mt-3 inline-flex text-sm font-semibold text-[#00473E] underline-offset-2 hover:underline"
+                  >
+                    See all CBD office details
+                  </Link>
+                </div>
+              </div>
+            );
+          })()}
+
           <div className="mt-8 flex flex-wrap gap-3">
             <button
               type="button"
@@ -369,9 +523,34 @@ export default function PaymentPage() {
         {showReceipt && (
           <Receipt
             orderData={{
-              ...(state.bookingData || orderBundle || {}),
+              ...(orderBundle || {}),
+              ...(state.bookingData || {}),
+              bookingData: {
+                ...(state.bookingData || {}),
+                pickupPoint:
+                  state.bookingData?.pickupPointId ||
+                  state.bookingData?.pickupPoint ||
+                  state.bookingData?.agentId,
+                pickupPointId:
+                  state.bookingData?.pickupPointId ||
+                  state.bookingData?.pickupPoint ||
+                  state.bookingData?.agentId,
+                pickupPointName: state.bookingData?.pickupPointName,
+                pickupPointAddress: state.bookingData?.pickupPointAddress,
+                dropoffPointLabel: state.bookingData?.dropoffPointLabel,
+                dropoffPointName: state.bookingData?.dropoffPointName,
+                packageValue: state.bookingData?.packageValue,
+                deliveryFee: state.bookingData?.deliveryFee ?? amount,
+              },
               trackingNo,
+              pickupPoint:
+                state.bookingData?.pickupPointId ||
+                state.bookingData?.pickupPoint ||
+                state.bookingData?.agentId,
               paymentReference: transactionCode,
+              courierPaymentReference: transactionCode,
+              deliveryFee: amount,
+              paymentStatus: 'Pre-paid',
             }}
             onClose={() => setShowReceipt(false)}
           />
@@ -388,10 +567,7 @@ export default function PaymentPage() {
       </Helmet>
 
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-2xl px-5 pb-10 pt-28 sm:px-8 sm:pb-12 sm:pt-32">
           <button
             type="button"
@@ -427,6 +603,29 @@ export default function PaymentPage() {
               <p className="text-xs text-[#5c6562]">Amount due</p>
               <p className="mt-1 font-[Sora] text-3xl font-bold tracking-tight text-[#00473E]">
                 KES {amount > 0 ? amount.toLocaleString() : '—'}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 flex items-start gap-3 rounded-2xl bg-[#00473E]/[0.06] px-4 py-3.5">
+            <Lightbulb
+              className="mt-0.5 size-4 shrink-0 text-[#00473E]"
+              aria-hidden
+            />
+            <div className="min-w-0 text-sm leading-relaxed text-[#2a3330]">
+              <p className="font-semibold text-[#00473E]">Drop-off tip</p>
+              <p className="mt-1 text-[#5c6562]">
+                Write your tracking number
+                {trackingNo ? (
+                  <>
+                    {' '}
+                    <span className="font-mono font-semibold text-[#111]">
+                      {trackingNo}
+                    </span>
+                  </>
+                ) : null}{' '}
+                on the parcel, then drop it at any ParcelGrid branch. That number
+                is your booking — our team will match it and process the parcel.
               </p>
             </div>
           </div>
@@ -554,22 +753,28 @@ export default function PaymentPage() {
                 {statusHint && (
                   <p className="mt-2 text-xs text-[#5c6562]">{statusHint}</p>
                 )}
+                {pollAttempt > 0 && (
+                  <p className="mt-1 text-xs font-medium text-[#00473E]">
+                    Check {Math.min(pollAttempt, PROMPT_STATUS_MAX_ATTEMPTS)} of{' '}
+                    {PROMPT_STATUS_MAX_ATTEMPTS}
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
-                onClick={() =>
-                  startPolling({
-                    merchantRequestId: merchantRequestId || undefined,
-                    checkoutRequestId: checkoutRequestId || undefined,
-                    trackingNo,
-                  })
-                }
+                onClick={() => {
+                  setMethod('paybill');
+                  setPhase('ready');
+                  stopPolling();
+                  setStatusHint(
+                    'Pay with Paybill using your tracking number, then tap “I’ve paid”.',
+                  );
+                }}
                 className="inline-flex h-11 items-center gap-2 rounded-full border border-black/10 bg-white px-5 text-sm font-semibold text-[#00473E]"
               >
-                <RefreshCw className="size-4" aria-hidden />
-                Check again
+                Use Paybill instead
               </button>
               <button
                 type="button"
@@ -608,16 +813,19 @@ export default function PaymentPage() {
               disabled={confirming || !trackingNo}
               className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#E9FF15] text-sm font-bold text-[#111] transition hover:bg-[#f3ff6a] disabled:opacity-60"
             >
-              {confirming || phase === 'awaiting_paybill' ? (
+              {confirming || (phase === 'awaiting_paybill' && isPolling) ? (
                 <>
                   <Loader2 className="size-4 animate-spin" aria-hidden />
                   Confirming payment…
+                  {pollAttempt > 0
+                    ? ` (${Math.min(pollAttempt, PAYBILL_STATUS_MAX_ATTEMPTS)}/${PAYBILL_STATUS_MAX_ATTEMPTS})`
+                    : ''}
                 </>
               ) : (
                 "I've paid — confirm payment"
               )}
             </button>
-            {statusHint && phase === 'awaiting_paybill' && (
+            {statusHint && (phase === 'awaiting_paybill' || method === 'paybill') && (
               <p className="text-sm text-[#5c6562]">{statusHint}</p>
             )}
           </div>

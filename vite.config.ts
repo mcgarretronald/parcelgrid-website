@@ -4,13 +4,21 @@ import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 // @ts-expect-error local Vite plugin has no type declarations
 import { pricingApiPlugin } from "./scripts/vite-pricing-api-plugin.mjs"
+// @ts-expect-error local Vite plugin has no type declarations
+import { ogSharePlugin } from "./scripts/vite-og-share-plugin.mjs"
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss(), pricingApiPlugin()],
+  plugins: [react(), tailwindcss(), ogSharePlugin(), pricingApiPlugin()],
   server: {
     port: 5174,
     strictPort: true,
+    // ngrok / tunnel hosts (Vite blocks unknown Host headers by default)
+    allowedHosts: [
+      'reprimand-persuader-saline.ngrok-free.dev',
+      '.ngrok-free.dev',
+      '.ngrok.io',
+    ],
     proxy: {
       // Non-pricing /api/* → local Express when present. Pricing routes
       // (/api/weight-bands, /api/custom-parcels, /api/calculate-fee) are handled

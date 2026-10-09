@@ -1,35 +1,42 @@
 /**
  * Proxy delivery-fee calculation to pricing-service (weight bands + special sub-items).
  */
-const AUTH_URL = 'https://app.escrowcourier.com/website-backend-services/api/auth/token';
+import {
+  applyCors,
+  handleOptions,
+  rateLimit,
+  parseJsonBody,
+  safeError,
+  fetchWebsiteToken,
+  isAllowedBrowserOrigin,
+} from './_lib/security.js';
+
 const FEE_URL =
   'https://app.escrowcourier.com/pricing-services/api/pricing/calculate-delivery-fee';
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Accept, Content-Type, Authorization');
+  applyCors(req, res, { methods: 'POST, OPTIONS' });
 
-  if (req.method === 'OPTIONS') return res.status(200).json({});
+  if (req.method === 'OPTIONS') return handleOptions(req, res);
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'METHOD_NOT_ALLOWED' });
+    return safeError(res, 405, 'METHOD_NOT_ALLOWED', 'POST only');
+  }
+  if (!isAllowedBrowserOrigin(req)) {
+    return safeError(res, 403, 'FORBIDDEN', 'Origin not allowed');
+  }
+
+  const limited = rateLimit(req, { key: 'calc-fee', limit: 40, windowMs: 60_000 });
+  if (limited !== true) {
+    res.setHeader('Retry-After', String(limited.body.retryAfterSeconds || 60));
+    return res.status(limited.status).json(limited.body);
   }
 
   try {
-    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body || {};
-    const tokenRes = await fetch(AUTH_URL, { headers: { Accept: 'application/json' } });
-    if (!tokenRes.ok) {
-      return res.status(502).json({ success: false, error: 'AUTH_FAILED' });
-    }
-    const tokenData = await tokenRes.json();
-    const token =
-      tokenData.token ||
-      tokenData.access_token ||
-      tokenData.bearer_token ||
-      tokenData.data?.token;
-    if (!token) {
-      return res.status(502).json({ success: false, error: 'AUTH_FAILED' });
-    }
+    const body = parseJsonBody(req);
+    if (!body) return safeError(res, 400, 'INVALID_JSON', 'Invalid request body');
+
+    const token = await fetchWebsiteToken();
+    if (!token) return safeError(res, 502, 'AUTH_FAILED', 'Pricing unavailable');
 
     const upstream = await fetch(FEE_URL, {
       method: 'POST',
@@ -45,14 +52,10 @@ export default async function handler(req, res) {
     try {
       data = JSON.parse(text);
     } catch {
-      return res.status(502).json({ success: false, error: 'BAD_UPSTREAM', details: text });
+      return safeError(res, 502, 'BAD_UPSTREAM', 'Invalid response from pricing');
     }
     return res.status(upstream.status).json(data);
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: 'PROXY_ERROR',
-      message: error?.message || 'Failed to calculate fee',
-    });
+  } catch {
+    return safeError(res, 500, 'PROXY_ERROR', 'Failed to calculate fee');
   }
 }

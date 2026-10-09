@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /payment
+Disallow: /apply-pickup-agent
+Disallow: /apply-booking-agent
+Disallow: /pickup-agent
+Disallow: /booking-agent
 
 Sitemap: https://escrowcourier.com/sitemap.xml

@@ -1,39 +1,53 @@
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Accept, Content-Type");
+import {
+  applyCors,
+  handleOptions,
+  rateLimit,
+  isValidTrackingNo,
+  safeError,
+  isAllowedBrowserOrigin,
+} from './_lib/security.js';
 
-  if (req.method === "OPTIONS") {
-    return res.status(200).json({});
+export default async function handler(req, res) {
+  applyCors(req, res, { methods: 'GET, OPTIONS' });
+
+  if (req.method === 'OPTIONS') {
+    return handleOptions(req, res, { methods: 'GET, OPTIONS' });
+  }
+  if (req.method !== 'GET') {
+    return safeError(res, 405, 'METHOD_NOT_ALLOWED', 'GET only');
+  }
+  if (!isAllowedBrowserOrigin(req)) {
+    return safeError(res, 403, 'FORBIDDEN', 'Origin not allowed');
   }
 
-  if (req.method !== "GET") {
-    return res.status(405).json({ error: "Method not allowed" });
+  const limited = rateLimit(req, { key: 'track', limit: 60, windowMs: 60_000 });
+  if (limited !== true) {
+    res.setHeader('Retry-After', String(limited.body.retryAfterSeconds || 60));
+    return res.status(limited.status).json(limited.body);
   }
 
   try {
     const raw =
-      (typeof req.query?.tracking === "string" && req.query.tracking) ||
-      (typeof req.query?.trackingNo === "string" && req.query.trackingNo) ||
-      "";
+      (typeof req.query?.tracking === 'string' && req.query.tracking) ||
+      (typeof req.query?.trackingNo === 'string' && req.query.trackingNo) ||
+      '';
 
-    // Support /api/track/:id style paths when the host rewrites them.
-    const pathTail = String(req.url || "")
-      .split("?")[0]
-      .replace(/^\/api\/track\/?/i, "")
-      .replace(/^\/+/g, "");
+    const pathTail = String(req.url || '')
+      .split('?')[0]
+      .replace(/^\/api\/track\/?/i, '')
+      .replace(/^\/+/g, '');
 
-    const trackingNo = decodeURIComponent(raw || pathTail || "").trim();
+    const trackingNo = isValidTrackingNo(decodeURIComponent(raw || pathTail || ''));
     if (!trackingNo) {
-      return res.status(400).json({ error: "Tracking number is required" });
+      return safeError(res, 400, 'INVALID_TRACKING', 'Valid tracking number is required');
     }
 
     const apiUrl = `https://app.escrowcourier.com/order-services/api/track/${encodeURIComponent(trackingNo)}`;
     const response = await fetch(apiUrl, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        Accept: "application/json",
-        Origin: "https://escrowcourier.com",
+        Accept: 'application/json',
+        Origin: 'https://escrowcourier.com',
       },
     });
 
@@ -42,17 +56,11 @@ export default async function handler(req, res) {
     try {
       data = JSON.parse(text);
     } catch {
-      return res.status(502).json({
-        error: "Invalid response from tracking service",
-        status: response.status,
-      });
+      return safeError(res, 502, 'BAD_UPSTREAM', 'Invalid response from tracking service');
     }
 
     return res.status(response.status).json(data);
-  } catch (error) {
-    return res.status(500).json({
-      error: "Internal server error",
-      message: error?.message || "Unknown error",
-    });
+  } catch {
+    return safeError(res, 500, 'PROXY_ERROR', 'Tracking unavailable');
   }
 }

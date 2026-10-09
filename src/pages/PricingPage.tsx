@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowRight, Route, Scale, ShieldCheck, Wallet } from 'lucide-react';
 import Footer from '../components/Footer';
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import { Reveal } from '../components/Reveal';
 import { JsonLd } from '../components/JsonLd';
 import { MiniFaq } from '../components/MiniFaq';
@@ -67,10 +68,7 @@ export default function PricingPage() {
       />
 
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.55),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-3xl px-5 pb-14 pt-28 text-center sm:px-8 sm:pb-16 sm:pt-32">
           <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">
             Courier prices · Kenya
@@ -79,7 +77,7 @@ export default function PricingPage() {
             Affordable Courier Rates for Upcountry Delivery
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/75">
-            Use our live calculator to check exact delivery fees across 300+ towns in Kenya — then
+            Use our live calculator to check exact delivery fees across 132 towns in Kenya — then
             book with confidence and close sales faster.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">

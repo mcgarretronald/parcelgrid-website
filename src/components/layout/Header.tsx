@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowUpRight, ChevronDown, Menu, Truck, Wallet, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  BookOpen,
+  Briefcase,
+  ChevronDown,
+  CircleHelp,
+  Handshake,
+  Menu,
+  Truck,
+  Wallet,
+  X,
+} from "lucide-react";
 
 type ServiceLink = { name: string; href: string; description: string; icon: typeof Truck };
 type NavLink = { name: string; href: string; children?: ServiceLink[] };
@@ -9,7 +20,7 @@ const services: ServiceLink[] = [
   {
     name: "Upcountry Delivery",
     href: "/services/upcountry-parcel-delivery",
-    description: "Next-day parcels from Nairobi to 300+ towns",
+    description: "Next-day parcels from Nairobi to 132 towns",
     icon: Truck,
   },
   {
@@ -17,6 +28,30 @@ const services: ServiceLink[] = [
     href: "/services/pay-on-delivery-courier-kenya",
     description: "Buyers pay by M-Pesa, you get paid instantly",
     icon: Wallet,
+  },
+  {
+    name: "How to use the ParcelGrid app",
+    href: "/how-to-use-app",
+    description: "Book, track, and manage parcels step by step",
+    icon: BookOpen,
+  },
+  {
+    name: "FAQ",
+    href: "/faq",
+    description: "Answers on pricing, COD, prepaid, and tracking",
+    icon: CircleHelp,
+  },
+  {
+    name: "Agent Opportunities",
+    href: "/opportunities",
+    description: "Become a pickup or booking agent",
+    icon: Handshake,
+  },
+  {
+    name: "Careers",
+    href: "/careers",
+    description: "Join the ParcelGrid team",
+    icon: Briefcase,
   },
 ];
 
@@ -39,9 +74,13 @@ const supportLinks = [
   { name: "How to use the app", href: "/how-to-use-app" },
 ];
 
-function isCurrent(pathname: string, href: string) {
+function isCurrent(pathname: string, href: string, children?: ServiceLink[]) {
   if (href === "/") return pathname === "/";
-  if (href === "/services") return pathname.startsWith("/services/");
+  if (children?.length) {
+    return children.some(
+      (child) => pathname === child.href || pathname.startsWith(`${child.href}/`),
+    );
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -82,7 +121,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
   }, [menuOpen]);
 
   const renderDesktopItem = (item: NavLink) => {
-          const current = isCurrent(pathname, item.href);
+          const current = isCurrent(pathname, item.href, item.children);
           if (item.children) {
             return (
               <div
@@ -112,11 +151,11 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                   />
                 </button>
                 {servicesOpen && (
-                  <div className="absolute -left-4 top-full z-10 w-[22rem] pt-4">
+                  <div className="absolute -left-4 top-full z-10 w-[24rem] pt-4">
                     <div className="absolute left-10 top-2.5 h-3 w-3 -translate-x-1/2 rotate-45 border-l border-t border-white/15 bg-[#0b1d18]" aria-hidden />
                     <ul
                       role="menu"
-                      className="relative overflow-hidden rounded-2xl border border-white/15 bg-[#0b1d18] p-2 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)]"
+                      className="relative max-h-[min(28rem,70vh)] overflow-y-auto overflow-x-hidden rounded-2xl border border-white/15 bg-[#0b1d18] p-2 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.7)]"
                     >
                       {item.children.map((child) => {
                         const Icon = child.icon;
@@ -203,9 +242,20 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
 
-          <Link to="/" className="flex min-h-11 items-center justify-center gap-2" aria-label="ParcelGrid home">
-            <img decoding="async" src="/brand/parcelgrid-mark.png" alt="" width="32" height="32" className="h-8 w-8 object-contain" />
-            <span className="font-[Sora] text-base font-semibold tracking-tight text-[#E9FF15] sm:text-lg">
+          <Link
+            to="/"
+            className="flex min-h-11 items-center justify-center gap-2.5 sm:gap-3"
+            aria-label="ParcelGrid home"
+          >
+            <img
+              decoding="async"
+              src="/brand/parcelgrid-mark.png"
+              alt=""
+              width="40"
+              height="48"
+              className="h-9 w-auto object-contain sm:h-10"
+            />
+            <span className="font-[Sora] text-lg font-semibold tracking-[0.02em] text-[#E9FF15] sm:text-xl lg:text-[1.35rem]">
               ParcelGrid
             </span>
           </Link>

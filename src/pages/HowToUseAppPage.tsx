@@ -1,5 +1,7 @@
 import React from 'react';
 import { JsonLd } from '../components/JsonLd';
+import { PageHeroBackground } from '../components/PageHeroBackground';
+import { AuroraBackground } from '../components/AuroraBackground';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Lightbulb, Phone, Mail } from 'lucide-react';
@@ -65,7 +67,7 @@ const STEPS: Step[] = [
     title: 'Drop off your parcel',
     steps: [
       'Pack the item securely and label it clearly.',
-      'Take it to the drop-off point you selected, for example Iconic Business Plaza on Moi Avenue, Jithada Shopping Complex on Taveta Road, or City Centre Mall on Ronald Ngala Street.',
+      'Take it to the drop-off point you selected, for example Iconic Business Plaza (Shop G13) on Moi Avenue, Jithada Shopping Complex (Shop F7) on Taveta Road, or City Centre Mall (Shop LG12) on Ronald Ngala Street.',
       'Hand it to ParcelGrid so the status moves to Received by ParcelGrid.',
       "From there, we move it to your customer's pickup station.",
     ],
@@ -345,10 +347,7 @@ const HowToUseAppPage: React.FC = () => {
 
       {/* Hero */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-28 text-center sm:px-8 sm:pb-16 sm:pt-32">
           <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">Vendor Guide</p>
           <h1 className="mt-4 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">
@@ -520,14 +519,18 @@ const HowToUseAppPage: React.FC = () => {
       </section>
 
       {/* Tips */}
-      <section className="bg-[#071410] py-14 text-white sm:py-20">
-        <div className="mx-auto max-w-6xl px-5 sm:px-8">
+      <section className="relative overflow-hidden bg-[#071410] py-14 text-white sm:py-20">
+        <AuroraBackground />
+        <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8">
           <p className="text-xs font-semibold tracking-[0.16em] text-[#E9FF15]">Smoother deliveries</p>
           <h2 className="mt-3 font-[Sora] text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">Quick tips</h2>
           <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {TIPS.map((tip) => (
-              <li key={tip} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-sm leading-relaxed text-white/85">
-                {tip}
+            {TIPS.map((tip, i) => (
+              <li key={tip} className="tip-card p-5 text-sm leading-relaxed text-white/85">
+                <span className="tip-card-index" aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <p>{tip}</p>
               </li>
             ))}
           </ul>

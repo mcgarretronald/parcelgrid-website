@@ -3,18 +3,20 @@ import { Helmet } from 'react-helmet-async';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ArrowRight, BadgeCheck, Mail, MessageCircle, Package, Phone, Store } from 'lucide-react';
 import Footer from '../components/Footer';
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import { FaqAccordionItem } from '../components/FaqAccordion';
 import { useScrollToTop } from '../hooks/useScrollToTop';
+import { Reveal } from '../components/Reveal';
 import { AGENT_PROCESS, AGENT_ROLES, type AgentRole } from '../lib/agentRoles';
 import type { FaqItem } from '../lib/faqData';
 
-const PAGE_TITLE = 'Become a ParcelGrid Agent in Kenya | Pickup & Booking Agent Opportunities';
+const PAGE_TITLE = 'Become a ParcelGrid Courier Agent Kenya | Pickup & Booking';
 const PAGE_DESCRIPTION =
   'Earn 20% commission as a ParcelGrid pickup or booking agent. Turn your shop into a trusted collection or drop-off point on a licensed national courier network.';
 
 const STATS = [
   { value: '20%', label: 'Commission on courier fees' },
-  { value: '300+', label: 'Towns on the network' },
+  { value: '132', label: 'Towns on the network' },
   { value: 'M-Pesa', label: 'Wallet payouts' },
   { value: '0', label: 'Cash handled for COD' },
 ];
@@ -96,10 +98,7 @@ const OpportunitiesPage: React.FC = () => {
 
       {/* Hero */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 pb-14 pt-28 sm:px-8 sm:pb-16 sm:pt-32 lg:grid-cols-2 lg:gap-14">
           <div className="text-center lg:text-left">
             <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">Partner with ParcelGrid</p>
@@ -142,7 +141,7 @@ const OpportunitiesPage: React.FC = () => {
       </section>
 
       {/* Stats */}
-      <section className="border-b border-black/[0.06] bg-[#f7f8f6] py-10 sm:py-14">
+      <Reveal as="section" variant="up" className="border-b border-black/[0.06] bg-[#f7f8f6] py-10 sm:py-14">
         <dl className="mx-auto grid max-w-5xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-black/10 bg-black/10 px-0 sm:grid-cols-4">
           {STATS.map((s) => (
             <div key={s.label} className="bg-white px-4 py-7 text-center sm:py-9">
@@ -151,10 +150,10 @@ const OpportunitiesPage: React.FC = () => {
             </div>
           ))}
         </dl>
-      </section>
+      </Reveal>
 
       {/* Roles */}
-      <section className="py-14 sm:py-20" aria-labelledby="roles-title">
+      <Reveal as="section" variant="up" className="py-14 sm:py-20" aria-labelledby="roles-title">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <div className="max-w-2xl">
             <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">Two ways to partner</p>
@@ -162,7 +161,7 @@ const OpportunitiesPage: React.FC = () => {
               Choose how you want to earn
             </h2>
           </div>
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
+          <div className="reveal-stagger mt-8 grid gap-6 md:grid-cols-2">
             {AGENT_ROLES.map((r) => (
               <article key={r.id} className="flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white">
                 <AgentImage
@@ -205,16 +204,16 @@ const OpportunitiesPage: React.FC = () => {
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* Process */}
-      <section className="bg-[#071410] py-14 text-white sm:py-20" aria-labelledby="process-title">
+      <Reveal as="section" variant="up" className="bg-[#071410] py-14 text-white sm:py-20" aria-labelledby="process-title">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <p className="text-xs font-semibold tracking-[0.16em] text-[#E9FF15]">How it works</p>
           <h2 id="process-title" className="mt-3 font-[Sora] text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">
             From first call to first commission
           </h2>
-          <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="reveal-stagger mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {AGENT_PROCESS.map((step, i) => (
               <li key={step.title} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
                 <span className="flex size-9 items-center justify-center rounded-full bg-[#E9FF15] font-[Sora] text-sm font-semibold text-[#00473E]">
@@ -226,10 +225,10 @@ const OpportunitiesPage: React.FC = () => {
             ))}
           </ol>
         </div>
-      </section>
+      </Reveal>
 
       {/* Role details + apply */}
-      <section id="apply" className="scroll-mt-24 bg-[#f7f8f6] py-14 sm:py-20" aria-labelledby="apply-title">
+      <Reveal as="section" variant="up" id="apply" className="scroll-mt-24 bg-[#f7f8f6] py-14 sm:py-20" aria-labelledby="apply-title">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">Requirements and how to join</p>
           <h2 id="apply-title" className="mt-3 font-[Sora] text-2xl font-semibold tracking-[-0.03em] text-[#111] sm:text-3xl">
@@ -330,10 +329,10 @@ const OpportunitiesPage: React.FC = () => {
             </aside>
           </div>
         </div>
-      </section>
+      </Reveal>
 
       {/* FAQ */}
-      <section className="bg-white py-14 sm:py-20" aria-labelledby="agent-faq-title">
+      <Reveal as="section" variant="up" className="bg-white py-14 sm:py-20" aria-labelledby="agent-faq-title">
         <div className="mx-auto grid max-w-6xl gap-10 px-5 sm:px-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-16">
           <div>
             <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">Quick answers</p>
@@ -347,13 +346,13 @@ const OpportunitiesPage: React.FC = () => {
               Talk to our team
             </Link>
           </div>
-          <div className="space-y-3">
+          <div className="reveal-stagger space-y-3">
             {FAQS.map((item, i) => (
               <FaqAccordionItem key={item.id} item={item} defaultOpen={i === 0} />
             ))}
           </div>
         </div>
-      </section>
+      </Reveal>
 
       <Footer />
     </div>

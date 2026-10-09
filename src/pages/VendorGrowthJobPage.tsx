@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, BadgeCheck, Banknote, Building2, Clock, MapPin, MessageCircle, Info, Briefcase } from 'lucide-react';
 import Footer from '../components/Footer';
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import { useScrollToTop } from '../hooks/useScrollToTop';
 import { JOBS } from '../lib/careers';
 
@@ -37,10 +38,7 @@ const VendorGrowthJobPage: React.FC = () => {
 
       {/* Hero */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-6xl px-5 pb-12 pt-28 sm:px-8 sm:pb-14 sm:pt-32">
           <Link to="/careers" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-medium text-white/70 hover:text-[#E9FF15]">
             <ArrowLeft className="size-4" aria-hidden /> Back to careers

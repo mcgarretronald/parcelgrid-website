@@ -1,0 +1,255 @@
+/* Soft aurora bands — brand teal + lime, no WebGL */
+.aurora-root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora-base {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 60% at 20% 10%, rgba(0, 71, 62, 0.55), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 85% 20%, rgba(12, 92, 69, 0.4), transparent 50%),
+    linear-gradient(180deg, #041612 0%, #071410 55%, #041612 100%);
+}
+
+.aurora-band {
+  position: absolute;
+  width: 140%;
+  height: 55%;
+  left: -20%;
+  border-radius: 50%;
+  filter: blur(48px);
+  opacity: 0.55;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+.aurora-band--a {
+  top: -8%;
+  background: linear-gradient(
+    105deg,
+    transparent 10%,
+    rgba(0, 120, 95, 0.55) 35%,
+    rgba(233, 255, 21, 0.35) 52%,
+    rgba(0, 90, 75, 0.45) 70%,
+    transparent 90%
+  );
+  animation: aurora-drift-a 14s ease-in-out infinite alternate;
+}
+
+.aurora-band--b {
+  top: 18%;
+  height: 45%;
+  background: linear-gradient(
+    95deg,
+    transparent 5%,
+    rgba(14, 165, 130, 0.4) 30%,
+    rgba(233, 255, 21, 0.22) 48%,
+    rgba(0, 71, 62, 0.5) 68%,
+    transparent 92%
+  );
+  animation: aurora-drift-b 18s ease-in-out infinite alternate;
+}
+
+.aurora-band--c {
+  top: 42%;
+  height: 50%;
+  background: linear-gradient(
+    115deg,
+    transparent 15%,
+    rgba(0, 71, 62, 0.45) 40%,
+    rgba(110, 231, 183, 0.28) 58%,
+    rgba(233, 255, 21, 0.18) 72%,
+    transparent 95%
+  );
+  animation: aurora-drift-c 16s ease-in-out infinite alternate;
+}
+
+.aurora-stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1px 1px at 28% 42%, rgba(233, 255, 21, 0.45), transparent),
+    radial-gradient(1.5px 1.5px at 62% 14%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 78% 36%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1.5px 1.5px at 88% 58%, rgba(233, 255, 21, 0.3), transparent),
+    radial-gradient(1px 1px at 44% 72%, rgba(255, 255, 255, 0.3), transparent);
+  animation: aurora-twinkle 6s ease-in-out infinite alternate;
+}
+
+.aurora-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(4, 22, 18, 0.25) 0%,
+    rgba(4, 22, 18, 0.45) 50%,
+    rgba(4, 22, 18, 0.75) 100%
+  );
+}
+
+@keyframes aurora-drift-a {
+  0% {
+    transform: translate3d(-4%, 0, 0) rotate(-2deg) scale(1);
+    opacity: 0.45;
+  }
+  100% {
+    transform: translate3d(6%, 6%, 0) rotate(3deg) scale(1.08);
+    opacity: 0.7;
+  }
+}
+
+@keyframes aurora-drift-b {
+  0% {
+    transform: translate3d(5%, 2%, 0) rotate(2deg) scale(1.05);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate3d(-8%, -4%, 0) rotate(-3deg) scale(1);
+    opacity: 0.65;
+  }
+}
+
+@keyframes aurora-drift-c {
+  0% {
+    transform: translate3d(-2%, 4%, 0) scale(1);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate3d(4%, -6%, 0) scale(1.1);
+    opacity: 0.6;
+  }
+}
+
+@keyframes aurora-twinkle {
+  0% {
+    opacity: 0.22;
+  }
+  100% {
+    opacity: 0.45;
+  }
+}
+
+/* Tip cards — hover “special” motion */
+.tip-card {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.35s ease,
+    background-color 0.35s ease,
+    box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tip-card::before {
+  content: "";
+  position: absolute;
+  inset: -40% -20%;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(233, 255, 21, 0.12) 48%,
+    rgba(0, 180, 140, 0.18) 55%,
+    transparent 70%
+  );
+  opacity: 0;
+  transform: translateX(-30%) rotate(8deg);
+  transition:
+    opacity 0.45s ease,
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.tip-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: box-shadow 0.35s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.tip-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+.tip-card:hover,
+.tip-card:focus-within {
+  transform: translateY(-6px) scale(1.02);
+  border-color: rgba(233, 255, 21, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(233, 255, 21, 0.12),
+    0 0 32px rgba(0, 120, 95, 0.35);
+}
+
+.tip-card:hover::before,
+.tip-card:focus-within::before {
+  opacity: 1;
+  transform: translateX(35%) rotate(8deg);
+}
+
+.tip-card:hover::after,
+.tip-card:focus-within::after {
+  box-shadow: inset 0 0 0 1px rgba(233, 255, 21, 0.2);
+}
+
+.tip-card-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-bottom: 0.75rem;
+  border-radius: 999px;
+  background: rgba(233, 255, 21, 0.12);
+  color: #e9ff15;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tip-card:hover .tip-card-index,
+.tip-card:focus-within .tip-card-index {
+  background: #e9ff15;
+  color: #00473e;
+  transform: scale(1.08) rotate(-6deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-band,
+  .aurora-stars {
+    animation: none !important;
+  }
+
+  .tip-card,
+  .tip-card::before,
+  .tip-card-index {
+    transition: none !important;
+  }
+
+  .tip-card:hover,
+  .tip-card:focus-within {
+    transform: none;
+  }
+}

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Input } from '../components/ui/input';
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import {
   ArrowLeft,
   ArrowRight,
@@ -11,6 +12,7 @@ import {
   CheckCircle,
   Loader2,
   Truck,
+  CircleAlert,
 } from 'lucide-react';
 import Footer from '../components/Footer';
 import { useScrollToTop } from '../hooks/useScrollToTop';
@@ -19,6 +21,7 @@ import {
   fetchDropOffStations,
   fetchPickupStations,
   findStationByAgentId,
+  sortDropOffStationsNairobiFirst,
   stationOptionLabel,
   type Station,
 } from '../lib/stations';
@@ -35,10 +38,118 @@ import { StationPicker } from '../components/booking/StationPicker';
 import { SelectPicker } from '../components/ui/SelectPicker';
 
 const BOOKING_STEPS = [
-  { id: 1, label: 'You & stations' },
-  { id: 2, label: 'Parcel details' },
-  { id: 3, label: 'Review & pay' },
+  {
+    id: 1,
+    label: 'You & receiver',
+    description: 'Names, phones, drop-off and pickup stations',
+  },
+  {
+    id: 2,
+    label: 'Your parcel',
+    description: "What you're sending, value, and delivery fee",
+  },
+  {
+    id: 3,
+    label: 'Confirm & pay',
+    description: 'Review everything, then pay with M-Pesa',
+  },
 ] as const;
+
+type BookingUiError = {
+  title: string;
+  message: string;
+};
+
+/** Map API / network failures to short, non-technical copy for the customer. */
+function toBookingUiError(raw: unknown, status?: number): BookingUiError {
+  const fallback: BookingUiError = {
+    title: 'We could not complete your booking',
+    message:
+      'Something went wrong on our side. Please try again in a moment. If it keeps failing, WhatsApp us on 0745 111 555.',
+  };
+
+  const blob =
+    typeof raw === 'string'
+      ? raw
+      : raw && typeof raw === 'object'
+        ? JSON.stringify(raw)
+        : '';
+
+  const lower = blob.toLowerCase();
+  const code =
+    (raw && typeof raw === 'object' && 'code' in (raw as object)
+      ? String((raw as { code?: string }).code || '')
+      : '') ||
+    (blob.match(/"code"\s*:\s*"([^"]+)"/)?.[1] ?? '');
+
+  if (
+    lower.includes('failed to fetch') ||
+    lower.includes('networkerror') ||
+    lower.includes('network request failed')
+  ) {
+    return {
+      title: 'Connection problem',
+      message: 'Check your internet connection and try Confirm & pay again.',
+    };
+  }
+
+  if (status === 401 || status === 403 || code === 'FORBIDDEN') {
+    return {
+      title: 'Booking temporarily unavailable',
+      message: 'Please refresh the page and try again in a few minutes.',
+    };
+  }
+
+  if (status === 409 || code.includes('DUPLICATE') || lower.includes('already exists')) {
+    return {
+      title: 'Booking already started',
+      message: 'An unpaid booking may already exist for this parcel. Continue to payment, or start a fresh booking.',
+    };
+  }
+
+  if (
+    status === 400 ||
+    code === 'VALIDATION_ERROR' ||
+    code === 'INVALID_PHONE' ||
+    lower.includes('invalid phone') ||
+    lower.includes('missing required')
+  ) {
+    return {
+      title: 'Some booking details need a check',
+      message:
+        'Go back and confirm your phone numbers, stations, weight, and parcel value look correct, then try again.',
+    };
+  }
+
+  if (
+    (typeof status === 'number' && status >= 500) ||
+    code === 'ORDER_CREATION_FAILED' ||
+    code === 'AUTH_FAILED' ||
+    code === 'BAD_UPSTREAM' ||
+    code === 'PROXY_ERROR' ||
+    lower.includes('data truncated') ||
+    lower.includes('order_creation_failed') ||
+    lower.includes('booking agent order')
+  ) {
+    return fallback;
+  }
+
+  // Never surface raw JSON / stack / SQL to the customer
+  if (
+    blob.includes('{') ||
+    blob.includes('Error:') ||
+    blob.length > 160 ||
+    /column |sql |stack|exception|truncated/i.test(blob)
+  ) {
+    return fallback;
+  }
+
+  if (typeof raw === 'string' && raw.trim() && raw.length <= 160) {
+    return { title: 'We could not complete your booking', message: raw.trim() };
+  }
+
+  return fallback;
+}
 
 const fieldLabelClass = 'mb-2 block text-sm font-semibold text-[#222]';
 const fieldHintClass = 'mt-1.5 text-xs text-[#5c6562]';
@@ -691,6 +802,8 @@ const BookingPage: React.FC = () => {
     specialInstructions: '',
     specialSubItemId: '',
   });
+  const formDataRef = useRef(formData);
+  formDataRef.current = formData;
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<Partial<Record<keyof FormData, boolean>>>({});
 
@@ -712,7 +825,7 @@ const BookingPage: React.FC = () => {
   const [feeError, setFeeError] = useState<string | null>(null);
   const [feeNote, setFeeNote] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<BookingUiError | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -726,7 +839,13 @@ const BookingPage: React.FC = () => {
         ]);
         if (!mounted) return;
         setPickupStations(pickup);
-        setDropoffStations(dropoff.length ? dropoff : pickup.filter((s) => s.capability === 'send_collect'));
+        setDropoffStations(
+          dropoff.length
+            ? dropoff
+            : sortDropOffStationsNairobiFirst(
+                pickup.filter((s) => s.capability === 'send_collect'),
+              ),
+        );
       } catch (err) {
         console.error('Failed to load stations', err);
         if (mounted) setStationsError('Could not load stations. Refresh and try again.');
@@ -915,7 +1034,10 @@ const BookingPage: React.FC = () => {
 
   const handleBlur = (field: keyof FormData) => {
     setTouched((prev) => ({ ...prev, [field]: true }));
-    setFieldError(field, validateField(field));
+    // Defer so a SelectPicker selection in the same tick can commit first.
+    queueMicrotask(() => {
+      setFieldError(field, validateField(field, formDataRef.current));
+    });
   };
 
   const fieldClass = (field: keyof FormData, kind: 'input' | 'select' = 'input') => {
@@ -1142,30 +1264,12 @@ const BookingPage: React.FC = () => {
       /* fall through to direct */
     }
 
-    // Production domain: website-backend allows escrowcourier.com Origin
-    let authToken = '';
-    try {
-      const tokenResponse = await fetch(
-        'https://app.escrowcourier.com/website-backend-services/api/auth/token',
-        { headers: { Accept: 'application/json' } },
-      );
-      if (tokenResponse.ok) {
-        const tokenData = await tokenResponse.json();
-        authToken =
-          tokenData.token || tokenData.access_token || tokenData.bearer_token || '';
-      }
-    } catch {
-      /* continue without token */
-    }
-
+    // CORS-safe website-backend fallback (no browser token — token stays server-side on /api)
     const direct = await fetch(
       'https://app.escrowcourier.com/website-backend-services/api/booking-agent-orders',
       {
         method: 'POST',
-        headers: {
-          ...headers,
-          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-        },
+        headers,
         body,
       },
     );
@@ -1174,7 +1278,9 @@ const BookingPage: React.FC = () => {
     try {
       directData = JSON.parse(directText);
     } catch {
-      throw new Error(directText || `Booking failed (${direct.status})`);
+      const err = new Error('BOOKING_UPSTREAM_FAILED') as Error & { status?: number };
+      err.status = direct.status;
+      throw err;
     }
     return { ok: direct.ok, status: direct.status, data: directData };
   };
@@ -1189,15 +1295,24 @@ const BookingPage: React.FC = () => {
     const vendorPhone = normalizeKenyaMobile(formData.vendorPhone);
     const customerPhone = normalizeKenyaMobile(formData.customerPhone);
     if (!vendorPhone || !customerPhone) {
-      setSubmitError('Enter valid Kenyan mobiles for you and the receiver (07… / 01…)');
+      setSubmitError({
+        title: 'Check your phone numbers',
+        message: 'Enter valid Kenyan mobiles for you and the receiver (07… / 01…).',
+      });
       return;
     }
     if (!pickup || !dropoff) {
-      setSubmitError('Select both a drop-off point and a pickup point');
+      setSubmitError({
+        title: 'Stations missing',
+        message: 'Select both a drop-off point and a pickup point, then try again.',
+      });
       return;
     }
     if (!deliveryFee || deliveryFee <= 0) {
-      setSubmitError('Delivery fee is missing — go back and confirm weight or special item.');
+      setSubmitError({
+        title: 'Delivery fee missing',
+        message: 'Go back and confirm the weight or special item so we can calculate the fee.',
+      });
       return;
     }
 
@@ -1244,7 +1359,15 @@ const BookingPage: React.FC = () => {
     };
 
     setSubmitting(true);
-    localStorage.setItem('currentBookingForm', JSON.stringify(formData));
+    sessionStorage.setItem('currentBookingForm', JSON.stringify(formData));
+    // Clear any leftover PII from older localStorage builds
+    try {
+      localStorage.removeItem('currentOrder');
+      localStorage.removeItem('currentOrderTimestamp');
+      localStorage.removeItem('currentBookingForm');
+    } catch {
+      /* ignore */
+    }
 
     try {
       const result = await createBookingOrder(orderPayload);
@@ -1255,26 +1378,39 @@ const BookingPage: React.FC = () => {
       const orderId = extractOrderId(orderData);
 
       if (!result.ok && result.status !== 409) {
-        const message =
-          orderData?.error?.message ||
-          orderData?.message ||
-          orderData?.error ||
-          `Failed to create order (${result.status})`;
-        throw new Error(typeof message === 'string' ? message : JSON.stringify(message));
+        console.error('Booking create failed', result.status, orderData);
+        setSubmitError(toBookingUiError(orderData?.error ?? orderData, result.status));
+        return;
       }
 
       if (!trackingNo) {
-        throw new Error('Order created but no tracking number was returned. Please try again.');
+        setSubmitError({
+          title: 'Booking created incompletely',
+          message:
+            'We could not read a tracking number. Please try again, or WhatsApp 0745 111 555 if this continues.',
+        });
+        return;
       }
 
-      localStorage.setItem('currentOrder', JSON.stringify(orderData));
-      localStorage.setItem('currentOrderTimestamp', Date.now().toString());
+      sessionStorage.setItem('currentOrder', JSON.stringify(orderData));
+      sessionStorage.setItem('currentOrderTimestamp', Date.now().toString());
 
       navigate('/payment', {
         state: {
           bookingData: {
             ...formData,
             deliveryFee,
+            pickupPointId: pickup.agentId,
+            pickupPointName: pickup.businessName,
+            pickupPointAddress: pickup.address,
+            pickupPointTown: pickup.town,
+            dropoffPointId: dropoff.agentId,
+            dropoffPointName: dropoff.businessName,
+            dropoffPointAddress: dropoff.address,
+            dropoffPointTown: dropoff.town,
+            dropoffPointLabel: dropoffLabel,
+            agentId: Number(pickup.agentId) || pickup.agentId,
+            originAgentId: Number(dropoff.agentId) || dropoff.agentId,
           },
           trackingNo,
           orderId,
@@ -1284,54 +1420,58 @@ const BookingPage: React.FC = () => {
       });
     } catch (error: any) {
       console.error('Error creating order:', error);
-      setSubmitError(error?.message || 'Could not create your booking. Please try again.');
+      setSubmitError(toBookingUiError(error?.message || error, error?.status));
     } finally {
       setSubmitting(false);
     }
   };
 
-  // If returning from payment or localStorage contains previous booking, set step to summary (3)
+  // If returning from payment or sessionStorage contains previous booking, set step to summary (3)
   useEffect(() => {
     // Check for stale data and clear if older than 1 hour
-    const storedTimestamp = localStorage.getItem('currentOrderTimestamp');
+    const storedTimestamp = sessionStorage.getItem('currentOrderTimestamp');
     if (storedTimestamp) {
       const timestamp = parseInt(storedTimestamp, 10);
       const oneHour = 60 * 60 * 1000;
       const now = Date.now();
-      
+
       if (now - timestamp > oneHour) {
-        console.log('Clearing stale booking data');
-        localStorage.removeItem('currentOrder');
-        localStorage.removeItem('currentOrderTimestamp');
-        localStorage.removeItem('currentBookingForm');
+        sessionStorage.removeItem('currentOrder');
+        sessionStorage.removeItem('currentOrderTimestamp');
+        sessionStorage.removeItem('currentBookingForm');
         return; // Don't restore stale data
       }
     }
-    
+
     const showSummary = location.state?.showSummary;
     if (showSummary) {
       const existing = location.state?.existingData;
       if (existing) {
-        setFormData(prev => ({ ...prev, ...existing }));
+        setFormData((prev) => ({ ...prev, ...existing }));
       } else {
-        const stored = localStorage.getItem('currentBookingForm');
+        const stored = sessionStorage.getItem('currentBookingForm');
         if (stored) {
-          try { setFormData(prev => ({ ...prev, ...JSON.parse(stored) })); } catch {}
+          try {
+            setFormData((prev) => ({ ...prev, ...JSON.parse(stored) }));
+          } catch {
+            /* ignore */
+          }
         }
       }
       setStep(3);
     } else if (!showSummary) {
       // Browser back without state but with persisted form & order
-      const stored = localStorage.getItem('currentBookingForm');
+      const stored = sessionStorage.getItem('currentBookingForm');
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          // If there is also an order in localStorage, assume user was at summary
-          if (localStorage.getItem('currentOrder')) {
-            setFormData(prev => ({ ...prev, ...parsed }));
+          if (sessionStorage.getItem('currentOrder')) {
+            setFormData((prev) => ({ ...prev, ...parsed }));
             setStep(3);
           }
-        } catch {}
+        } catch {
+          /* ignore */
+        }
       }
     }
   }, [location.state]);
@@ -1352,10 +1492,7 @@ const BookingPage: React.FC = () => {
 
       {/* Hero — matches Stations / Track */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-3xl px-5 pb-12 pt-28 text-center sm:px-8 sm:pb-14 sm:pt-32">
           <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">Prepaid booking</p>
           <h1 className="mt-4 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
@@ -1367,47 +1504,112 @@ const BookingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Progress */}
-      <div className="border-b border-black/[0.06] bg-[#f7f8f6]">
-        <div className="mx-auto flex max-w-3xl items-center gap-2 overflow-x-auto px-5 py-4 sm:px-8">
-          {BOOKING_STEPS.map((item, index) => {
-            const active = step === item.id;
-            const done = step > item.id;
-            return (
-              <div key={item.id} className="flex min-w-0 flex-1 items-center gap-2">
-                <div
-                  className={`flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                    active || done
-                      ? 'bg-[#00473E] text-[#E9FF15]'
-                      : 'border border-black/10 bg-white text-[#5c6562]'
-                  }`}
-                >
-                  {done ? <CheckCircle className="size-4" /> : item.id}
-                </div>
-                <span
-                  className={`truncate text-xs font-semibold sm:text-sm ${
-                    active ? 'text-[#111]' : 'text-[#5c6562]'
-                  }`}
-                >
-                  {item.label}
-                </span>
-                {index < BOOKING_STEPS.length - 1 && (
-                  <div className="mx-1 hidden h-px flex-1 bg-black/10 sm:block" aria-hidden />
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* Steps + form side by side */}
+      <section className="bg-[#f7f8f6] py-10 sm:py-14">
+        <div className="mx-auto grid max-w-6xl gap-8 px-5 sm:px-8 lg:grid-cols-[minmax(240px,280px)_minmax(0,1fr)] lg:items-start lg:gap-10">
+          {/* Side stepper — vertical on desktop, compact row on mobile */}
+          <aside className="lg:sticky lg:top-28" aria-label="Booking steps">
+            <p className="mb-4 text-xs font-semibold tracking-[0.16em] text-[#00473E] lg:mb-5">
+              Step {step} of {BOOKING_STEPS.length}
+            </p>
 
-      {/* Form */}
-      <section className="bg-white py-10 sm:py-14">
-        <div className="mx-auto max-w-3xl px-5 sm:px-8">
-          <p className="mb-6 text-sm text-[#5c6562]">
-            Step {step} of {BOOKING_STEPS.length}
-          </p>
+            {/* Mobile: horizontal chips */}
+            <ol className="flex gap-2 overflow-x-auto pb-1 lg:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {BOOKING_STEPS.map((item) => {
+                const active = step === item.id;
+                const done = step > item.id;
+                return (
+                  <li
+                    key={item.id}
+                    className={`flex min-w-[9.5rem] shrink-0 items-start gap-2.5 rounded-2xl border px-3 py-3 ${
+                      active
+                        ? 'border-[#00473E]/25 bg-white shadow-sm'
+                        : done
+                          ? 'border-[#00473E]/15 bg-white/80'
+                          : 'border-black/10 bg-white/60'
+                    }`}
+                  >
+                    <span
+                      className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                        active || done
+                          ? 'bg-[#00473E] text-[#E9FF15]'
+                          : 'border border-black/10 bg-white text-[#5c6562]'
+                      }`}
+                    >
+                      {done ? <CheckCircle className="size-3.5" aria-hidden /> : item.id}
+                    </span>
+                    <span className="min-w-0">
+                      <span
+                        className={`block text-xs font-semibold leading-snug ${
+                          active ? 'text-[#111]' : 'text-[#5c6562]'
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
 
-          <div className="rounded-2xl border border-black/[0.07] bg-white p-5 sm:p-8">
+            {/* Desktop: vertical sidebar */}
+            <ol className="relative hidden space-y-0 lg:block">
+              {BOOKING_STEPS.map((item, index) => {
+                const active = step === item.id;
+                const done = step > item.id;
+                const isLast = index === BOOKING_STEPS.length - 1;
+                return (
+                  <li key={item.id} className="relative flex gap-4 pb-8 last:pb-0">
+                    {!isLast && (
+                      <span
+                        className={`absolute left-[15px] top-9 h-[calc(100%-1.25rem)] w-px ${
+                          done ? 'bg-[#00473E]' : 'bg-black/10'
+                        }`}
+                        aria-hidden
+                      />
+                    )}
+                    <span
+                      className={`relative z-[1] flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                        active
+                          ? 'bg-[#00473E] text-[#E9FF15] ring-4 ring-[#00473E]/15'
+                          : done
+                            ? 'bg-[#00473E] text-[#E9FF15]'
+                            : 'border border-black/10 bg-white text-[#5c6562]'
+                      }`}
+                      aria-current={active ? 'step' : undefined}
+                    >
+                      {done && !active ? (
+                        <CheckCircle className="size-4" aria-hidden />
+                      ) : (
+                        item.id
+                      )}
+                    </span>
+                    <div className="min-w-0 pt-0.5">
+                      <p
+                        className={`font-[Sora] text-sm font-semibold tracking-tight ${
+                          active ? 'text-[#111]' : done ? 'text-[#00473E]' : 'text-[#5c6562]'
+                        }`}
+                      >
+                        {item.label}
+                      </p>
+                      <p
+                        className={`mt-1 text-xs leading-relaxed ${
+                          active ? 'text-[#3d4542]' : 'text-[#8a9390]'
+                        }`}
+                      >
+                        {item.description}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </aside>
+
+          <div className="overflow-visible rounded-2xl border border-black/[0.07] bg-white p-5 shadow-sm sm:p-8">
+            <p className="mb-5 hidden text-sm text-[#5c6562] sm:block lg:hidden">
+              {BOOKING_STEPS[step - 1]?.description}
+            </p>
             {step === 1 && (
               <div className="space-y-8">
                 <div className="space-y-5">
@@ -1605,8 +1807,9 @@ const BookingPage: React.FC = () => {
                     hasError={Boolean(fieldErrors.packageType)}
                     error={fieldErrors.packageType || null}
                     onChange={(value) => {
-                      handleInputChange('packageType', value);
                       setTouched((prev) => ({ ...prev, packageType: true }));
+                      handleInputChange('packageType', value);
+                      setFieldError('packageType', value ? null : 'Select a package type');
                     }}
                     onBlur={() => handleBlur('packageType')}
                   />
@@ -1664,11 +1867,21 @@ const BookingPage: React.FC = () => {
                     hasError={Boolean(fieldErrors.weightRange || weightBandsError)}
                     error={fieldErrors.weightRange || weightBandsError || null}
                     onChange={(value) => {
-                      handleInputChange('weightRange', value);
                       setTouched((prev) => ({ ...prev, weightRange: true }));
+                      setFormData((prev) => ({
+                        ...prev,
+                        weightRange: value,
+                        // Choosing a weight band clears any special-item override
+                        ...(value ? { specialSubItemId: '' } : {}),
+                      }));
                       if (value) {
                         setSelectedSpecialSubItem(null);
-                        setFormData((prev) => ({ ...prev, specialSubItemId: '' }));
+                        setFieldError('weightRange', null);
+                      } else {
+                        setFieldError(
+                          'weightRange',
+                          'Select a weight range (or describe a special item below)',
+                        );
                       }
                     }}
                     onBlur={() => handleBlur('weightRange')}
@@ -1905,9 +2118,40 @@ const BookingPage: React.FC = () => {
                 </div>
 
                 {submitError && (
-                  <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
-                    {submitError}
-                  </p>
+                  <div
+                    className="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-red-900"
+                    role="alert"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-700">
+                        <CircleAlert className="size-4" aria-hidden />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-[Sora] text-sm font-semibold">{submitError.title}</p>
+                        <p className="mt-1 text-sm leading-relaxed text-red-800/90">
+                          {submitError.message}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => void handleSubmit()}
+                            disabled={submitting}
+                            className="inline-flex min-h-10 items-center rounded-full bg-[#00473E] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#00352f] disabled:opacity-50"
+                          >
+                            {submitting ? 'Retrying…' : 'Try again'}
+                          </button>
+                          <a
+                            href="https://wa.me/254745111555"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex min-h-10 items-center rounded-full border border-red-200 bg-white px-4 text-xs font-semibold text-red-900 transition-colors hover:bg-red-50"
+                          >
+                            WhatsApp support
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -1962,3 +2206,4 @@ const BookingPage: React.FC = () => {
 };
 
 export default BookingPage;
+

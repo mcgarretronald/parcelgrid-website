@@ -1,15 +1,37 @@
 /**
  * Production proxy: POST /api/web-chat/session → customer-support web chat session.
- * Forwards Origin as escrowcourier.com so the service's allow-list accepts the call.
  */
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Accept, Content-Type, X-Chat-Session');
+import {
+  applyCors,
+  handleOptions,
+  rateLimit,
+  safeError,
+  isAllowedBrowserOrigin,
+} from '../_lib/security.js';
 
-  if (req.method === 'OPTIONS') return res.status(200).json({});
+export default async function handler(req, res) {
+  applyCors(req, res, {
+    methods: 'POST, OPTIONS',
+    headers: 'Accept, Content-Type, X-Chat-Session',
+  });
+
+  if (req.method === 'OPTIONS') {
+    return handleOptions(req, res, {
+      methods: 'POST, OPTIONS',
+      headers: 'Accept, Content-Type, X-Chat-Session',
+    });
+  }
   if (req.method !== 'POST') {
-    return res.status(405).json({ success: false, error: 'METHOD_NOT_ALLOWED', message: 'POST only' });
+    return safeError(res, 405, 'METHOD_NOT_ALLOWED', 'POST only');
+  }
+  if (!isAllowedBrowserOrigin(req)) {
+    return safeError(res, 403, 'FORBIDDEN', 'Origin not allowed');
+  }
+
+  const limited = rateLimit(req, { key: 'chat-session', limit: 10, windowMs: 60_000 });
+  if (limited !== true) {
+    res.setHeader('Retry-After', String(limited.body.retryAfterSeconds || 60));
+    return res.status(limited.status).json(limited.body);
   }
 
   try {
@@ -31,18 +53,20 @@ export default async function handler(req, res) {
     try {
       data = JSON.parse(text);
     } catch {
-      return res.status(502).json({
-        success: false,
-        error: 'BAD_UPSTREAM',
-        message: 'Invalid response from chat service. Call or WhatsApp 0745 111 555.',
-      });
+      return safeError(
+        res,
+        502,
+        'BAD_UPSTREAM',
+        'Chat unavailable. Call or WhatsApp 0745 111 555.',
+      );
     }
     return res.status(response.status).json(data);
-  } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: 'PROXY_ERROR',
-      message: error?.message || 'Chat unavailable. Call or WhatsApp 0745 111 555.',
-    });
+  } catch {
+    return safeError(
+      res,
+      500,
+      'PROXY_ERROR',
+      'Chat unavailable. Call or WhatsApp 0745 111 555.',
+    );
   }
 }

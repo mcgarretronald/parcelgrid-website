@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { JsonLd } from '../components/JsonLd';
+import { PageHeroBackground } from '../components/PageHeroBackground';
 import { Helmet } from "react-helmet-async";
 import { ArrowRight, BellRing, MapPin, ShieldCheck, Smartphone, Store, Wallet, Moon } from "lucide-react";
 import Footer from "../components/Footer";
@@ -11,7 +12,7 @@ import { faqByIds } from "../lib/faqData";
 
 const PAGE_TITLE = "Upcountry Parcel Delivery Kenya | Next-Day Courier Outside Nairobi | ParcelGrid";
 const PAGE_DESCRIPTION =
-  "Reliable next-day upcountry parcel delivery to 300+ towns across Kenya. Drop off at our Nairobi CBD branches (9 AM–7 PM, Mon–Sat). COD & prepaid supported.";
+  "Reliable next-day upcountry parcel delivery to 132 towns across Kenya. Drop off at our Nairobi CBD branches (9 AM–7 PM, Mon–Sat). COD & prepaid supported.";
 
 const CORRIDORS = [
   {
@@ -140,17 +141,14 @@ export default function UpcountryDeliveryPage() {
 
       {/* Hero */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
-        <div
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_55%_at_50%_0%,rgba(0,71,62,0.5),transparent_70%)]"
-          aria-hidden
-        />
+        <PageHeroBackground />
         <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-28 text-center sm:px-8 sm:pb-16 sm:pt-32">
           <p className="text-xs font-semibold tracking-[0.18em] text-[#E9FF15]">Upcountry delivery</p>
           <h1 className="mt-4 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">
             Next-Day Upcountry Parcel Delivery in Kenya
           </h1>
           <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-white/75 sm:text-lg">
-            Daily parcel dispatches to 300+ towns outside Nairobi. Drop off at Ronald Ngala, Moi Avenue, or Taveta Road. Your customer gets an SMS when the parcel is ready, and they collect at a pickup station near them.
+            Daily parcel dispatches to 132 towns outside Nairobi. Drop off at Ronald Ngala, Moi Avenue, or Taveta Road. Your customer gets an SMS when the parcel is ready, and they collect at a pickup station near them.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-2">
             <Link
@@ -173,12 +171,12 @@ export default function UpcountryDeliveryPage() {
       <Reveal as="section" className="border-b border-black/[0.06] bg-[#f7f8f6] py-14 sm:py-20" aria-labelledby="corridors-title">
         <div className="mx-auto max-w-6xl px-5 sm:px-8">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">Nationwide network</p>
+            <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">Outside Nairobi network</p>
             <h2 id="corridors-title" className="mt-3 font-[Sora] text-2xl font-semibold tracking-[-0.03em] text-[#111] sm:text-3xl">
               Daily dispatches across Kenya&apos;s key routes
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-[#5c6562] sm:text-base">
-              We move parcels overnight from Nairobi CBD to pickup stations across 300+ commercial centres. Tap a town to see its stations.
+              We move parcels overnight from Nairobi CBD to pickup stations across 132 commercial centres. Tap a town to see its stations.
             </p>
           </div>
 
@@ -241,7 +239,7 @@ export default function UpcountryDeliveryPage() {
           </Reveal>
 
           <p className="mt-8 text-center text-sm text-[#5c6562]">
-            Don&apos;t see your town? Search all 300+ on the{" "}
+            Don&apos;t see your town? Search all 132 on the{" "}
             <Link to="/pickup-points" className="font-semibold text-[#00473E] underline-offset-2 hover:underline">
               stations page
             </Link>
@@ -349,7 +347,7 @@ export default function UpcountryDeliveryPage() {
                   Branch {String(i + 1).padStart(2, "0")}
                 </span>
                 <h3 className="mt-4 font-[Sora] text-lg font-semibold text-[#111]">{b.name.replace(/ Branch$/, "")}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[#5c6562]">{b.street}, Nairobi CBD</p>
+                <p className="mt-2 text-sm leading-relaxed text-[#5c6562]">{b.address}</p>
                 <a
                   href={mapsLink(b)}
                   target="_blank"
@@ -372,7 +370,7 @@ export default function UpcountryDeliveryPage() {
               to="/pickup-points"
               className="inline-flex min-h-12 items-center rounded-full border border-[#00473E]/25 bg-white px-6 text-sm font-semibold text-[#00473E] hover:bg-[#00473E]/5"
             >
-              Find a station in 300+ towns
+              Find a station in 132 towns
             </Link>
           </div>
         </div>

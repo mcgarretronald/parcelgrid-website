@@ -1,12 +1,25 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "../components/layout/Header";
 
 const ChatWidget = lazy(() => import("../components/chat/ChatWidget"));
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 export default function RootLayout() {
   const location = useLocation();
   const isLandingPage = location.pathname === '/';
+
+  // SPA route changes — gtag initial config only covers the first load
+  useEffect(() => {
+    window.gtag?.('config', 'G-R80P9G4W4C', {
+      page_path: `${location.pathname}${location.search}`,
+    });
+  }, [location.pathname, location.search]);
 
   return (
     <div className="relative min-h-screen overflow-x-hidden">

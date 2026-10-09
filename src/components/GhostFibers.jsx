@@ -185,18 +185,27 @@ export default function GhostFibers({
     const container = containerRef.current;
     if (!container) return;
 
-    const renderer = new Renderer({
-      webgl: 2,
-      alpha: false,
-      antialias: false,
-      dpr: Math.min(Math.max(dpr, 0.5), 2),
-    });
-    const gl = renderer.gl;
-    const canvas = gl.canvas;
+    const canvas = document.createElement("canvas");
     canvas.style.width = "100%";
     canvas.style.height = "100%";
     canvas.style.display = "block";
     canvas.setAttribute("aria-hidden", "true");
+
+    let renderer;
+    try {
+      renderer = new Renderer({
+        canvas,
+        webgl: 2,
+        alpha: false,
+        antialias: false,
+        dpr: Math.min(Math.max(dpr, 0.5), 2),
+      });
+    } catch {
+      return;
+    }
+    if (!renderer?.gl) return;
+
+    const gl = renderer.gl;
     container.appendChild(canvas);
 
     const geometry = new Triangle(gl);
@@ -337,8 +346,18 @@ export default function GhostFibers({
       document.removeEventListener("visibilitychange", handleVisibility);
       reducedMotion.removeEventListener("change", handleReducedMotion);
       contexts.delete(container);
-      if (canvas.parentNode === container) container.removeChild(canvas);
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      try {
+        canvas.remove();
+      } catch {
+        /* already removed */
+      }
+      requestAnimationFrame(() => {
+        try {
+          gl.getExtension("WEBGL_lose_context")?.loseContext();
+        } catch {
+          /* ignore */
+        }
+      });
     };
   }, [dpr]);
 

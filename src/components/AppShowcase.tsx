@@ -32,7 +32,7 @@ export function AppShowcase() {
       ref={ref}
       id="value-proposition"
       aria-labelledby="value-proposition-heading"
-      className={`app-showcase relative overflow-hidden bg-[#00473E] ${className}`}
+      className={`app-showcase reveal section-blend-bottom relative overflow-hidden bg-[#00473E] ${className}`}
     >
       <div className="absolute inset-0" aria-hidden="true">
         <LazyGradientWaves
