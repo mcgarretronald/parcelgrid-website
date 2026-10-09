@@ -25,9 +25,11 @@ import weightBands from '../api/weight-bands.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.resolve(__dirname, '../dist');
 const port = Number(process.env.PORT) || 10000;
+const host = process.env.HOST || '0.0.0.0';
 
 const app = express();
 app.disable('x-powered-by');
+app.set('trust proxy', 1);
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -109,6 +111,6 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ success: false, error: 'SERVER_ERROR' });
 });
 
-app.listen(port, () => {
-  console.log(`ParcelGrid website listening on :${port}`);
+app.listen(port, host, () => {
+  console.log(`ParcelGrid website listening on ${host}:${port}`);
 });

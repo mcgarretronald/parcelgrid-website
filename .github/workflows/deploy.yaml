@@ -57,3 +57,4 @@ jobs:
           kubectl -n staging apply -f k8s/deployment.yaml
           kubectl -n staging apply -f k8s/service.yaml
           kubectl -n staging apply -f k8s/ingress.yaml
+          kubectl -n staging rollout status deployment/escrow-web-services --timeout=180s
