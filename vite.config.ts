@@ -28,17 +28,16 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      // Proxy the escrow pickup-points API for local development.
-      // The API's CORS allowlist rejects http://localhost:5174 (it only allows
-      // escrowcourier.com + localhost:5173), which silently blocked the pickup
-      // station address/phone lookup on /track. Server-side proxying avoids CORS
-      // entirely, and we send an allowed Origin so the API doesn't 500.
+      // Proxy the public agents API for local development. The API's CORS
+      // allowlist only reflects `http://localhost:5173`/`:3000`, which silently
+      // blocked the agent address/phone lookup on this dev server (port 5174).
+      // Server-side proxying avoids CORS entirely; we send no Origin header, which
+      // the API serves fine (it returns 500 for a non-allowlisted Origin).
       '/pickup-points-api': {
         target: 'https://app.escrowcourier.com',
         changeOrigin: true,
         secure: true,
-        rewrite: () => '/website-backend-services/api/pickup-points',
-        headers: { origin: 'https://escrowcourier.com' },
+        rewrite: () => '/user-services/api/agents/public',
       },
       // Booking-enabled agents (drop-off / send points). Strip Origin —
       // user-service CORS is oriented to server-to-server / allowlisted apps.

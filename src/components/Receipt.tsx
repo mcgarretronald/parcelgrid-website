@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Download, Share2, X } from 'lucide-react';
+import { fetchAgents } from '../lib/api';
 
 interface ReceiptProps {
   orderData: any;
@@ -87,21 +88,6 @@ async function canvasToPngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
       'image/png',
     );
   });
-}
-
-async function fetchPickupAgents(): Promise<any[]> {
-  for (const url of ['/pickup-points-api', '/api/pickup-points']) {
-    try {
-      const res = await fetch(url, { headers: { Accept: 'application/json' } });
-      if (!res.ok) continue;
-      const json = await res.json();
-      const agents = Array.isArray(json) ? json : json?.data || json?.agents || [];
-      if (agents.length) return agents;
-    } catch {
-      /* try next */
-    }
-  }
-  return [];
 }
 
 const Receipt: React.FC<ReceiptProps> = ({ orderData, onClose }) => {
@@ -245,7 +231,12 @@ const Receipt: React.FC<ReceiptProps> = ({ orderData, onClose }) => {
 
     let cancelled = false;
     (async () => {
-      const agents = await fetchPickupAgents();
+      let agents: any[] = [];
+      try {
+        agents = await fetchAgents();
+      } catch {
+        agents = [];
+      }
       if (cancelled) return;
       const matched = agents.find(
         (a) =>

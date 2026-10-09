@@ -26,7 +26,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const apiUrl = 'https://app.escrowcourier.com/website-backend-services/api/pickup-points';
+    const apiUrl = 'https://app.escrowcourier.com/user-services/api/agents/public';
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {

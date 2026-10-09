@@ -6,6 +6,7 @@ import {
   isAllowedBrowserOrigin,
 } from './_lib/security.js';
 
+/** Same public agents catalog as /api/agents — kept for existing client paths. */
 export default async function handler(req, res) {
   applyCors(req, res, { methods: 'GET, OPTIONS' });
 
@@ -26,7 +27,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const apiUrl = 'https://app.escrowcourier.com/website-backend-services/api/pickup-points';
+    const apiUrl = 'https://app.escrowcourier.com/user-services/api/agents/public';
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {

@@ -14,7 +14,7 @@ export type Station = {
   distanceFromHQ?: number;
 };
 
-const PICKUP_API = "https://app.escrowcourier.com/website-backend-services/api/pickup-points";
+const PICKUP_API = "https://app.escrowcourier.com/user-services/api/agents/public";
 const PICKUP_PROXY = "/pickup-points-api";
 const PICKUP_FN = "/api/pickup-points";
 
