@@ -16,9 +16,9 @@ import Footer from '../components/Footer';
 import { HOME_FAQ, faqAnswerToText } from '../lib/faqData';
 
 const SITE = 'https://escrowcourier.com';
-const PAGE_TITLE = 'Courier Services Kenya | Upcountry Delivery & COD | ParcelGrid';
+const PAGE_TITLE = 'Courier Services Kenya | Next-Day Upcountry & Pay on Delivery | ParcelGrid';
 const PAGE_DESCRIPTION =
-  'ParcelGrid courier services in Kenya: next-day upcountry delivery to 132 towns, Pay on Delivery with instant M-Pesa, and prepaid booking from Nairobi CBD branches. CA-licensed.';
+  'Courier services Kenya for online sellers: next-day delivery to 132 towns, Pay on Delivery with instant M-Pesa, and prepaid booking. Drop off at Ronald Ngala, Moi Ave or Taveta Rd. CA-licensed.';
 
 const LandingPage: React.FC = () => {
   const location = useLocation();

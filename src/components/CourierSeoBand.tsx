@@ -16,22 +16,22 @@ export function CourierSeoBand() {
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
         <p className="text-xs font-semibold tracking-[0.16em] text-[#00473E]">
-          COURIER SERVICES IN KENYA
+          COURIER SERVICES KENYA
         </p>
         <h2
           id="courier-services-heading"
           className="mt-3 max-w-3xl font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-[#111] sm:text-4xl"
         >
-          Reliable courier services for Nairobi sellers and upcountry buyers
+          Courier services Kenya — next-day delivery outside Nairobi
         </h2>
         <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-14">
           <div className="space-y-4 text-base leading-relaxed text-[#5c6562] sm:text-[17px]">
             <p>
-              ParcelGrid is a licensed{" "}
-              <strong className="font-semibold text-[#071410]">courier service in Kenya</strong> built
-              for online sellers, shops, and businesses that ship outside Nairobi. Drop off at our
-              CBD branches on Ronald Ngala Street, Moi Avenue, or Taveta Road — we move parcels
-              next-day to{" "}
+              Looking for{" "}
+              <strong className="font-semibold text-[#071410]">courier services Kenya</strong> sellers
+              actually use? ParcelGrid is a Communications Authority–licensed courier built for
+              online shops and businesses that ship outside Nairobi. Drop off at our CBD branches on
+              Ronald Ngala Street, Moi Avenue, or Taveta Road — we move parcels next-day to{" "}
               <Link to="/pickup-points" className="font-semibold text-[#00473E] underline-offset-2 hover:underline">
                 pickup stations in 132 towns
               </Link>

@@ -2,9 +2,9 @@
   "site": "https://escrowcourier.com",
   "routes": {
     "/": {
-      "title": "Courier Services Kenya | Upcountry Delivery & COD | ParcelGrid",
-      "description": "ParcelGrid courier services in Kenya: next-day upcountry delivery to 132 towns, Pay on Delivery with instant M-Pesa, and prepaid booking from Nairobi CBD branches. CA-licensed.",
-      "h1": "Fast Upcountry Delivery. Prepaid or Pay on Delivery.",
+      "title": "Courier Services Kenya | Next-Day Upcountry & Pay on Delivery | ParcelGrid",
+      "description": "Courier services Kenya for online sellers: next-day delivery to 132 towns, Pay on Delivery with instant M-Pesa, and prepaid booking. Drop off at Ronald Ngala, Moi Ave or Taveta Rd. CA-licensed.",
+      "h1": "Courier Services Kenya. Next-day outside Nairobi.",
       "priority": "1.0",
       "changefreq": "weekly"
     },

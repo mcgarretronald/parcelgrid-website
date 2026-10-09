@@ -25,6 +25,13 @@ export const FAQ_TOPICS: FaqTopic[] = [
         },
       },
       {
+        id: 'courier-services-kenya',
+        question: 'Which courier services does ParcelGrid offer in Kenya?',
+        answer: {
+          text: 'ParcelGrid offers courier services in Kenya focused on parcels from Nairobi CBD to upcountry towns: next-day delivery to 132 pickup stations, prepaid booking online or in-app, and Pay on Delivery (COD) with instant M-Pesa settlements for online sellers.',
+        },
+      },
+      {
         id: 'where-located',
         question: 'Where are you located?',
         answer: {
@@ -343,7 +350,13 @@ export const faqByIds = (ids: string[]): FaqItem[] =>
   })
 
 /** Short answers shown right above the footer on key landing pages. */
-export const HOME_FAQ_IDS = ['drop-off-cbd', 'delivery-time', 'how-cod-works', 'send-outside-nairobi']
+export const HOME_FAQ_IDS = [
+  'courier-services-kenya',
+  'drop-off-cbd',
+  'delivery-time',
+  'how-cod-works',
+  'send-outside-nairobi',
+]
 export const COD_FAQ_IDS = ['cod-collection', 'when-paid', 'cod-refused', 'cod-limit']
 export const STATIONS_FAQ_IDS = ['send-outside-nairobi', 'recipient-needs', 'hold-time', 'cbd-branches']
 export const PRICING_FAQ_IDS = ['how-pricing-works', 'pricing-same-as-app', 'how-pay-courier-fee', 'send-outside-nairobi']

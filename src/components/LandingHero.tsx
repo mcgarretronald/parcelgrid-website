@@ -16,9 +16,9 @@ const stats: { value?: number; suffix?: string; display?: string; label: string 
 const slides = [
   {
     id: "both",
-    line1: "Fast Upcountry Delivery.",
-    line2: "Prepaid or Pay on Delivery.",
-    body: "Kenya’s trusted courier for online sellers and businesses. Drop off at our Ronald Ngala, Moi Avenue, or Taveta Road branches. We deliver next-day to 132 towns — book prepaid online, or collect payment from your buyer on delivery.",
+    line1: "Courier Services Kenya.",
+    line2: "Next-day outside Nairobi.",
+    body: "ParcelGrid is a CA-licensed courier service in Kenya for online sellers and businesses. Drop off at Ronald Ngala, Moi Avenue, or Taveta Road — we deliver next-day to 132 towns. Book prepaid online, or use Pay on Delivery with instant M-Pesa.",
   },
   {
     id: "prepaid",
@@ -72,8 +72,8 @@ export function LandingHero() {
           <p className="mb-5 flex items-start gap-3 text-[11px] font-medium leading-relaxed tracking-[0.14em] text-[#E9FF15] sm:text-xs sm:tracking-[0.16em]">
             <span className="mt-[0.45em] block h-px w-8 shrink-0 bg-[#E9FF15]" />
             <span>
-              <span className="block">LICENSED BY COMMUNICATIONS AUTHORITY (CA)</span>
-              <span className="mt-1 block">OUTSIDE NAIROBI COURIER</span>
+              <span className="block">COURIER SERVICES KENYA · CA LICENSED</span>
+              <span className="mt-1 block">NAIROBI CBD DROP-OFF · 132 TOWNS</span>
             </span>
           </p>
 
