@@ -21,7 +21,7 @@ const CareersPage: React.FC = () => {
         <title>{PAGE_TITLE}</title>
         <meta name="title" content={PAGE_TITLE} />
         <meta name="description" content={PAGE_DESCRIPTION} />
-        <meta name="keywords" content="ParcelGrid careers, courier jobs Nairobi, logistics jobs Kenya, vendor growth officer, customer relations job" />
+        <meta name="keywords" content="ParcelGrid careers, courier jobs Nairobi, logistics jobs Kenya, accountant job Nairobi, finance jobs Kenya" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content={PAGE_TITLE} />
         <meta property="og:description" content={PAGE_DESCRIPTION} />

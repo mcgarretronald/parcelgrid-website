@@ -10,7 +10,7 @@ const AboutPage = lazy(() => import("../pages/AboutPage"));
 const ContactPage = lazy(() => import("../pages/ContactPage"));
 const CareersPage = lazy(() => import("../pages/CareersPage"));
 const OpportunitiesPage = lazy(() => import("../pages/OpportunitiesPage"));
-const VendorGrowthJobPage = lazy(() => import("../pages/VendorGrowthJobPage"));
+const JobPage = lazy(() => import("../pages/JobPage"));
 const HowToUseAppPage = lazy(() => import("../pages/HowToUseAppPage"));
 const BookingPage = lazy(() => import("../pages/BookingPage"));
 const PaymentPage = lazy(() => import("../pages/PaymentPage"));
@@ -90,7 +90,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/careers/vendor-growth-officer",
-        element: <VendorGrowthJobPage />,
+        element: <Navigate to="/careers" replace />,
+      },
+      {
+        path: "/careers/:slug",
+        element: <JobPage />,
       },
       {
         path: "/prepaid-cod",

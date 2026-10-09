@@ -1,19 +1,33 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, BadgeCheck, Banknote, Building2, Clock, MapPin, MessageCircle, Info, Briefcase } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import {
+  ArrowLeft,
+  BadgeCheck,
+  Banknote,
+  Building2,
+  Clock,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Info,
+  Briefcase,
+} from 'lucide-react';
 import Footer from '../components/Footer';
 import { PageHeroBackground } from '../components/PageHeroBackground';
 import { useScrollToTop } from '../hooks/useScrollToTop';
 import { JOBS } from '../lib/careers';
+import NotFoundPage from './NotFoundPage';
 
-const job = JOBS[0];
-
-const VendorGrowthJobPage: React.FC = () => {
+const JobPage: React.FC = () => {
   useScrollToTop();
+  const { slug } = useParams<{ slug: string }>();
+  const job = JOBS.find((j) => j.slug === slug);
+
+  if (!job) return <NotFoundPage />;
+
   const title = `${job.title} Job in ${job.location} | ParcelGrid Careers`;
-  const description =
-    'Join ParcelGrid as a Vendor Growth and Customer Relations Officer in Nairobi. Help onboard online merchants and scale our delivery network. Start with a 2-minute video.';
+  const description = job.summary;
 
   const details = [
     { icon: MapPin, label: 'Location', value: job.location },
@@ -29,7 +43,10 @@ const VendorGrowthJobPage: React.FC = () => {
         <title>{title}</title>
         <meta name="title" content={title} />
         <meta name="description" content={description} />
-        <meta name="keywords" content="vendor growth officer, customer relations job, logistics job Nairobi, ParcelGrid career, sales job Nairobi" />
+        <meta
+          name="keywords"
+          content={`${job.title} job Nairobi, ParcelGrid careers, careers Kenya, jobs Nairobi`}
+        />
         <meta property="og:type" content="website" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
@@ -65,14 +82,31 @@ const VendorGrowthJobPage: React.FC = () => {
             <div className="rounded-2xl bg-[#00473E] p-6 text-white">
               <p className="text-xs font-semibold tracking-[0.16em] text-[#E9FF15]">How to apply</p>
               <p className="mt-2 text-sm leading-relaxed text-white/85">{job.applyIntro}</p>
-              <a
-                href="https://wa.me/254745111555"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#E9FF15] px-5 text-sm font-semibold text-[#00473E] transition-colors hover:bg-[#d4e614]"
-              >
-                <MessageCircle className="size-4" aria-hidden /> WhatsApp: 0745 111 555
-              </a>
+
+              {job.applyEmail ? (
+                <a
+                  href={`mailto:${job.applyEmail}?subject=${encodeURIComponent(`Application: ${job.title}`)}`}
+                  className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#E9FF15] px-5 text-sm font-semibold text-[#00473E] transition-colors hover:bg-[#d4e614]"
+                >
+                  <Mail className="size-4" aria-hidden /> Email {job.applyEmail}
+                </a>
+              ) : (
+                <a
+                  href="https://wa.me/254745111555"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#E9FF15] px-5 text-sm font-semibold text-[#00473E] transition-colors hover:bg-[#d4e614]"
+                >
+                  <MessageCircle className="size-4" aria-hidden /> WhatsApp: 0745 111 555
+                </a>
+              )}
+
+              {job.applyDeadline && (
+                <p className="mt-3 text-center text-xs font-semibold text-[#E9FF15]">
+                  Application deadline: {job.applyDeadline}
+                </p>
+              )}
+
               <p className="mt-4 flex items-start gap-2 rounded-xl bg-white/10 p-3 text-xs leading-relaxed text-white/85">
                 <Info className="mt-0.5 size-4 shrink-0 text-[#E9FF15]" aria-hidden />
                 <span>
@@ -130,4 +164,4 @@ const VendorGrowthJobPage: React.FC = () => {
   );
 };
 
-export default VendorGrowthJobPage;
+export default JobPage;
