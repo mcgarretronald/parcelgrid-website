@@ -21,6 +21,7 @@ import { Reveal } from "../components/Reveal";
 import { STATIONS_FAQ_IDS, faqByIds } from "../lib/faqData";
 import { useScrollToTop } from "../hooks/useScrollToTop";
 import {
+  fetchDropOffStations,
   fetchPickupStations,
   findStationByShareParam,
   logStationSearchMiss,
@@ -367,15 +368,27 @@ export default function PickupPointsPage() {
       setLoading(true);
       setError(null);
       try {
-        const pickups = await fetchPickupStations();
+        // Public /api/pickup-points historically omitted is_booking_enabled, so
+        // every shop looked collect-only. Overlay Send & Collect from the
+        // dedicated drop-off catalog (and once user-service ships the flag,
+        // pickup rows already carry the right capability).
+        const [pickups, dropoffs] = await Promise.all([
+          fetchPickupStations(),
+          fetchDropOffStations().catch(() => [] as Station[]),
+        ]);
         if (cancelled) return;
 
-        const merged = [...pickups].sort((a, b) => {
-          if (a.capability !== b.capability) {
-            return a.capability === "send_collect" ? -1 : 1;
-          }
-          return a.town.localeCompare(b.town) || a.businessName.localeCompare(b.businessName);
-        });
+        const sendIds = new Set(dropoffs.map((d) => d.agentId));
+        const merged = pickups
+          .map((s) =>
+            sendIds.has(s.agentId) ? { ...s, capability: "send_collect" as const } : s,
+          )
+          .sort((a, b) => {
+            if (a.capability !== b.capability) {
+              return a.capability === "send_collect" ? -1 : 1;
+            }
+            return a.town.localeCompare(b.town) || a.businessName.localeCompare(b.businessName);
+          });
         setStations(merged);
       } catch {
         if (!cancelled) setError("Unable to load stations right now. Please refresh and try again.");
