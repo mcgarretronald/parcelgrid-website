@@ -359,7 +359,7 @@ const Receipt: React.FC<ReceiptProps> = ({ orderData, onClose }) => {
         await navigator.share({
           files: [file],
           title: `ParcelGrid receipt ${trackingNo}`,
-          text: `Track ${trackingNo} on https://escrowcourier.com/track`,
+          text: `Track ${trackingNo} on https://escrowcourier.com/track?tracking=${encodeURIComponent(trackingNo)}`,
         });
         setActionHint('Shared');
         return;
@@ -367,7 +367,7 @@ const Receipt: React.FC<ReceiptProps> = ({ orderData, onClose }) => {
       if (navigator.share) {
         await navigator.share({
           title: `ParcelGrid receipt ${trackingNo}`,
-          text: `ParcelGrid tracking ${trackingNo} — https://escrowcourier.com/track`,
+          text: `ParcelGrid tracking ${trackingNo} — https://escrowcourier.com/track?tracking=${encodeURIComponent(trackingNo)}`,
         });
         setActionHint('Shared');
         return;
