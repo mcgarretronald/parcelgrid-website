@@ -46,7 +46,7 @@ const AGENTS_PROXY_PATH = '/pickup-points-api'
 export async function fetchAgents(): Promise<any[]> {
   const sources = import.meta.env.DEV
     ? [AGENTS_PROXY_PATH, AGENTS_FUNCTION_PATH, PUBLIC_AGENTS_API]
-    : [AGENTS_FUNCTION_PATH, PUBLIC_AGENTS_API, AGENTS_PROXY_PATH]
+    : [AGENTS_FUNCTION_PATH]
 
   for (const source of sources) {
     try {

@@ -16,12 +16,24 @@ spec:
         - name: escrow-web-services
           image: registry.digitalocean.com/escrow-mobileapp-registry/escrow-web-services:{{IMAGE_TAG}}
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           envFrom:
             - secretRef:
                 name: escrow-auth-env
           resources:
             requests:
-              memory: "150Mi"
+              memory: "200Mi"
             limits:
-              memory: "300Mi"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 20

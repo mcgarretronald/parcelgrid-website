@@ -234,9 +234,11 @@ export function findStationByAgentId(
  * Do not call booking-agents (those are CBD booking staff, not shops).
  */
 export async function fetchPickupStations(): Promise<Station[]> {
+  // Prod: same-origin /api only (Node render-server). Vite proxies + direct
+  // upstream are DEV fallbacks — calling them in prod causes 404 / CORS noise.
   const sources = import.meta.env.DEV
     ? [PICKUP_PROXY, PICKUP_FN, PICKUP_API]
-    : [PICKUP_FN, PICKUP_PROXY, PICKUP_API];
+    : [PICKUP_FN];
   const raw = await fetchJson(sources);
   return raw.map(normalizePickupStation).filter((s): s is Station => !!s);
 }
@@ -270,7 +272,7 @@ export function sortDropOffStationsNairobiFirst(stations: Station[]): Station[] 
 export async function fetchDropOffStations(): Promise<Station[]> {
   const sources = import.meta.env.DEV
     ? [DROPOFF_PROXY, DROPOFF_FN, DROPOFF_API]
-    : [DROPOFF_FN, DROPOFF_PROXY, DROPOFF_API];
+    : [DROPOFF_FN];
   const raw = await fetchJson(sources);
   const fromApi: Station[] = [];
   for (const item of raw) {
@@ -419,7 +421,7 @@ export async function logStationSearchMiss(payload: StationSearchMissPayload): P
 
   const sources = import.meta.env.DEV
     ? [LOCATION_SEARCH_PROXY, LOCATION_SEARCH_FN, LOCATION_SEARCH_API]
-    : [LOCATION_SEARCH_FN, LOCATION_SEARCH_PROXY, LOCATION_SEARCH_API];
+    : [LOCATION_SEARCH_FN];
 
   for (const source of sources) {
     try {
