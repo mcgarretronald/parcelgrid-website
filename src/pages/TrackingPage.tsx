@@ -986,12 +986,6 @@ const TrackingPage: React.FC = () => {
             </Button>
           </form>
 
-          <p className="mt-5 text-xs font-medium tracking-[0.12em] text-white/55 uppercase sm:text-[13px] sm:tracking-[0.08em] sm:normal-case">
-            <span className="sm:tracking-normal">
-              CA-Licensed Courier · Next-Day Upcountry · Instant M-Pesa COD Payouts
-            </span>
-          </p>
-
           {error && hasSearched && (
             <div
               className="mx-auto mt-6 max-w-2xl rounded-2xl border border-red-200 bg-red-50 px-5 py-5 text-left text-red-950 shadow-sm"
