@@ -671,23 +671,25 @@ function toTrackingUiError(err: unknown, searched: string): TrackingUiError {
     return {
       kind: 'network',
       title: 'Could not connect to tracking',
-      what: 'Your device could not reach our tracking service. This is usually a network or connection issue.',
+      what: 'We could not reach the tracking service from this device. Check your connection, then try again.',
       nextSteps: [
         'Check your internet connection.',
-        'Try Track Now again.',
-        'If it keeps failing, WhatsApp support and share the tracking number.',
+        'Confirm the full tracking number (letters, #, and digits), then tap Track Now.',
+        'If it keeps failing, WhatsApp support and share the number you used.',
       ],
     };
   }
 
+  // Never tell users "this is on us" for an unknown failure — wrong/incomplete
+  // numbers were previously misclassified as outages.
   return {
     kind: 'unavailable',
-    title: 'Tracking is temporarily unavailable',
-    what: 'Our tracking service did not respond correctly. This is on our side, not your tracking number.',
+    title: 'We could not look up that tracking number',
+    what: `Tracking did not return a result for ${ref}. Most often the number is incomplete or mistyped — ParcelGrid numbers look like ALPH#58651 or WEB#12345.`,
     nextSteps: [
-      'Wait a moment, then try Track Now again.',
-      'You can also track later from the same link or SMS we sent.',
-      'Need help now? WhatsApp support with your tracking number.',
+      'Copy the full tracking number from your SMS or booking confirmation.',
+      'Try Track Now again with letters, #, and digits included.',
+      'Still stuck? WhatsApp support with the exact number you used.',
     ],
   };
 }
@@ -1072,7 +1074,7 @@ const TrackingPage: React.FC = () => {
                       <MessageCircle className="h-3.5 w-3.5" aria-hidden />
                       WhatsApp support
                     </a>
-                    {(error.kind === 'not_found' || error.kind === 'invalid') && (
+                    {(error.kind === 'not_found' || error.kind === 'invalid' || error.kind === 'unavailable') && (
                       <Link
                         to="/book-parcel"
                         className="inline-flex min-h-10 items-center rounded-full border border-red-200 bg-white px-4 text-xs font-semibold text-red-950 transition-colors hover:bg-red-50"
