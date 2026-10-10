@@ -3,17 +3,31 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Clock, MapPin, MessageCircle, Phone } from 'lucide-react';
 import Footer from '../components/Footer';
+import { JsonLd } from '../components/JsonLd';
 import { PageHeroBackground } from '../components/PageHeroBackground';
 import { useScrollToTop } from '../hooks/useScrollToTop';
 import { Reveal } from '../components/Reveal';
 import { CAREER_VALUES, JOBS } from '../lib/careers';
 
-const PAGE_TITLE = 'Careers at ParcelGrid | Courier Jobs in Nairobi, Kenya';
+const PAGE_TITLE = 'ParcelGrid Careers | Accountant & Courier Jobs in Nairobi, Kenya';
 const PAGE_DESCRIPTION =
-  'Build the future of logistics in Kenya. Explore open roles at ParcelGrid, a licensed courier network growing fast across 132 towns.';
+  'ParcelGrid is hiring in Nairobi. Apply for open roles including Accountant (KES 40,000, full-time) at Escrow Courier Networks Ltd — CA-licensed courier across 132 towns.';
 
 const CareersPage: React.FC = () => {
   useScrollToTop();
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://escrowcourier.com';
+
+  const careersLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'ParcelGrid open careers',
+    itemListElement: JOBS.map((job, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: `${origin}/careers/${job.slug}`,
+      name: job.title,
+    })),
+  };
 
   return (
     <div className="min-h-screen bg-white text-[#222222]">
@@ -21,12 +35,14 @@ const CareersPage: React.FC = () => {
         <title>{PAGE_TITLE}</title>
         <meta name="title" content={PAGE_TITLE} />
         <meta name="description" content={PAGE_DESCRIPTION} />
-        <meta name="keywords" content="ParcelGrid careers, courier jobs Nairobi, logistics jobs Kenya, accountant job Nairobi, finance jobs Kenya" />
+        <meta name="keywords" content="ParcelGrid careers, ParcelGrid jobs, courier jobs Nairobi, logistics jobs Kenya, accountant job Nairobi, finance jobs Kenya" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content={PAGE_TITLE} />
         <meta property="og:description" content={PAGE_DESCRIPTION} />
-        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/careers` : ''} />
+        <meta property="og:url" content={`${origin}/careers`} />
+        <link rel="canonical" href={`${origin}/careers`} />
       </Helmet>
+      <JsonLd data={careersLd} />
 
       {/* Hero */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
@@ -36,10 +52,10 @@ const CareersPage: React.FC = () => {
             We&apos;re hiring
           </span>
           <h1 className="mt-5 font-[Sora] text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl md:text-5xl">
-            Be part of our mission
+            Be part of our mission — ParcelGrid is hiring
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg">
-            We&apos;re looking for passionate people to join us on our mission. We value flat hierarchies, clear communication, and full ownership and responsibility.
+            Open roles in Nairobi, including Accountant. We value flat hierarchies, clear communication, and full ownership and responsibility.
           </p>
           <div className="mt-7 flex justify-center">
             <a

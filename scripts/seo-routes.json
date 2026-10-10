@@ -86,18 +86,18 @@
       "changefreq": "monthly"
     },
     "/careers": {
-      "title": "Careers at ParcelGrid | Courier Jobs in Nairobi, Kenya",
-      "description": "Build the future of logistics in Kenya. Explore open roles at ParcelGrid, a licensed courier network growing fast across 132 towns.",
-      "h1": "Be part of our mission",
-      "priority": "0.5",
-      "changefreq": "monthly"
+      "title": "ParcelGrid Careers | Accountant & Courier Jobs in Nairobi, Kenya",
+      "description": "ParcelGrid is hiring in Nairobi. Apply for open roles including Accountant (KES 40,000, full-time) at Escrow Courier Networks Ltd — CA-licensed courier across 132 towns.",
+      "h1": "Be part of our mission — ParcelGrid is hiring",
+      "priority": "0.8",
+      "changefreq": "weekly"
     },
-    "/careers/vendor-growth-officer": {
-      "title": "Vendor Growth and Customer Relations Officer Job in Nairobi | ParcelGrid Careers",
-      "description": "Join ParcelGrid as a Vendor Growth and Customer Relations Officer in Nairobi. Help onboard online merchants and scale our courier network. Start with a 2-minute video.",
-      "h1": "Vendor Growth and Customer Relations Officer",
-      "priority": "0.5",
-      "changefreq": "monthly"
+    "/careers/accountant": {
+      "title": "Accountant Job in Nairobi | ParcelGrid Careers",
+      "description": "Hire as Accountant at ParcelGrid in Nairobi. Full-time, KES 40,000 gross. Own financial reporting, M-Pesa reconciliations, tax compliance and cost controls for Kenya's growing courier network.",
+      "h1": "Accountant",
+      "priority": "0.8",
+      "changefreq": "weekly"
     }
   }
 }

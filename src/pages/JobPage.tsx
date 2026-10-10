@@ -14,6 +14,7 @@ import {
   Briefcase,
 } from 'lucide-react';
 import Footer from '../components/Footer';
+import { JsonLd } from '../components/JsonLd';
 import { PageHeroBackground } from '../components/PageHeroBackground';
 import { useScrollToTop } from '../hooks/useScrollToTop';
 import { JOBS } from '../lib/careers';
@@ -28,6 +29,42 @@ const JobPage: React.FC = () => {
 
   const title = `${job.title} Job in ${job.location} | ParcelGrid Careers`;
   const description = job.summary;
+  const jobUrl =
+    typeof window !== 'undefined' ? `${window.location.origin}/careers/${job.slug}` : `https://escrowcourier.com/careers/${job.slug}`;
+
+  const jobPostingLd = {
+    '@context': 'https://schema.org',
+    '@type': 'JobPosting',
+    title: job.title,
+    description: job.summary,
+    datePosted: '2026-10-09',
+    hiringOrganization: {
+      '@type': 'Organization',
+      name: 'ParcelGrid',
+      sameAs: 'https://escrowcourier.com',
+      logo: 'https://escrowcourier.com/logo.png',
+    },
+    jobLocation: {
+      '@type': 'Place',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Nairobi',
+        addressCountry: 'KE',
+      },
+    },
+    employmentType: 'FULL_TIME',
+    baseSalary: {
+      '@type': 'MonetaryAmount',
+      currency: 'KES',
+      value: {
+        '@type': 'QuantitativeValue',
+        value: 40000,
+        unitText: 'MONTH',
+      },
+    },
+    url: jobUrl,
+    directApply: true,
+  };
 
   const details = [
     { icon: MapPin, label: 'Location', value: job.location },
@@ -45,13 +82,15 @@ const JobPage: React.FC = () => {
         <meta name="description" content={description} />
         <meta
           name="keywords"
-          content={`${job.title} job Nairobi, ParcelGrid careers, careers Kenya, jobs Nairobi`}
+          content={`${job.title} job Nairobi, ParcelGrid careers, ParcelGrid jobs, accountant job Nairobi, careers Kenya, jobs Nairobi`}
         />
         <meta property="og:type" content="website" />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
-        <link rel="canonical" href={typeof window !== 'undefined' ? `${window.location.origin}/careers/${job.slug}` : ''} />
+        <meta property="og:url" content={jobUrl} />
+        <link rel="canonical" href={jobUrl} />
       </Helmet>
+      <JsonLd data={jobPostingLd} />
 
       {/* Hero */}
       <section className="relative -mt-24 overflow-hidden bg-[#071410]">
