@@ -1,28 +1,30 @@
-import { lazy } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import RootLayout from "./root";
 import LandingPage from "../pages/LandingPage";
+import RouteErrorPage from "../pages/RouteErrorPage";
+import { lazyWithRetry } from "../lib/lazyWithRetry";
 
-const PickupPointsPage = lazy(() => import("../pages/PickupPointsPage"));
-const PrepaidCODPage = lazy(() => import("../pages/PrepaidCODPage"));
-const FAQ = lazy(() => import("../pages/FAQ"));
-const AboutPage = lazy(() => import("../pages/AboutPage"));
-const ContactPage = lazy(() => import("../pages/ContactPage"));
-const CareersPage = lazy(() => import("../pages/CareersPage"));
-const OpportunitiesPage = lazy(() => import("../pages/OpportunitiesPage"));
-const JobPage = lazy(() => import("../pages/JobPage"));
-const HowToUseAppPage = lazy(() => import("../pages/HowToUseAppPage"));
-const BookingPage = lazy(() => import("../pages/BookingPage"));
-const PaymentPage = lazy(() => import("../pages/PaymentPage"));
-const TrackingPage = lazy(() => import("../pages/TrackingPage"));
-const UpcountryDeliveryPage = lazy(() => import("../pages/UpcountryDeliveryPage"));
-const PricingPage = lazy(() => import("../pages/PricingPage"));
-const NotFoundPage = lazy(() => import("../pages/NotFoundPage"));
+const PickupPointsPage = lazyWithRetry(() => import("../pages/PickupPointsPage"));
+const PrepaidCODPage = lazyWithRetry(() => import("../pages/PrepaidCODPage"));
+const FAQ = lazyWithRetry(() => import("../pages/FAQ"));
+const AboutPage = lazyWithRetry(() => import("../pages/AboutPage"));
+const ContactPage = lazyWithRetry(() => import("../pages/ContactPage"));
+const CareersPage = lazyWithRetry(() => import("../pages/CareersPage"));
+const OpportunitiesPage = lazyWithRetry(() => import("../pages/OpportunitiesPage"));
+const JobPage = lazyWithRetry(() => import("../pages/JobPage"));
+const HowToUseAppPage = lazyWithRetry(() => import("../pages/HowToUseAppPage"));
+const BookingPage = lazyWithRetry(() => import("../pages/BookingPage"));
+const PaymentPage = lazyWithRetry(() => import("../pages/PaymentPage"));
+const TrackingPage = lazyWithRetry(() => import("../pages/TrackingPage"));
+const UpcountryDeliveryPage = lazyWithRetry(() => import("../pages/UpcountryDeliveryPage"));
+const PricingPage = lazyWithRetry(() => import("../pages/PricingPage"));
+const NotFoundPage = lazyWithRetry(() => import("../pages/NotFoundPage"));
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       {
         index: true,

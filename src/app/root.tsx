@@ -1,8 +1,9 @@
-import { lazy, Suspense, useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "../components/layout/Header";
+import { lazyWithRetry } from "../lib/lazyWithRetry";
 
-const ChatWidget = lazy(() => import("../components/chat/ChatWidget"));
+const ChatWidget = lazyWithRetry(() => import("../components/chat/ChatWidget"));
 
 declare global {
   interface Window {
