@@ -602,7 +602,7 @@ const TRACK_API = 'https://app.escrowcourier.com/order-services/api/track';
 const TRACK_PROXY_PATH = '/track-api';
 const TRACK_FUNCTION_PATH = '/api/track';
 
-type TrackingErrorKind = 'empty' | 'not_found' | 'network' | 'unavailable';
+type TrackingErrorKind = 'empty' | 'invalid' | 'not_found' | 'network' | 'unavailable';
 
 type TrackingUiError = {
   kind: TrackingErrorKind;
@@ -620,16 +620,44 @@ class TrackingLookupError extends Error {
   }
 }
 
+/** ParcelGrid format: PREFIX#digits e.g. ALPH#58651, WEB#12345 */
+function isValidTrackingFormat(raw: string): boolean {
+  return /^[A-Z]{2,6}#\d{4,8}$/i.test(String(raw || '').trim());
+}
+
+function trackingErrorCode(json: unknown): string {
+  if (!json || typeof json !== 'object') return '';
+  const err = (json as { error?: unknown }).error;
+  if (typeof err === 'string') return err.toUpperCase();
+  if (err && typeof err === 'object' && typeof (err as { code?: unknown }).code === 'string') {
+    return String((err as { code: string }).code).toUpperCase();
+  }
+  return '';
+}
+
 function toTrackingUiError(err: unknown, searched: string): TrackingUiError {
   const ref = searched.trim() ? `“${searched.trim()}”` : 'that number';
+
+  if (err instanceof TrackingLookupError && err.kind === 'invalid') {
+    return {
+      kind: 'invalid',
+      title: 'That is not a full tracking number',
+      what: `${ref} is incomplete. ParcelGrid tracking numbers look like ALPH#58651 or WEB#12345 — letters, then #, then digits.`,
+      nextSteps: [
+        'Open the SMS or booking confirmation and copy the full tracking number.',
+        'Include the letters and the # symbol — digits alone will not work.',
+        'Still stuck? WhatsApp support with the number from your SMS.',
+      ],
+    };
+  }
 
   if (err instanceof TrackingLookupError && err.kind === 'not_found') {
     return {
       kind: 'not_found',
       title: 'No parcel matches this tracking number',
-      what: `We could not find a ParcelGrid shipment for ${ref}. The number may be mistyped, incomplete, or not created yet.`,
+      what: `We could not find a ParcelGrid shipment for ${ref}. The number may be mistyped, or the booking may not exist yet.`,
       nextSteps: [
-        'Check the full tracking number (for example WEB#12345 or MARK#12345) — include letters, #, and digits.',
+        'Double-check every character (letters, #, and digits).',
         'If you just booked, wait a minute and try again after payment.',
         'Still stuck? WhatsApp support with the number you used.',
       ],
@@ -666,6 +694,9 @@ function toTrackingUiError(err: unknown, searched: string): TrackingUiError {
 
 async function fetchTracking(trackingNo: string): Promise<TrackingData> {
   const value = trackingNo.trim();
+  if (!isValidTrackingFormat(value)) {
+    throw new TrackingLookupError('invalid', 'INVALID_TRACKING');
+  }
   const encoded = encodeURIComponent(value);
 
   // Prefer same-origin proxies (avoid CORS). Upstream only allows escrowcourier.com.
@@ -682,21 +713,28 @@ async function fetchTracking(trackingNo: string): Promise<TrackingData> {
       const res = await fetch(url, { headers: { Accept: 'application/json' } });
       lastStatus = res.status;
 
-      if (res.status === 404) {
-        throw new TrackingLookupError('not_found', 'NOT_FOUND');
-      }
-      if (!res.ok) {
-        // Try next source for gateway/proxy failures; keep last status for messaging.
-        if (res.status >= 500 || res.status === 502 || res.status === 503) continue;
-        throw new TrackingLookupError('unavailable', `STATUS_${res.status}`);
-      }
-
       const text = await res.text();
       let json: any = null;
       try {
         json = JSON.parse(text);
       } catch {
+        if (res.status >= 500 || res.status === 502 || res.status === 503) continue;
+        if (res.status === 404) throw new TrackingLookupError('not_found', 'NOT_FOUND');
+        if (res.status === 400) throw new TrackingLookupError('invalid', 'INVALID_TRACKING');
         continue;
+      }
+
+      const code = trackingErrorCode(json);
+      if (res.status === 404 || code === 'NOT_FOUND') {
+        throw new TrackingLookupError('not_found', 'NOT_FOUND');
+      }
+      if (res.status === 400 || code === 'INVALID_TRACKING') {
+        throw new TrackingLookupError('invalid', 'INVALID_TRACKING');
+      }
+      if (!res.ok) {
+        // Try next source for gateway/proxy failures; keep last status for messaging.
+        if (res.status >= 500 || res.status === 502 || res.status === 503) continue;
+        throw new TrackingLookupError('unavailable', `STATUS_${res.status}`);
       }
 
       // The track endpoint returns: { success, data: { trackingNo, currentStatus, order, milestones, journey } }
@@ -1034,7 +1072,7 @@ const TrackingPage: React.FC = () => {
                       <MessageCircle className="h-3.5 w-3.5" aria-hidden />
                       WhatsApp support
                     </a>
-                    {error.kind === 'not_found' && (
+                    {(error.kind === 'not_found' || error.kind === 'invalid') && (
                       <Link
                         to="/book-parcel"
                         className="inline-flex min-h-10 items-center rounded-full border border-red-200 bg-white px-4 text-xs font-semibold text-red-950 transition-colors hover:bg-red-50"
